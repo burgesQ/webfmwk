@@ -1,146 +1,148 @@
 package util
 
 import (
-    "io"
+	"bufio"
+	"io"
 	"sync"
-    "bufio"
-    "github.com/json-iterator/go"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type PrettyJson struct {
-    input  io.Reader
-    output *bufio.Writer
-    iter   *jsoniter.Iterator
-    wg     sync.WaitGroup
-    err    error
-    comp   bool
+	input  io.Reader
+	output *bufio.Writer
+	iter   *jsoniter.Iterator
+	wg     sync.WaitGroup
+	err    error
+	comp   bool
 }
 
 func NewPrettyJson(in io.Reader, out io.Writer) *PrettyJson {
 
-    return &PrettyJson{
-        in,
-        bufio.NewWriterSize(out, 1024),
-        jsoniter.Parse(jsoniter.ConfigFastest, in, 512*1024),
-        sync.WaitGroup{},
-        nil,
-        false,
-    }
+	return &PrettyJson{
+		in,
+		bufio.NewWriterSize(out, 1024),
+		jsoniter.Parse(jsoniter.ConfigFastest, in, 512*1024),
+		sync.WaitGroup{},
+		nil,
+		false,
+	}
 }
 
 func (p *PrettyJson) SetCompactMode() *PrettyJson {
-    p.comp = true
-    return p
+	p.comp = true
+	return p
 }
 
 func (p *PrettyJson) printSimpleValue() {
-
-    bts := p.iter.SkipAndReturnBytes()
-    p.output.Write(bts)
+	bts := p.iter.SkipAndReturnBytes()
+	p.output.Write(bts)
 }
 
 func (p *PrettyJson) parseElmt(prefix string) bool {
-    
-    t := p.iter.WhatIsNext()
 
-    switch t {
+	t := p.iter.WhatIsNext()
 
-    case jsoniter.ArrayValue:
+	switch t {
 
-        p.output.WriteByte('[')
-        count := 0
-        p.iter.ReadArrayCB(func(*jsoniter.Iterator) bool {
-            if count > 0 {
-                p.output.WriteByte(',')
-            }
-            if !p.comp {
-                p.output.WriteByte('\n')
-                p.output.WriteString(prefix)
-                p.output.WriteString("  ")
-            }
+	case jsoniter.ArrayValue:
 
-            count++
-            return p.parseElmt(prefix + "  ")
-        })
+		p.output.WriteByte('[')
+		count := 0
+		p.iter.ReadArrayCB(func(*jsoniter.Iterator) bool {
+			if count > 0 {
+				p.output.WriteByte(',')
+			}
+			if !p.comp {
+				p.output.WriteByte('\n')
+				p.output.WriteString(prefix)
+				p.output.WriteString("  ")
+			}
 
-        if !p.comp && count > 0 {
-            p.output.WriteByte('\n')
-            p.output.WriteString(prefix)
-        }
+			count++
+			return p.parseElmt(prefix + "  ")
+		})
 
-        p.output.WriteByte(']')
+		if !p.comp && count > 0 {
+			p.output.WriteByte('\n')
+			p.output.WriteString(prefix)
+		}
 
-    case jsoniter.ObjectValue:
+		p.output.WriteByte(']')
 
-        p.output.WriteByte('{')
-        count := 0
-        p.iter.ReadMapCB(func(Iter *jsoniter.Iterator, field string) bool {
-            if count > 0 {
-                p.output.WriteByte(',')
-            }
+	case jsoniter.ObjectValue:
 
-            if !p.comp {
-                p.output.WriteByte('\n')
-                p.output.WriteString(prefix)
-                p.output.WriteString("  ")
-            }
+		p.output.WriteByte('{')
+		count := 0
+		p.iter.ReadMapCB(func(Iter *jsoniter.Iterator, field string) bool {
+			if count > 0 {
+				p.output.WriteByte(',')
+			}
 
-            p.output.WriteByte('"')
-            p.output.WriteString(field)
-            p.output.WriteString("\":")
+			if !p.comp {
+				p.output.WriteByte('\n')
+				p.output.WriteString(prefix)
+				p.output.WriteString("  ")
+			}
 
-            if !p.comp {
-                p.output.WriteByte(' ')
-            }
+			p.output.WriteByte('"')
+			p.output.WriteString(field)
+			p.output.WriteString("\":")
 
-            count++
-            return p.parseElmt(prefix + "  ")
-        })
+			if !p.comp {
+				p.output.WriteByte(' ')
+			}
 
-        if !p.comp && count > 0 {
-            p.output.WriteByte('\n')
-            p.output.WriteString(prefix)
-        }
+			count++
+			return p.parseElmt(prefix + "  ")
+		})
 
-        p.output.WriteByte('}')
+		if !p.comp && count > 0 {
+			p.output.WriteByte('\n')
+			p.output.WriteString(prefix)
+		}
 
-    case jsoniter.InvalidValue:
-        return false
-    default:
-        p.printSimpleValue()
-    }
+		p.output.WriteByte('}')
 
-    return true
+	case jsoniter.InvalidValue:
+		return false
+	default:
+		p.printSimpleValue()
+	}
+
+	return true
 }
 
 func (p *PrettyJson) run() {
 
-    defer p.output.Flush()
+	defer p.output.Flush()
 
-    for  {
-        if !p.parseElmt("") {
+	for {
+		if !p.parseElmt("") {
 
-            if p.iter.Error != io.EOF {
-                p.err = p.iter.Error
-            }
+			if p.iter.Error != io.EOF {
+				p.err = p.iter.Error
+			}
 
-            return
-        }
-    }
+			return
+		}
+	}
 }
 
 func (p *PrettyJson) Start() {
-    p.wg.Add(1)
-    go func () {
-        defer p.wg.Done()
-        p.run()
+	p.wg.Add(1)
+	go func() {
+		defer p.wg.Done()
+		p.run()
 
-        closer, ok := p.input.(io.Closer)
-        if ok { closer.Close() }
-    }()
+		closer, ok := p.input.(io.Closer)
+		if ok {
+			closer.Close()
+		}
+	}()
 }
 
 func (p *PrettyJson) Close() error {
-    p.wg.Wait()
-    return p.err
+	p.wg.Wait()
+	return p.err
 }

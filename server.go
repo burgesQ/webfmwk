@@ -1,7 +1,7 @@
 package webfmwk
 
 import (
-	scontext "context"
+	"context"
 	"crypto/tls"
 	"net/http"
 	"os"
@@ -27,16 +27,15 @@ type TLSConfig struct {
 
 // Server is a struct holding all the necessary data / struct
 type Server struct {
-	routes        Routes
-	ctx           *scontext.Context
-	wg            *sync.WaitGroup
-	launcher      util.WorkerLauncher
-	middlewares   []mux.MiddlewareFunc
-	prefix        string
-	customContext interface{}
-	docHandler    http.Handler
-	CORS          bool
-	// contextual
+	routes      Routes
+	ctx         *context.Context
+	wg          *sync.WaitGroup
+	launcher    util.WorkerLauncher
+	middlewares []mux.MiddlewareFunc
+	prefix      string
+	context     IContext
+	docHandler  http.Handler
+	CORS        bool
 }
 
 var (
@@ -53,9 +52,12 @@ func (s *Server) RegisterDocHandler(handler http.Handler) {
 }
 
 // Save a custom context * so it can be fetched in the controller handler.
-func (s *Server) SetCustomContext(setter func(c CContext) interface{}) {
-	ctx, _ := s.customContext.(CContext)
-	s.customContext = setter(ctx)
+func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
+	ctx, ok := s.context.(*Context)
+	if ok {
+		s.context = setter(ctx)
+	}
+	return ok
 }
 
 // SetPrefix set the url path to prefix.
@@ -69,7 +71,7 @@ func (s *Server) GetLauncher() *util.WorkerLauncher {
 }
 
 // FetchLauncher return a pointer on the context.Context used.
-func (s *Server) GetContext() *scontext.Context {
+func (s *Server) GetContext() *context.Context {
 	return s.ctx
 }
 
@@ -136,6 +138,10 @@ func (s *Server) PATCH(path string, handler HandlerSign) {
 // Magic
 //
 
+func (s *Server) hasBody(r *http.Request) bool {
+	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
+}
+
 // webfmwk main logic
 // Return a http handler wrapped by webfmwk .
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
@@ -143,41 +149,53 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// copy context & set data
-		ctx, _ := (s.customContext).(CContext)
+		ctx := s.context
 
-		ctx.R = r
-		ctx.W = &w
-		ctx.Routes = &s.routes
+		ctx.SetRequest(r)
+		ctx.SetWriter(&w)
+		ctx.SetRoutes(&s.routes)
 
 		// extract params
-		s.HandleParam(&ctx, r)
+
+		ctx.SetVars(mux.Vars(r))
+		ctx.SetQuery(r.URL.Query())
 
 		// check for pjson
-		if len(ctx.Query["pjson"]) > 0 {
-			ctx.Pretty = true
-		} else {
-			ctx.Pretty = false
-		}
+		ctx.IsPretty()
 
 		// check for header if needed
-		if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
-			if !ctx.CheckHeader() {
-				return
-			}
+		if s.hasBody(r) && !ctx.CheckHeader() {
+			return
 		}
 
 		// register the user custom context
 		//TODO: so wrong in there ..
-		ctx.CustomContext = s.customContext
+		// ctx.CustomContext = s.customContext
 
 		// run handler
 		defer ctx.OwnRecover()
+
+		//		out := ctx.(*Context)
 
 		if err := handler(ctx); err != nil {
 			log.Errorf("%s", err.Error())
 		}
 
 	}
+}
+
+func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
+	worker.TLSConfig = &tls.Config{
+		InsecureSkipVerify: tlsCfg.Insecure,
+		Certificates:       make([]tls.Certificate, 1),
+	}
+
+	var err error
+	cert, err := tls.LoadX509KeyPair(tlsCfg.Cert, tlsCfg.Key)
+	if err != nil {
+		log.Fatalf("%s", err.Error())
+	}
+	worker.TLSConfig.Certificates[0] = cert
 }
 
 // Initialize a http.Server struct.
@@ -193,29 +211,18 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 	}
 
 	if s.CORS {
-		headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
-		originsOk := handlers.AllowedOrigins([]string{"*"})
-		methodsOk := handlers.AllowedMethods([]string{"POST", "PUT", "PATCH", "OPTIONS"})
-		worker.Handler = handlers.CORS(originsOk, headersOk, methodsOk)(s.SetRouter())
+		worker.Handler = handlers.CORS(
+			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"}),
+			handlers.AllowedOrigins([]string{"*"}),
+			handlers.AllowedMethods([]string{"POST", "PUT", "PATCH", "OPTIONS"}))(
+			s.SetRouter())
 	} else {
 		worker.Handler = s.SetRouter()
 	}
 
 	// load tls for https
 	if len(tlsStuffs) == 1 {
-		tlsCfg := tlsStuffs[0]
-
-		var err error
-
-		worker.TLSConfig = &tls.Config{
-			InsecureSkipVerify: tlsCfg.Insecure,
-			Certificates:       make([]tls.Certificate, 1),
-		}
-
-		worker.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(tlsCfg.Cert, tlsCfg.Key)
-		if err != nil {
-			log.Fatalf("%s", err.Error())
-		}
+		s.loadTLS(&worker, tlsStuffs[0])
 	}
 
 	// save the server
@@ -243,7 +250,7 @@ func (s *Server) Start(addr string) error {
 
 // Shutdown terminate all running servers.
 // Call shutdown with a context.context on each http(s) server.
-func (s *Server) Shutdown(ctx scontext.Context) error {
+func Shutdown(ctx context.Context) error {
 
 	for _, server := range poolOfServers {
 		server.Shutdown(ctx)
@@ -256,6 +263,10 @@ func (s *Server) Shutdown(ctx scontext.Context) error {
 	return nil
 }
 
+func (s *Server) Shutdown(ctx context.Context) error {
+	return Shutdown(ctx)
+}
+
 // WaitAndStop wait for all servers to terminate.
 // Use of a sync.waitGroup to properly wait all group.
 func (s *Server) WaitAndStop() {
@@ -264,7 +275,7 @@ func (s *Server) WaitAndStop() {
 }
 
 // Handle ctrl+c.
-func (s *Server) ExitHandler(ctx scontext.Context, sig ...os.Signal) {
+func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	c := make(chan os.Signal)
 	signal.Notify(c, sig...)
 
@@ -281,12 +292,17 @@ func (s *Server) ExitHandler(ctx scontext.Context, sig ...os.Signal) {
 
 // InitServer set the server struct & pre-launch the exit handler.
 // Init the worker internal launcher.
-func InitServer(withCtrl bool) (s Server) {
+func InitServer(withCtrl bool) Server {
 
 	var wg sync.WaitGroup
-	ctx, cancel := scontext.WithCancel(scontext.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 
-	s.launcher = util.CreateWorkerLauncher(&wg, cancel)
+	s := Server{
+		launcher: util.CreateWorkerLauncher(&wg, cancel),
+		ctx:      &ctx,
+		wg:       &wg,
+		context:  &Context{},
+	}
 
 	// launch the ctrl+c job
 	if withCtrl {
@@ -295,9 +311,6 @@ func InitServer(withCtrl bool) (s Server) {
 			return nil
 		})
 	}
-	// save the context & wait groupe
-	s.ctx = &ctx
-	s.wg = &wg
 
-	return
+	return s
 }

@@ -1,12 +1,13 @@
 package webfmwk
 
 import (
-	z "github.com/burgesQ/webfmwk/testing"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
+
+	z "github.com/burgesQ/webfmwk/testing"
+	"github.com/gorilla/mux"
 )
 
 func TestSetRouter(t *testing.T) {
@@ -15,7 +16,7 @@ func TestSetRouter(t *testing.T) {
 	defer s.Shutdown(*s.GetContext())
 
 	s.SetPrefix("/api")
-	s.GET("/test", func(c CContext) error { return nil })
+	s.GET("/test", func(c IContext) error { return nil })
 
 	r := s.SetRouter()
 
@@ -40,11 +41,11 @@ func TestHandleParam(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.GET("/test/{id}", func(c CContext) error {
+	s.GET("/test/{id}", func(c IContext) error {
 
-		if len(c.Query["pjson"]) == 0 || c.Query["pjson"][0] != "1" {
-			t.Errorf("Query Param wrongly decoded %#v", c.Query["pjson"])
-		} else if c.Vars["id"] != "toto" {
+		if c.GetQuery("pjson") != "1" {
+			t.Errorf("query Param wrongly decoded %#v", c.GetQuery("pjson"))
+		} else if c.GetVar("id") != "toto" {
 			t.Errorf("URL Param wrongly decoded")
 		}
 

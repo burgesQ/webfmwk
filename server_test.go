@@ -13,7 +13,7 @@ func TestSetPrefix(t *testing.T) {
 	defer s.Shutdown(*s.GetContext())
 
 	s.SetPrefix("/api")
-	s.GET("/test", func(c CContext) error { return nil })
+	s.GET("/test", func(c IContext) error { return nil })
 
 	r := s.SetRouter()
 
@@ -64,7 +64,7 @@ func TestAddRoute(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.AddRoute(Route{Pattern: "/test/1", Method: "GET", Handler: func(c CContext) error { return nil }})
+	s.AddRoute(Route{Pattern: "/test/1", Method: "GET", Handler: func(c IContext) error { return nil }})
 
 	if !(s.routes[0].Pattern == "/test/1" && s.routes[0].Method == "GET") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
@@ -77,8 +77,8 @@ func TestAddRoutes(t *testing.T) {
 	defer s.Shutdown(*s.GetContext())
 
 	s.AddRoutes([]Route{
-		Route{Pattern: "/test/1", Method: "GET", Handler: func(c CContext) error { return nil }},
-		Route{Pattern: "/test/2", Method: "GET", Handler: func(c CContext) error { return nil }},
+		Route{Pattern: "/test/1", Method: "GET", Handler: func(c IContext) error { return nil }},
+		Route{Pattern: "/test/2", Method: "GET", Handler: func(c IContext) error { return nil }},
 	})
 
 	if !(s.routes[0].Pattern == "/test/1" && s.routes[1].Pattern == "/test/2") {
@@ -91,7 +91,7 @@ func TestGET(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.GET("/test", func(c CContext) error {
+	s.GET("/test", func(c IContext) error {
 		return nil
 	})
 
@@ -105,7 +105,7 @@ func TestDELETE(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.DELETE("/test", func(c CContext) error {
+	s.DELETE("/test", func(c IContext) error {
 		return nil
 	})
 
@@ -119,7 +119,7 @@ func TestPOST(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.POST("/test", func(c CContext) error {
+	s.POST("/test", func(c IContext) error {
 		return nil
 	})
 
@@ -133,7 +133,7 @@ func TestPUT(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.PUT("/test", func(c CContext) error {
+	s.PUT("/test", func(c IContext) error {
 		return nil
 	})
 
@@ -147,7 +147,7 @@ func TestPATCH(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.PATCH("/test", func(c CContext) error {
+	s.PATCH("/test", func(c IContext) error {
 		return nil
 	})
 

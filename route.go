@@ -1,14 +1,13 @@
 package webfmwk
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/burgesQ/webfmwk/log"
 	"github.com/gorilla/mux"
 )
 
-type HandlerSign func(c CContext) error
+type HandlerSign func(c IContext) error
 
 type Route struct {
 	Pattern string      `json:"pattern"`
@@ -64,11 +63,4 @@ func (s *Server) SetRouter() *mux.Router {
 	}
 
 	return subRouter
-}
-
-// HandlerParam fetch the url queries & queries params
-// and then store them into the Context struct
-func (s *Server) HandleParam(ctx *CContext, r *http.Request) {
-	ctx.Vars = mux.Vars(r)
-	ctx.Query = r.URL.Query()
 }

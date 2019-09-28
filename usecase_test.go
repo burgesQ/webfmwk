@@ -10,7 +10,7 @@ import (
 )
 
 type customContext struct {
-	CContext
+	Context
 	Value string
 }
 
@@ -35,31 +35,31 @@ func TestUseCase(t *testing.T) {
 	s.SetPrefix("/api")
 
 	// set custom context
-	s.SetCustomContext(func(c CContext) interface{} {
-		cctx := &customContext{c, "turlu"}
+	s.SetCustomContext(func(c *Context) IContext {
+		cctx := &customContext{*c, "turlu"}
 		return cctx
 	})
 
 	// declare routes
-	s.GET("/hello", func(c CContext) error { return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`)) })
-	s.GET("/routes", func(c CContext) error { return c.JSON(http.StatusOK, &testSerial{"hello"}) })
-	s.GET("/hello/{who}", func(c CContext) error {
-		var content = `{ "message": "hello ` + c.Vars["who"] + `" }`
+	s.GET("/hello", func(c IContext) error { return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`)) })
+	s.GET("/routes", func(c IContext) error { return c.JSON(http.StatusOK, &testSerial{"hello"}) })
+	s.GET("/hello/{who}", func(c IContext) error {
+		var content = `{ "message": "hello ` + c.GetVar("who") + `" }`
 		return c.JSONBlob(http.StatusOK, []byte(content))
 	})
-	s.GET("/testQuery", func(c CContext) error { return c.JSONOk(c.Query) })
-	s.GET("/testContext", func(c CContext) error {
-		cc := c.CustomContext.(*customContext)
+	s.GET("/testquery", func(c IContext) error { return c.JSONOk(c.GetQueries()) })
+	s.GET("/testContext", func(c IContext) error {
+		cc := c.(*customContext)
 		return c.JSONBlob(http.StatusOK, []byte(string(`{ "message": "hello `+cc.Value+`" }`)))
 	})
-	s.POST("/world", func(c CContext) error {
+	s.POST("/world", func(c IContext) error {
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 			LastName  string `json:"last_name,omitempty"  validate:"required"`
 		}{}
 
 		// check body handle the error management, so no return needed
-		if err := c.CheckFetchContent(&anonymous); err != nil {
+		if err := c.FetchContent(&anonymous); err != nil {
 			return c.JSONUnprocessable(err)
 		}
 		return c.JSONCreated(anonymous)
@@ -87,7 +87,7 @@ func TestUseCase(t *testing.T) {
 	z.RequestAndTestAPI(t, "/api/hello/you", func(t *testing.T, resp *http.Response) bool {
 		return z.TestBody(t, resp, `{"message":"hello you"}`) && z.TestStatusCode(t, resp, http.StatusOK)
 	})
-	z.RequestAndTestAPI(t, "/api/testQuery?pjson=1", func(t *testing.T, resp *http.Response) bool {
+	z.RequestAndTestAPI(t, "/api/testquery?pjson=1", func(t *testing.T, resp *http.Response) bool {
 		return z.TestBodyDiffere(t, resp, `{"pjson":["1"]}`) && z.TestStatusCode(t, resp, http.StatusOK)
 	})
 	z.RequestAndTestAPI(t, "/api/testContext", func(t *testing.T, resp *http.Response) bool {
