@@ -7,20 +7,19 @@
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
-- [README.md](#readmemd)
 - [What](#what)
     - [dep](#dep)
 - [Test](#test)
 - [How to use it](#how-to-use-it)
     - [Example](#example)
-        - [Basic server](#basic-server)
+        - [Hello world !](#hello-world-)
         - [fetch query param](#fetch-query-param)
         - [fetch url params](#fetch-url-params)
         - [fetch body / validate](#fetch-body--validate)
-        - [Run tls](#run-tls)
-        - [Register a custom context](#register-a-custom-context)
+        - [Use tls](#use-tls)
+        - [Register a extended context](#register-a-extended-context)
         - [Register middlewares](#register-middlewares)
-        - [Minimalistic hello world](#minimalistic-hello-world)
+        - [swagger doc compat](#swagger-doc-compat)
 
 <!-- markdown-toc end -->
 
@@ -62,22 +61,25 @@ log.SetLogLevel(log.LOG_DEBUG)
 log.Init(log.LOGGER_STDOUT | log.LOGFORMAT_LONG)
 ```
 
-### Basic server 
+### Hello world !
 
-```go
+<details><summary>hello world</summary>
+<p>
+
+```golib
 import (
-	w "github.com/burgesQ/webfmwk"
+    w "github.com/burgesQ/webfmwk"
 )
 
 func main() {
-	// init server w/ ctrl+c support
+	// create server
 	s := w.InitServer(true)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
+    s.GET("/hello", func(c w.IContext) error {
+		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
-	// start asynchronously on :4242
+    // start asynchronously on :4242
 	go func() {
 		s.Start(":4242")
 	}()
@@ -87,15 +89,21 @@ func main() {
 }
 ```
 
+</p>
+</details>
+
 ### fetch query param
 
 ### fetch url params
 
 ### fetch body / validate
 
-### Run tls
+### Use tls
 
 Simply use the method `Server.StartTLS(addr, certPath, keyPath string)`.
+
+<details><summary>use tls</summary>
+<p>
 
 ```go
 // start tls asynchronously on :4242
@@ -108,9 +116,15 @@ go func() {
 }()
 ```
 
-### Register a custom context
+</p>
+</details>
+
+### Register a extended context
 
 Create a struct that extend `webfmwk.Context`
+
+<details><summary>extend context</summary>
+<p>
 
 ```go
 import (
@@ -137,9 +151,15 @@ func main() {
 	})
 ```
 
+</p>
+</details>
+
 ### Register middlewares
 
 Import `github.com/burgesQ/webfmwk/middleware`
+
+<details><summary>extend middleware</summary>
+<p>
 
 ```go
 import (
@@ -154,32 +174,12 @@ func main() {
     s.AddMiddleware(m.WithLogging)
 ```
 
+</p>
+</details>
+
 ### swagger doc compat
 
-### Minimalistic hello world
 
-```golib
-import (
-    w "github.com/burgesQ/webfmwk"
-)
-
-func main() {
-	// create server
-	s := w.InitServer(true)
-
-    s.GET("/hello", func(c w.IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
-	})
-
-    // start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
-}
-```
 
 [1]: https://github.com/gorilla/gorilla-mux
 [2]: https://github.com/gorilla/gorilla-handler
