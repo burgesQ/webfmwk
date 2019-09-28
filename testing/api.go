@@ -7,41 +7,48 @@ import (
 	"testing"
 )
 
-func PushAPI(t *testing.T, path string, content []byte) (resp *http.Response, err error) {
-	url := "http://127.0.0.1:4242" + path
+const baseAPI = "http://127.0.0.1:4242"
+
+type (
+	// HandlerForTest implement the function signature used to check the req/resp
+	HandlerForTest = func(t *testing.T, resp *http.Response)
+)
+
+// PushAPI is used to push a request to a local API
+func PushAPI(t *testing.T, path string, content []byte) *http.Response {
+	t.Helper()
+	url := baseAPI + path
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(content))
+	if err != nil {
+		t.Fatalf("can't post the new request : %s", err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	if resp, err = client.Do(req); err != nil {
+	resp, err := client.Do(req)
+	if err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	}
 
-	return
+	return resp
 }
 
-func RequestAPI(t *testing.T, path string) (resp *http.Response, err error) {
-	if resp, err = http.Get("http://127.0.0.1:4242" + path); err != nil {
+// RequestAPI is used to request the local API
+func RequestAPI(t *testing.T, path string) (resp *http.Response) {
+	resp, err := http.Get(baseAPI + path)
+	if err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	}
-	return
+	return resp
 }
 
-func PushAndTestAPI(t *testing.T, path string, content []byte, handler func(t *testing.T, resp *http.Response) bool) bool {
-	resp, err := PushAPI(t, path, content)
-	if err != nil || !handler(t, resp) {
-		return false
-	}
-	return true
+func PushAndTestAPI(t *testing.T, path string, content []byte, handler HandlerForTest) {
+	handler(t, PushAPI(t, path, content))
 }
 
-func RequestAndTestAPI(t *testing.T, path string, handler func(t *testing.T, resp *http.Response) bool) bool {
-	resp, err := RequestAPI(t, path)
-	if err != nil || !handler(t, resp) {
-		return false
-	}
-	return true
+func RequestAndTestAPI(t *testing.T, path string, handler HandlerForTest) {
+	handler(t, RequestAPI(t, path))
 }
 
 func FetchBody(t *testing.T, resp *http.Response) (body string, err error) {
@@ -57,38 +64,27 @@ func FetchBody(t *testing.T, resp *http.Response) (body string, err error) {
 	return
 }
 
-func TestBody(t *testing.T, resp *http.Response, expected string) bool {
-	if body, err := FetchBody(t, resp); err == nil {
-		if body != expected {
-			t.Fatalf("error while comparing the body [%s] expected: [%s]", body, expected)
-			return false
-		}
-		return true
-	}
-	return true
+func AssertBody(t *testing.T, resp *http.Response, expected string) {
+	t.Helper()
+	body, err := FetchBody(t, resp)
+	AssertNil(t, err)
+	AssertStringEqual(t, body, expected)
 }
 
-func TestBodyDiffere(t *testing.T, resp *http.Response, expected string) bool {
-	if body, err := FetchBody(t, resp); err == nil {
-		if body == expected {
-			t.Fatalf("error while comparing the body [%s] should be as expected: [%s]", body, expected)
-			return false
-		}
-		return true
-	}
-	return true
+func AssertBodyDiffere(t *testing.T, resp *http.Response, expected string) {
+	t.Helper()
+	body, err := FetchBody(t, resp)
+	AssertNil(t, err)
+	AssertStringNotEqual(t, body, expected)
 }
 
-func TestStatusCode(t *testing.T, resp *http.Response, expected int) bool {
-	if resp.StatusCode != expected {
-		t.Errorf("Invalide response status code : [%d] expected: [%d]", resp.StatusCode, expected)
-		return false
-	}
-	return true
+func AssertStatusCode(t *testing.T, resp *http.Response, expected int) {
+	t.Helper()
+	AssertIntEqual(t, resp.StatusCode, expected)
 }
 
-func TestHeader(t *testing.T, resp *http.Response, key, val string) bool {
-	// test existance
+func AssertHeader(t *testing.T, resp *http.Response, key, val string) bool {
+	// test existence
 	if out, ok := resp.Header[key]; !ok || len(out) == 0 || out[0] != val {
 		t.Errorf("Invalid response header [%s] expected: [%s]", out[0], val)
 		return false
