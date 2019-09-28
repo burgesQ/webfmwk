@@ -66,7 +66,7 @@ log.Init(log.LOGGER_STDOUT | log.LOGFORMAT_LONG)
 <details><summary>hello world</summary>
 <p>
 
-```golib
+```go
 import (
     w "github.com/burgesQ/webfmwk"
 )
