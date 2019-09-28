@@ -1,5 +1,9 @@
 # README.md
 
+- TODO: proper doc
+- TODO: proper example
+- TODO: Makefile :nerd_face:
+
 # What
 
 `webfmwk` is a minimalist go web framework design for JSON API. His purpose is to use as few as possible external library for a lighter build package.
@@ -15,34 +19,28 @@ The server handle ctrl+c on it's own.
 
 # How to use it
 
-Sample `main.go`
-
-## psjon
-
-Set the `pjson` query param to anything to fetch a pretty json payload.
+TODO: samples `main.go`
 
 # Test
 
 Simply run `go test .`.
 
-Code coverage (`go test . -cover`) : 73%
-
 # Exemple
 
-## Pre-requisite : init frafos logging
+## Pre-requisite : init logging
 
-```golib
-// init frafos logging
+```go
+// init logging
 log.SetLogLevel(log.LOG_DEBUG)
 log.Init(log.LOGGER_STDOUT | log.LOGFORMAT_LONG)
 ```
 
 ## Hugh server instance
 
-```golib
+```go
 import (
-    "frafos.com/golib/webfmwk"
-    "frafos.com/golib/webfmwk/middleware"
+    "github.com/burgesQ/webfmwk"
+    "github.com/burgesQ/webfmwk/middleware"
 )
 
 func main() {
@@ -97,7 +95,7 @@ func main() {
     // set routes
 	s.AddRoutes(routes)
 
-    // you can also add routes
+    // you can also append single route
 	s.AddRoute(w.Route{
 		Pattern: "/world",
 		Method:  "POST",
@@ -134,35 +132,23 @@ func main() {
 
 Simply use the method `webfmwk.Server.StartTLS(addr, certPath, keyPath string)`.
 
-```golib
+```go
 // start tls asynchronously on :4242
 go func() {
     s.StartTLS(":4242", "server.crt", "server.key")
 }()
 ```
 
-## Listen on 2 port
-
-Use the magic of go routine
-
-```golib
-// start on 2 different address
-go func() {
-	go func() {
-		s.Start(":4444")
-	}()
-	s.Start(":4242")
-}()
-```
-
 ## Register a custom context
+
+TODO: this gonna hugely change
 
 Create a struct that implement `webfmwk.CContext`
 
-```golib
+```go
 import (
-    "frafos.com/golib/log"
-    w "frafos.com/golib/webfmwk"
+    "github.com/burgesQ/log"
+    w "github.com/burgesQ/webfmwk"
 )
 
 type CustomContext struct {
@@ -208,13 +194,13 @@ func main() {
 
 ## Register middlewares
 
-Import `fraofs.com/golib/webfmwk/middleware`
+Import `github.com/burgesQ/webfmwk/middleware`
 
-```golib
+```go
 import (
-    "frafos.com/golib/log"
-    w "frafos.com/golib/webfmwk"
-    m "frafos.com/golib/webfmwk/middleware"
+    "github.com/burgesQ/webfmwk/log"
+    w "github.com/burgesQ/webfmwk"
+    m "github.com/burgesQ/webfmwk/middleware"
 )
 
 func main() {
@@ -243,8 +229,8 @@ func main() {
 
 ```golib
 import (
-    "frafos.com/golib/log"
-    w "frafos.com/golib/webfmwk"
+    "github.com/burgesQ/log"
+    w "github.com/burgesQ/webfmwk"
 )
 
 func main() {
@@ -266,33 +252,6 @@ func main() {
 	defer s.WaitAndStop()
 }
 ```
-
-# TODO
-
-- [x] server
-  - [x] Headers
-  - [x] Middelware
-    - [x] logging
-    - [x] secu
-    - [x] CORS
-- [x] route
-  - [x] GET/DELETE
-  - [x] POST/PUT
-  - [x] url params
-  - [x] quert param
-  - [x] routes prefix
-- [x] test multiple listning address
-- [x] pjson
-- [ ] context
-  - [x] register custom context
-  - [ ] up cast
-  - [x] down cast
-- [ ] RFC's
-- [ ] todo's
-- [ ] json validation
-- [ ] template
-- [x] godoc compat
-- [x] unit testing
 
 [1]: https://github.com/gorilla/gorilla-mux
 [2]: https://github.com/gorilla/gorilla-handler

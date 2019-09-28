@@ -1,0 +1,53 @@
+#+TITLE: webfmwk todo's
+#+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
+#+DESCRIPTION: Quick summary of web framework todo's
+
+* TODO v1 [0/2] [0%]
+** IDEA server [0/1] [0%]
+  - [ ] cleaner exit
+
+** IDEA context [0/2] [0%]
+  - [ ] interfacing
+  - [ ] panic / recover
+
+** stuffs
+  - [ ] cleaner doc
+    - [ ] up to date example
+    - [ ] more example
+  - [ ] cleaner test
+  - [ ] CC / CI
+
+
+* DONE v1 [4/4] [100%]
+** DONE server [3/3] [100%]
+   CLOSED: [2019-09-28 Sat 14:50]
+  - [X] Headers
+  - [X] Middelware
+    - [X] logging
+    - [X] secu
+    - [X] CORS
+  - [X] test multiple listning address
+
+** DONE route [4/4] [100%]
+   CLOSED: [2019-09-28 Sat 14:52]
+  - [X] GET/DELETE
+  - [X] POST/PUT
+  - [X] url params
+    - [X] query param
+  - [X] routes prefix
+  - [X] pjson
+
+** DONE context [4/4] [100%]
+   CLOSED: [2019-09-28 Sat 14:52]
+    - [X] register custom context
+    - [X] use custom
+    - [X] json validation
+
+** DONE stuffs
+   CLOSED: [2019-09-28 Sat 14:52]
+  - [x] swagger compat
+
+
+* In time
+** templating
+** use external golib
