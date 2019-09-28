@@ -2,9 +2,11 @@ package util
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 	"sync"
 
+	"github.com/burgesQ/webfmwk/log"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -145,4 +147,23 @@ func (p *PrettyJson) Start() {
 func (p *PrettyJson) Close() error {
 	p.wg.Wait()
 	return p.err
+}
+
+// Use the pretty json utilitary to create well, pretty json ? :nerd_face:
+func SimplePrettyJSON(r io.Reader, pretty bool) string {
+
+	o := new(bytes.Buffer)
+	pj := NewPrettyJson(r, o)
+
+	if !pretty {
+		pj = pj.SetCompactMode()
+	}
+
+	pj.Start()
+
+	if err := pj.Close(); err != nil {
+		log.Errorf("JSON error: %s", err.Error())
+	}
+
+	return o.String()
 }

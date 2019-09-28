@@ -155,8 +155,6 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 		ctx.SetWriter(&w)
 		ctx.SetRoutes(&s.routes)
 
-		// extract params
-
 		ctx.SetVars(mux.Vars(r))
 		ctx.SetQuery(r.URL.Query())
 
@@ -168,13 +166,8 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 			return
 		}
 
-		// register the user custom context
-		//TODO: so wrong in there ..
-		// ctx.CustomContext = s.customContext
-
 		// run handler
 		defer ctx.OwnRecover()
-		//		out := ctx.(*Context)
 
 		if err := handler(ctx); err != nil {
 			log.Errorf("%s", err.Error())
@@ -277,14 +270,12 @@ func (s *Server) WaitAndStop() {
 func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	c := make(chan os.Signal)
 	signal.Notify(c, sig...)
-
+	defer s.Shutdown(ctx)
 	select {
 	case <-ctx.Done():
-		s.Shutdown(ctx)
 		return
 	case si := <-c:
 		log.Infof("captured %v, exiting...", si)
-		s.Shutdown(ctx)
 		return
 	}
 }

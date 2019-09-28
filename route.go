@@ -28,9 +28,10 @@ func (r *Route) check() bool { return true }
 // register the user defined routes,
 // and return the routes handler
 func (s *Server) SetRouter() *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
-
-	subRouter := router.PathPrefix(s.prefix).Subrouter()
+	var (
+		router    = mux.NewRouter().StrictSlash(true)
+		subRouter = router.PathPrefix(s.prefix).Subrouter()
+	)
 
 	// regster middlewares
 	for _, mw := range s.middlewares {
@@ -38,11 +39,11 @@ func (s *Server) SetRouter() *mux.Router {
 	}
 
 	// register routes
-	for _, s_route := range s.routes {
+	for _, route := range s.routes {
 		subRouter.
-			HandleFunc(s_route.Pattern, s.customHandler(s_route.Handler)).
-			Methods(s_route.Method).
-			Name(s_route.Name)
+			HandleFunc(route.Pattern, s.customHandler(route.Handler)).
+			Methods(route.Method).
+			Name(route.Name)
 	}
 
 	// register doc handler
@@ -51,16 +52,14 @@ func (s *Server) SetRouter() *mux.Router {
 		subRouter.PathPrefix("/doc/").Handler(s.docHandler)
 	}
 
-	if err := subRouter.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		pathTemplate, _ := route.GetPathTemplate()
-		methods, _ := route.GetMethods()
-
+	subRouter.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		var (
+			pathTemplate, _ = route.GetPathTemplate()
+			methods, _      = route.GetMethods()
+		)
 		log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
-
 		return nil
-	}); err != nil {
-		log.Errorf("%s", err.Error())
-	}
+	})
 
 	return subRouter
 }

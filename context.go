@@ -3,7 +3,6 @@ package webfmwk
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 	"unicode/utf8"
@@ -13,88 +12,112 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
-// Context hold the data used by the request
-type Context struct {
-	r             *http.Request
-	w             *http.ResponseWriter
-	routes        *Routes
-	vars          map[string]string
-	query         map[string][]string
-	CustomContext interface{}
-}
-
-// AnonymousError struct is used to output error code
+// Context implement the IContext interface
+// It hold the data used by the request
 type (
+	Context struct {
+		r      *http.Request
+		w      *http.ResponseWriter
+		routes *Routes
+		vars   map[string]string
+		query  map[string][]string
+		custom IContext
+	}
+
+	// AnonymousError struct is used to answer error
 	AnonymousError struct {
 		Error string `json:"error"`
 	}
 )
 
 var (
-	MissingContentType = func(c *Context) {
+	missingContentType = func(c *Context) {
 		c.JSON(http.StatusNotAcceptable, AnonymousError{"Missing Content-Type header"})
 	}
-	MismatchContentType = func(c *Context) {
+	mismatchContentType = func(c *Context) {
 		c.JSON(http.StatusNotAcceptable, AnonymousError{"Content-Type is not application/json"})
 	}
-	UnprocessableEntity = func(c *Context) {
+	unprocessableEntity = func(c *Context) {
 		c.JSONUnprocessable(AnonymousError{"Unprocessable Payload, wrong json ?"})
 	}
-	UnprocessableQueryParam = func(c *Context) {
+	unprocessableQueryParam = func(c *Context) {
 		c.JSONUnprocessable(AnonymousError{"Unprocessable query param"})
+	}
+	validationFailed = func(c *Context, e error) {
+		c.JSONUnprocessable(AnonymousError{e.Error()})
 	}
 
 	formChecker = validator.New()
 )
 
+// SetRequest implement IContext
 func (c *Context) SetRequest(r *http.Request) {
 	c.r = r
 }
 
-func (c Context) GetRequest() *http.Request {
-	return c.r
-}
-
+// SetWriter implement IContext
 func (c *Context) SetWriter(w *http.ResponseWriter) {
 	c.w = w
 }
 
-func (c Context) GetWriter() *http.ResponseWriter {
-	return c.w
-}
-
+// SetRoutes implement IContext
 func (c *Context) SetRoutes(r *Routes) {
 	c.routes = r
 }
 
-func (c Context) GetRoutes() *Routes {
-	return c.routes
+// FetchContent implement IContext
+func (c *Context) FetchContent(dest interface{}) (e error) {
+	defer c.r.Body.Close()
+	if e = json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
+		log.Errorf("while decoding the payload : %s", e.Error())
+		//		panic(New422(AnonymousError{"Unprocessable Payload, wrong json ?"}))
+		unprocessableEntity(c)
+		return e
+	}
+	return
 }
 
+// Validate implement IContext
+// this implemt use validator to anotate & check struct
+func (c Context) Validate(dest interface{}) (e error) {
+	if e = formChecker.Struct(dest); e != nil {
+		log.Errorf("error while validating the payload :\n%s", e.Error())
+		// panic(New422(AnonymousError{e.Error()}))
+		validationFailed(&c, e)
+		return e
+	}
+	return
+}
+
+// SetVars implement IContext
 func (c *Context) SetVars(v map[string]string) {
 	c.vars = v
 }
 
-// Param fetch a url param
+// GetVar implement IContext
 func (c Context) GetVar(key string) string {
 	return c.vars[key]
 }
 
+// SetQuery implement IContext
 func (c *Context) SetQuery(q map[string][]string) {
 	c.query = q
 }
 
+// GetQueries implement IContext
 func (c *Context) GetQueries() map[string][]string {
 	return c.query
 }
 
-func (c *Context) GetQuery(key string) string {
+// GetQuery implement IContext
+func (c *Context) GetQuery(key string) (string, bool) {
 	if len(c.query[key]) > 0 {
-		return c.query[key][0]
+		return c.query[key][0], true
 	}
-	return ""
+	return "", false
 }
 
+// IsPretty implement IContext
 func (c Context) IsPretty() bool {
 	if len(c.query["pjson"]) > 0 {
 		return true
@@ -102,35 +125,17 @@ func (c Context) IsPretty() bool {
 	return false
 }
 
-// FetchContent extract the content from the body.
-func (c *Context) FetchContent(dest interface{}) (e error) {
-	defer c.r.Body.Close()
-	if e = json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
-		log.Errorf("while decoding the payload : %s", e.Error())
-		return
-	}
-	return
-}
-
-// Validate validate the json payload destructured into a go struct
-func (c Context) Validate(dest interface{}) (e error) {
-	if e = formChecker.Struct(dest); e != nil {
-		log.Errorf("error while validating the payload :\n%s", e.Error())
-	}
-	return
-}
-
-// CheckHeader from content request (POST, PUT, PATCH)
+// CheckHeader implement IContext
 func (c Context) CheckHeader() (ret bool) {
 	ctype := c.r.Header.Get("Content-Type")
 
 	// if no application/json
 	if len(ctype) == 0 {
-		MissingContentType(&c)
-		ret = false
+		missingContentType(&c)
+		// panic(New406(AnonymousError{"Missing Content-Type header"}))
 	} else if !strings.HasPrefix(ctype, "application/json") {
-		MismatchContentType(&c)
-		ret = false
+		mismatchContentType(&c)
+		// panic(New406(AnonymousError{"Content-Type is not application/json"}))
 	} else {
 		ret = true
 	}
@@ -138,57 +143,62 @@ func (c Context) CheckHeader() (ret bool) {
 	return
 }
 
-// Use the pretty json utilitary to create well, pretty json ? :nerd_face:
-func prettyJSON(r io.Reader, pretty bool) string {
-
-	o := new(bytes.Buffer)
-	pj := util.NewPrettyJson(r, o)
-
-	if !pretty {
-		pj = pj.SetCompactMode()
+// OwnRecover implement IContext
+func (c Context) OwnRecover() {
+	if r := recover(); r != nil {
+		switch err := r.(type) {
+		case ErrorHandled:
+			c.JSON(err.GetOPCode(), err.GetContent())
+		default:
+			panic(err)
+		}
 	}
-
-	pj.Start()
-
-	if err := pj.Close(); err != nil {
-		log.Errorf("JSON error: %s", err.Error())
-	}
-
-	return o.String()
 }
 
-// SetHeader set one header for the next response
-func (c *Context) SetHeader(key, val string) {
+func (c *Context) setHeader(key, val string) {
 	(*c.w).Header().Set(key, val)
 }
 
-// SetHeader set a array of headers for the next response
-func (c *Context) SetHeaders(headers ...[2]string) {
+func (c *Context) setHeaders(headers ...[2]string) {
 	for _, h := range headers {
 		if h[0] != "" && h[1] != "" {
-			c.SetHeader(h[0], h[1])
+			c.setHeader(h[0], h[1])
 		} else {
 			log.Warnf("can't set header [%s] to [%s] (empty value)", h[0], h[1])
 		}
 	}
 }
 
-// SendResponse create & send a response according to the parameters
-func (c *Context) SendResponse(statusCode int, content []byte, headers ...[2]string) error {
-	c.SetHeaders(headers...)
+func (c *Context) response(statusCode int, content []byte) error {
+
+	(*c.w).WriteHeader(statusCode)
+	(*c.w).Write(content)
+
+	if utf8.Valid(content) {
+		log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
+	} else {
+		log.Infof("[%d](%d)", statusCode, len(content))
+	}
+
+	return nil
+}
+
+// sendResponse create & send a response according to the parameters
+func (c *Context) sendResponse(statusCode int, content []byte, headers ...[2]string) error {
+	c.setHeaders(headers...)
 	return c.response(statusCode, content)
 }
 
 // JSONBlob sent a JSON response allready encoded.
 func (c *Context) JSONBlob(statusCode int, content []byte) error {
 
-	c.SetHeader("Accept", "application/json; charset=UTF-8")
+	c.setHeader("Accept", "application/json; charset=UTF-8")
 	if statusCode != http.StatusNoContent {
-		c.SetHeader("Content-Type", "application/json; charset=UTF-8")
-		c.SetHeader("Produce", "application/json; charset=UTF-8")
+		c.setHeader("Content-Type", "application/json; charset=UTF-8")
+		c.setHeader("Produce", "application/json; charset=UTF-8")
 	}
 
-	pcontent := prettyJSON(bytes.NewReader(content), c.IsPretty())
+	pcontent := util.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
 
 	return c.response(statusCode, []byte(pcontent))
 }
@@ -204,8 +214,8 @@ func (c *Context) JSON(statusCode int, content interface{}) error {
 	}
 }
 
-func (c *Context) JSONNotImplemented(content interface{}) error {
-	return c.JSON(http.StatusNotImplemented, content)
+func (c *Context) JSONOk(content interface{}) error {
+	return c.JSON(http.StatusOK, content)
 }
 
 func (c *Context) JSONNoContent() error {
@@ -224,10 +234,6 @@ func (c *Context) JSONUnprocessable(content interface{}) error {
 	return c.JSON(http.StatusUnprocessableEntity, content)
 }
 
-func (c *Context) JSONOk(content interface{}) error {
-	return c.JSON(http.StatusOK, content)
-}
-
 func (c *Context) JSONNotFound(content interface{}) error {
 	return c.JSON(http.StatusNotFound, content)
 }
@@ -236,41 +242,11 @@ func (c *Context) JSONConflict(content interface{}) error {
 	return c.JSON(http.StatusConflict, content)
 }
 
+func (c *Context) JSONNotImplemented(content interface{}) error {
+	return c.JSON(http.StatusNotImplemented, content)
+}
+
 // InternalError create a error 500 with the reason why
 func (c *Context) JSONInternalError(content interface{}) error {
 	return c.JSON(http.StatusInternalServerError, content)
 }
-
-func (c *Context) response(statusCode int, content []byte) error {
-
-	(*c.w).WriteHeader(statusCode)
-	(*c.w).Write(content)
-
-	if utf8.Valid(content) {
-		log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
-	} else {
-		log.Infof("[%d](%d)", statusCode, len(content))
-	}
-
-	return nil
-}
-
-func (c Context) OwnRecover() {
-	if r := recover(); r != nil {
-		switch err := r.(type) {
-		case ErrorHandled:
-			c.JSON(err.GetOPCode(), err.GetContent())
-		default:
-			panic(err)
-		}
-	}
-}
-
-// HandleError log the error and create a appropriate server response.
-// The log format is defined by context. By default error.Error() is provided to the log output.
-// The server response is defined by reason.
-// func (c *Context) HandleError(e error, code int, reason, context string, data ...interface{}) error {
-// 	log.Errorf(context, e.Error(), data[:])
-// 	c.JSON(code, AnonymousError{reason})
-// 	return e
-// }

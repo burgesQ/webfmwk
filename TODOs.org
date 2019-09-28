@@ -2,13 +2,15 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* TODO v1 [0/2] [0%]
+* WIP v1 [0/2] [0%]
 ** IDEA server [0/1] [0%]
   - [ ] cleaner exit
 
-** IDEA context [0/2] [0%]
-  - [ ] interfacing
+** IDEA context [1/2] [50%]
+  - [X] interfacing
   - [ ] panic / recover
+    - [ ] propagate
+    - [ ] interface method
 
 ** stuffs
   - [ ] cleaner doc

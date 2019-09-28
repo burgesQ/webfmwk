@@ -9,8 +9,10 @@ import (
 
 func TestSetPrefix(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.SetPrefix("/api")
 	s.GET("/test", func(c IContext) error { return nil })
@@ -29,8 +31,10 @@ func TestSetPrefix(t *testing.T) {
 
 func TestGetLauncher(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
@@ -39,8 +43,10 @@ func TestGetLauncher(t *testing.T) {
 
 func TestGetContext(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	if s.GetContext() == nil {
 		t.Errorf("Context wrongly created : %v.", s.ctx)
@@ -49,8 +55,10 @@ func TestGetContext(t *testing.T) {
 
 func TestAddMiddleware(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.AddMiddleware(m.Logging)
 
@@ -61,10 +69,16 @@ func TestAddMiddleware(t *testing.T) {
 
 func TestAddRoute(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
-	s.AddRoute(Route{Pattern: "/test/1", Method: "GET", Handler: func(c IContext) error { return nil }})
+	s.AddRoute(Route{
+		Pattern: "/test/1",
+		Method:  "GET",
+		Handler: func(c IContext) error { return nil },
+	})
 
 	if !(s.routes[0].Pattern == "/test/1" && s.routes[0].Method == "GET") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
@@ -73,12 +87,22 @@ func TestAddRoute(t *testing.T) {
 
 func TestAddRoutes(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.AddRoutes([]Route{
-		Route{Pattern: "/test/1", Method: "GET", Handler: func(c IContext) error { return nil }},
-		Route{Pattern: "/test/2", Method: "GET", Handler: func(c IContext) error { return nil }},
+		Route{
+			Pattern: "/test/1",
+			Method:  "GET",
+			Handler: func(c IContext) error { return nil },
+		},
+		Route{
+			Pattern: "/test/2",
+			Method:  "GET",
+			Handler: func(c IContext) error { return nil },
+		},
 	})
 
 	if !(s.routes[0].Pattern == "/test/1" && s.routes[1].Pattern == "/test/2") {
@@ -88,8 +112,10 @@ func TestAddRoutes(t *testing.T) {
 
 func TestGET(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.GET("/test", func(c IContext) error {
 		return nil
@@ -102,8 +128,10 @@ func TestGET(t *testing.T) {
 
 func TestDELETE(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.DELETE("/test", func(c IContext) error {
 		return nil
@@ -116,8 +144,10 @@ func TestDELETE(t *testing.T) {
 
 func TestPOST(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.POST("/test", func(c IContext) error {
 		return nil
@@ -130,9 +160,10 @@ func TestPOST(t *testing.T) {
 
 func TestPUT(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
-
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 	s.PUT("/test", func(c IContext) error {
 		return nil
 	})
@@ -144,8 +175,10 @@ func TestPUT(t *testing.T) {
 
 func TestPATCH(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	defer func() {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}()
 
 	s.PATCH("/test", func(c IContext) error {
 		return nil
@@ -156,18 +189,21 @@ func TestPATCH(t *testing.T) {
 	}
 }
 
-// TODO: TestStartTLS(t *testing.T)
-// TODO: TestStart
-// TODO: TestShutDown
-// TODO: TestWaitAndStop
-// TODO: TestExitHandler
+// // TODO: TestStartTLS(t *testing.T)
+// // TODO: TestStart
+// // TODO: TestShutDown
+// // TODO: TestWaitAndStop
+// // TODO: TestExitHandler
 
 func TestInitServer(t *testing.T) {
-	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
-
-	if s.GetLauncher() == nil || s.GetContext() == nil {
-		t.Errorf("Error while creating the server entity")
-	}
+	t.Run("simple init server", func(t *testing.T) {
+		s := InitServer(false)
+		defer func() {
+			s.Shutdown(*s.GetContext())
+			s.WaitAndStop()
+		}()
+		if s.GetLauncher() == nil || s.GetContext() == nil {
+			t.Errorf("Error while creating the server entity")
+		}
+	})
 }

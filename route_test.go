@@ -43,8 +43,8 @@ func TestHandleParam(t *testing.T) {
 
 	s.GET("/test/{id}", func(c IContext) error {
 
-		if c.GetQuery("pjson") != "1" {
-			t.Errorf("query Param wrongly decoded %#v", c.GetQuery("pjson"))
+		if val, ok := c.GetQuery("pjson"); !ok || val != "1" {
+			t.Errorf("query Param wrongly decoded %s", val)
 		} else if c.GetVar("id") != "toto" {
 			t.Errorf("URL Param wrongly decoded")
 		}
@@ -57,7 +57,7 @@ func TestHandleParam(t *testing.T) {
 			t.Fatalf("error while booting the server : %s", e.Error())
 		}
 	}()
-	time.Sleep(1 * time.Second)
+	time.Sleep(50 * time.Millisecond)
 
 	z.RequestAndTestAPI(t, "/test/toto?pjson=1", func(t *testing.T, resp *http.Response) {})
 }
