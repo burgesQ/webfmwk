@@ -29,7 +29,7 @@ const (
 	// These are the same on Linux, BSD, and OS X.
 
 	// LogEmerg is the emergency log level
-	LogEmerg LogLevel = iota
+	LogEmerg Level = iota
 	// LogAlert is the alert log level
 	LogAlert
 	// LogCrit is the critical log level
