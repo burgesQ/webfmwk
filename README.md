@@ -4,25 +4,6 @@
 [![Codecov](https://img.shields.io/codecov/c/github/burgesQ/webfmwk.svg?style=flat-square)](https://codecov.io/gh/burgesQ/webfmwk)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE)
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-**Table of Contents**
-
-- [What](#what)
-    - [dep](#dep)
-- [Test](#test)
-- [How to use it](#how-to-use-it)
-    - [Example](#example)
-        - [Hello world !](#hello-world-)
-        - [fetch query param](#fetch-query-param)
-        - [fetch url params](#fetch-url-params)
-        - [fetch body / validate](#fetch-body--validate)
-        - [Use tls](#use-tls)
-        - [Register a extended context](#register-a-extended-context)
-        - [Register middlewares](#register-middlewares)
-        - [swagger doc compat](#swagger-doc-compat)
-
-<!-- markdown-toc end -->
-
 # What
 
 `webfmwk` is a minimalist go web framework design for JSON API. 

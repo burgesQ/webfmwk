@@ -76,9 +76,9 @@ func TestFetchContentUnprocessable(t *testing.T) {
 		}{}
 
 		if err := c.FetchContent(&anonymous); err != nil {
-			return c.JSONUnprocessable(AnonymousError{err.Error()})
+			return err // c.JSONUnprocessable(AnonymousError{err.Error()})
 		} else if err = c.Validate(anonymous); err != nil {
-			return c.JSONUnprocessable(AnonymousError{err.Error()})
+			return err // c.JSONUnprocessable(AnonymousError{err.Error()})
 		}
 
 		return c.JSON(http.StatusCreated, anonymous)
