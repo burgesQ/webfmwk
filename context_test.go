@@ -1,0 +1,276 @@
+package webfmwk
+
+import (
+	"bytes"
+	"errors"
+	"net/http"
+	"testing"
+	"time"
+
+	z "github.com/burgesQ/webfmwk/testing"
+)
+
+var (
+	h_body      = `{"message":"nul"}`
+	json_encode = "application/json; charset=UTF-8"
+)
+
+func wrapperPost(t *testing.T,
+	route, routeReq string,
+	content []byte,
+	handlerRoute func(c CContext) error,
+	handlerTest func(t *testing.T, resp *http.Response) (ok bool)) {
+	s := InitServer(false)
+	defer s.WaitAndStop()
+	defer s.Shutdown(*s.GetContext())
+
+	s.POST(route, handlerRoute)
+
+	go func() {
+		if e := s.Start(":4242"); e != nil {
+			t.Fatalf("error while booting the server : %s", e.Error())
+		}
+	}()
+	time.Sleep(1 * time.Second)
+
+	z.PushAndTestAPI(t, routeReq, content, handlerTest)
+}
+
+func wrapperGet(t *testing.T,
+	route, routeReq string,
+	handlerRoute func(c CContext) error,
+	handlerTest func(t *testing.T, resp *http.Response) (ok bool)) {
+	s := InitServer(false)
+	defer s.WaitAndStop()
+	defer s.Shutdown(*s.GetContext())
+
+	s.GET(route, handlerRoute)
+
+	go func() {
+		if e := s.Start(":4242"); e != nil {
+			t.Fatalf("error while booting the server : %s", e.Error())
+		}
+	}()
+	time.Sleep(1 * time.Second)
+
+	z.RequestAndTestAPI(t, routeReq, handlerTest)
+}
+
+func TestHandleError(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		return c.HandleError(errors.New("test"), http.StatusInternalServerError, "test", "test")
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, `{"error":"test"}`) && z.TestStatusCode(t, resp, http.StatusInternalServerError)
+	})
+}
+
+func TestParam(t *testing.T) {
+	wrapperGet(t, "/test/{id}", "/test/tutu", func(c CContext) error {
+		id := c.Vars["id"]
+		if id != "tutu" {
+			t.Errorf("error fetching the url param : [%s] expected [tutu]", id)
+		}
+		return c.JSONOk(id)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, `"tutu"`) && z.TestStatusCode(t, resp, http.StatusOK)
+	})
+}
+
+func TestFetchContentUnprocessable(t *testing.T) {
+	wrapperPost(t, "/test", "/test", []byte(`{"first_name": tutu"}`), func(c CContext) error {
+
+		anonymous := struct {
+			FirstName string `json:"first_name,omitempty" validate:"required"`
+		}{}
+
+		if err := c.CheckFetchContent(&anonymous); err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusCreated, anonymous)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestStatusCode(t, resp, http.StatusUnprocessableEntity)
+	})
+}
+
+func TestFetchContent(t *testing.T) {
+	wrapperPost(t, "/test", "/test", []byte(`{"first_name": "tutu"}`), func(c CContext) error {
+
+		anonymous := struct {
+			FirstName string `json:"first_name,omitempty" validate:"required"`
+		}{}
+
+		if err := c.CheckFetchContent(&anonymous); err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusCreated, anonymous)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, `{"first_name":"tutu"}`) && z.TestStatusCode(t, resp, http.StatusCreated)
+	})
+}
+
+func TestCheckHeaderNoHeader(t *testing.T) {
+	s := InitServer(false)
+	defer s.WaitAndStop()
+	defer s.Shutdown(*s.GetContext())
+
+	s.POST("/test", func(c CContext) error {
+		return c.JSONBlob(http.StatusOK, []byte(h_body))
+	})
+
+	go func() {
+		if e := s.Start(":4242"); e != nil {
+			t.Fatalf("error while booting the server : %s", e.Error())
+		}
+	}()
+	time.Sleep(1 * time.Second)
+
+	url := "http://127.0.0.1:4242" + "/test"
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(h_body)))
+	client := &http.Client{}
+
+	if resp, err := client.Do(req); err != nil {
+		t.Fatalf("error requesting the api : %s", err.Error())
+	} else {
+		z.TestStatusCode(t, resp, http.StatusNotAcceptable)
+	}
+}
+
+func TestCheckHeaderWrongHeader(t *testing.T) {
+	s := InitServer(false)
+	defer s.WaitAndStop()
+	defer s.Shutdown(*s.GetContext())
+
+	s.POST("/test", func(c CContext) error {
+		return c.JSONBlob(http.StatusOK, []byte(h_body))
+	})
+
+	go func() {
+		if e := s.Start(":4242"); e != nil {
+			t.Fatalf("error while booting the server : %s", e.Error())
+		}
+	}()
+	time.Sleep(1 * time.Second)
+
+	url := "http://127.0.0.1:4242" + "/test"
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(h_body)))
+	req.Header.Set("Content-Type", "")
+
+	client := &http.Client{}
+	if resp, err := client.Do(req); err != nil {
+		t.Fatalf("error requesting the api : %s", err.Error())
+	} else {
+		z.TestStatusCode(t, resp, http.StatusNotAcceptable)
+	}
+}
+
+func TestCheckHeader(t *testing.T) {
+	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c CContext) error {
+		return c.JSONBlob(200, []byte(h_body))
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusOK)
+	})
+}
+
+func TestJSONBlobPretty(t *testing.T) {
+	wrapperGet(t, "/test", "/test?pjson", func(c CContext) error {
+		return c.JSONBlob(http.StatusOK, []byte(h_body))
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBodyDiffere(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusOK)
+	})
+}
+
+func TestJSONBlob(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		return c.JSONBlob(http.StatusOK, []byte(h_body))
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		for _, test_val := range []string{"Content-Type", "Accept", "Produce"} {
+			if !z.TestHeader(t, resp, test_val, json_encode) {
+				return false
+			}
+		}
+		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusOK)
+	})
+}
+
+func TestJSONNotImplemented(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONNotImplemented(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) &&
+			z.TestStatusCode(t, resp, http.StatusNotImplemented)
+	})
+}
+
+func TestJSONCreated(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONCreated(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusCreated)
+	})
+}
+
+func TestJSONUnprocessable(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONUnprocessable(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusUnprocessableEntity)
+	})
+}
+
+func TestJSONOk(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONOk(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) &&
+			z.TestStatusCode(t, resp, http.StatusOK)
+	})
+}
+
+func TestJSONNotFound(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONNotFound(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) &&
+			z.TestStatusCode(t, resp, http.StatusNotFound)
+	})
+}
+
+func TestJSONConflict(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONConflict(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) &&
+			z.TestStatusCode(t, resp, http.StatusConflict)
+	})
+}
+
+func TestJSONInternalError(t *testing.T) {
+	wrapperGet(t, "/test", "/test", func(c CContext) error {
+		ret := struct {
+			Message string `json:"message"`
+		}{"nul"}
+		return c.JSONInternalError(ret)
+	}, func(t *testing.T, resp *http.Response) (ok bool) {
+		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusInternalServerError)
+	})
+}
