@@ -185,8 +185,8 @@ func TestJSONBlob(t *testing.T) {
 	wrapperGet(t, "/test", "/test", func(c IContext) error {
 		return c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
-		for _, test_val := range []string{"Content-Type", "Accept", "Produce"} {
-			z.AssertHeader(t, resp, test_val, jsonEncode)
+		for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
+			z.AssertHeader(t, resp, testVal, jsonEncode)
 		}
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusOK)

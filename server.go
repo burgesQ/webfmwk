@@ -39,7 +39,7 @@ type Server struct {
 }
 
 var (
-	// poolOfServers hold all the http(s) server to properly shut them down.
+	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*http.Server
 )
 
@@ -47,11 +47,12 @@ var (
 // Setter - Getter
 //
 
+// RegisterDocHandler is used to save an swagger doc handler
 func (s *Server) RegisterDocHandler(handler http.Handler) {
 	s.docHandler = handler
 }
 
-// Save a custom context * so it can be fetched in the controller handler.
+// SetCustomContext save a custom context so it can be fetched in the controller handler
 func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
 	ctx, ok := s.context.(*Context)
 	if ok {
@@ -60,32 +61,32 @@ func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
 	return ok
 }
 
-// SetPrefix set the url path to prefix.
+// SetPrefix set the url path to prefix
 func (s *Server) SetPrefix(prefix string) {
 	s.prefix = prefix
 }
 
-// FetchLauncher return a pointer on the util.workerLauncher used.
+// GetLauncher return a pointer on the util.workerLauncher used
 func (s *Server) GetLauncher() *util.WorkerLauncher {
 	return &s.launcher
 }
 
-// FetchLauncher return a pointer on the context.Context used.
+// GetContext return a pointer on the context.Context used
 func (s *Server) GetContext() *context.Context {
 	return s.ctx
 }
 
-// AddMiddlware append a middleware to the list of middleware.
+// AddMiddleware append a middleware to the list of middleware
 func (s *Server) AddMiddleware(mw mux.MiddlewareFunc) {
 	s.middlewares = append(s.middlewares, mw)
 }
 
-// Add a extra route to expose.
+// AddRoute add a new route to expose
 func (s *Server) AddRoute(r Route) {
 	s.routes = append(s.routes, r)
 }
 
-// Add extra routes to expose.
+// AddRoutes save all the routes to expose
 func (s *Server) AddRoutes(r []Route) {
 	s.routes = append(s.routes, r...)
 }
@@ -94,7 +95,8 @@ func (s *Server) AddRoutes(r []Route) {
 // Routes method
 //
 
-func (s *Server) GET(path string, handler HandlerSign) {
+// GET expose a route to the http verb GET
+func (s *Server) GET(path string, handler handlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "GET",
@@ -102,7 +104,8 @@ func (s *Server) GET(path string, handler HandlerSign) {
 	})
 }
 
-func (s *Server) DELETE(path string, handler HandlerSign) {
+// DELETE expose a route to the http verb DELETE
+func (s *Server) DELETE(path string, handler handlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "DELETE",
@@ -110,7 +113,8 @@ func (s *Server) DELETE(path string, handler HandlerSign) {
 	})
 }
 
-func (s *Server) POST(path string, handler HandlerSign) {
+// POST expose a route to the http verb POST
+func (s *Server) POST(path string, handler handlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "POST",
@@ -118,7 +122,8 @@ func (s *Server) POST(path string, handler HandlerSign) {
 	})
 }
 
-func (s *Server) PUT(path string, handler HandlerSign) {
+// PUT expose a route to the http verb PUT
+func (s *Server) PUT(path string, handler handlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "PUT",
@@ -126,7 +131,8 @@ func (s *Server) PUT(path string, handler HandlerSign) {
 	})
 }
 
-func (s *Server) PATCH(path string, handler HandlerSign) {
+// PATCH expose a route to the http verb PATCH
+func (s *Server) PATCH(path string, handler handlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "PATCH",
@@ -134,31 +140,21 @@ func (s *Server) PATCH(path string, handler HandlerSign) {
 	})
 }
 
-//
-// Magic
-//
-
 func (s *Server) hasBody(r *http.Request) bool {
 	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
 }
 
-// webfmwk main logic
-// Return a http handler wrapped by webfmwk .
-func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
-
+// webfmwk main logic, return a http handler wrapped by webfmwk
+func (s *Server) customHandler(handler handlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		// copy context & set data
 		ctx := s.context
 
 		ctx.SetRequest(r)
 		ctx.SetWriter(&w)
 		ctx.SetRoutes(&s.routes)
-
 		ctx.SetVars(mux.Vars(r))
 		ctx.SetQuery(r.URL.Query())
-
-		// check for pjson
 		ctx.IsPretty()
 
 		// check for header if needed
@@ -172,7 +168,6 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 		if err := handler(ctx); err != nil {
 			log.Errorf("%s", err.Error())
 		}
-
 	}
 }
 
@@ -190,8 +185,7 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
 	worker.TLSConfig.Certificates[0] = cert
 }
 
-// Initialize a http.Server struct.
-// Save the server in the pool of workers.
+// Initialize a http.Server struct. Save the server in the pool of workers.
 func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 
 	// ! handlers.CORS() must be the first handler
@@ -224,7 +218,7 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 	return &worker
 }
 
-// Run the web framework server on addr via https.
+// StartTLS expose an server to an HTTPS endpoint
 func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) error {
 	s.launcher.Start("https server "+addr, func() error {
 		return s.setServer(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.Cert, tlsStuffs.Key)
@@ -232,7 +226,7 @@ func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) error {
 	return nil
 }
 
-// Run the web framework server on addr.
+// Start expose an server to an HTTP endpoint
 func (s *Server) Start(addr string) error {
 	s.launcher.Start("http server "+addr, func() error {
 		return s.setServer(addr).ListenAndServe()
@@ -255,6 +249,7 @@ func Shutdown(ctx context.Context) error {
 	return nil
 }
 
+// Shutdown call the framework shutdown to stop all running server
 func (s *Server) Shutdown(ctx context.Context) error {
 	return Shutdown(ctx)
 }
@@ -266,7 +261,7 @@ func (s *Server) WaitAndStop() {
 	log.Infof("wg bye")
 }
 
-// Handle ctrl+c.
+// ExitHandler handle ctrl+c in intern
 func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	c := make(chan os.Signal)
 	signal.Notify(c, sig...)

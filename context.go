@@ -205,48 +205,55 @@ func (c *Context) JSONBlob(statusCode int, content []byte) error {
 
 // JSON create a JSON response based on the param content.
 func (c *Context) JSON(statusCode int, content interface{}) error {
-
-	if data, err := json.Marshal(content); err != nil {
+	data, err := json.Marshal(content)
+	if err != nil {
 		log.Errorf("%s", err.Error())
 		return c.JSONInternalError(AnonymousError{"Error creating the JSON response."})
-	} else {
-		return c.JSONBlob(statusCode, data)
 	}
+	return c.JSONBlob(statusCode, data)
 }
 
+// JSONOk implement IContext
 func (c *Context) JSONOk(content interface{}) error {
 	return c.JSON(http.StatusOK, content)
 }
 
+// JSONNoContent implement IContext
 func (c *Context) JSONNoContent() error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
+// JSONBadRequest implement IContext
 func (c *Context) JSONBadRequest(content interface{}) error {
 	return c.JSON(http.StatusBadRequest, content)
 }
 
+// JSONCreated implement IContext
 func (c *Context) JSONCreated(content interface{}) error {
 	return c.JSON(http.StatusCreated, content)
 }
 
+// JSONUnprocessable implement IContext
 func (c *Context) JSONUnprocessable(content interface{}) error {
 	return c.JSON(http.StatusUnprocessableEntity, content)
 }
 
+// JSONNotFound implement IContext
 func (c *Context) JSONNotFound(content interface{}) error {
 	return c.JSON(http.StatusNotFound, content)
 }
 
+// JSONConflict implement IContext
 func (c *Context) JSONConflict(content interface{}) error {
 	return c.JSON(http.StatusConflict, content)
 }
 
+// JSONNotImplemented implement IContext
 func (c *Context) JSONNotImplemented(content interface{}) error {
 	return c.JSON(http.StatusNotImplemented, content)
 }
 
-// InternalError create a error 500 with the reason why
+// JSONInternalError implement IContext
 func (c *Context) JSONInternalError(content interface{}) error {
 	return c.JSON(http.StatusInternalServerError, content)
 }

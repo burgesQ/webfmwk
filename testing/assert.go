@@ -1,7 +1,6 @@
 package testing
 
 import (
-	//	"reflect"
 	"testing"
 )
 
@@ -67,7 +66,7 @@ func AssertNotEqual(t *testing.T, have, want interface{}) {
 // 	assertSimpleNotEqualContext(have, want, context, args)
 // }
 
-// AssertNil run an assertion that the argument is not nil
+// AssertNotNil run an assertion that the argument is not nil
 func AssertNotNil(t *testing.T, have interface{}) {
 	t.Helper()
 	assertSimpleNotEqual(t, have, nil)
@@ -119,7 +118,7 @@ func AssertStringNotEqual(t *testing.T, have, want string) {
 // 	assertSimpleNotEqualContext(have, want, context, args...)
 // }
 
-// AssertStringEqual run an assertion that the two int arguments are equal
+// AssertIntEqual run an assertion that the two int arguments are equal
 func AssertIntEqual(t *testing.T, have, want int) {
 	t.Helper()
 	assertSimpleEqual(t, have, want)

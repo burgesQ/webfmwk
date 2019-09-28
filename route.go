@@ -7,17 +7,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type HandlerSign func(c IContext) error
+type (
+	handlerSign func(c IContext) error
 
-type Route struct {
-	Pattern string      `json:"pattern"`
-	Method  string      `json:"method"`
-	Name    string      `json:"name"`
-	Handler HandlerSign `json:"-"`
-}
+	// Route hold the data for one route
+	Route struct {
+		Pattern string      `json:"pattern"`
+		Method  string      `json:"method"`
+		Name    string      `json:"name"`
+		Handler handlerSign `json:"-"`
+	}
 
-// readability
-type Routes []Route
+	// Routes hold an array of route
+	Routes []Route
+)
 
 // check if a routes is compilent
 // TODO: all
