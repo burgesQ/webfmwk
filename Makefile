@@ -16,7 +16,10 @@ $(NAME): test
 vet:
 	$(VET) .
 
+lint:
+	golint .
+
 test:
 	$(TEST) .
 
-.PHONY: vet test
+.PHONY: vet lint test
