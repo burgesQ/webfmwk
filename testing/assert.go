@@ -57,7 +57,7 @@ func AssertEqualContext(t *testing.T, have, want interface{},
 	assertSimpleEqualContext(t, have, want, context, args...)
 }
 
-// AssertNotEqual run an assertion that the argument are nto equal
+// AssertNotEqual run an assertion that the argument are not equal
 func AssertNotEqual(t *testing.T, have, want interface{}) {
 	t.Helper()
 	assertSimpleNotEqual(t, have, want)

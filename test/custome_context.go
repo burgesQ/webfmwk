@@ -25,7 +25,7 @@ func main() {
 	})
 
 	s.GET("/test", func(c w.IContext) error {
-		ctx := c.(*custom Context)
+		ctx := c.(*customContext)
 		return c.JSONOk(ctx.customVal)
 	})
 

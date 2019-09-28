@@ -189,7 +189,7 @@ func (c *Context) sendResponse(statusCode int, content []byte, headers ...[2]str
 	return c.response(statusCode, content)
 }
 
-// JSONBlob sent a JSON response allready encoded.
+// JSONBlob sent a JSON response already encoded
 func (c *Context) JSONBlob(statusCode int, content []byte) error {
 
 	c.setHeader("Accept", "application/json; charset=UTF-8")
