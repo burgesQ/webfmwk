@@ -174,7 +174,6 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 
 		// run handler
 		defer ctx.OwnRecover()
-
 		//		out := ctx.(*Context)
 
 		if err := handler(ctx); err != nil {

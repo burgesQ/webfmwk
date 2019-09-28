@@ -18,7 +18,7 @@ func wrapperPost(t *testing.T,
 	route, routeReq string,
 	content []byte,
 	handlerRoute func(c IContext) error,
-	handlerTest func(t *testing.T, resp *http.Response) (ok bool)) {
+	handlerTest z.HandlerForTest) {
 	s := InitServer(false)
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
@@ -38,7 +38,7 @@ func wrapperPost(t *testing.T,
 func wrapperGet(t *testing.T,
 	route, routeReq string,
 	handlerRoute func(c IContext) error,
-	handlerTest func(t *testing.T, resp *http.Response) (ok bool)) {
+	handlerTest z.HandlerForTest) {
 	s := InitServer(false)
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
@@ -62,8 +62,9 @@ func TestParam(t *testing.T) {
 			t.Errorf("error fetching the url param : [%s] expected [tutu]", id)
 		}
 		return c.JSONOk(id)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, `"tutu"`) && z.TestStatusCode(t, resp, http.StatusOK)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, `"tutu"`)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
 }
 
@@ -75,12 +76,14 @@ func TestFetchContentUnprocessable(t *testing.T) {
 		}{}
 
 		if err := c.FetchContent(&anonymous); err != nil {
-			return err
+			return c.JSONUnprocessable(AnonymousError{err.Error()})
+		} else if err = c.Validate(anonymous); err != nil {
+			return c.JSONUnprocessable(AnonymousError{err.Error()})
 		}
 
 		return c.JSON(http.StatusCreated, anonymous)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestStatusCode(t, resp, http.StatusUnprocessableEntity)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertStatusCode(t, resp, http.StatusUnprocessableEntity)
 	})
 }
 
@@ -96,8 +99,9 @@ func TestFetchContent(t *testing.T) {
 		}
 
 		return c.JSON(http.StatusCreated, anonymous)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, `{"first_name":"tutu"}`) && z.TestStatusCode(t, resp, http.StatusCreated)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, `{"first_name":"tutu"}`)
+		z.AssertStatusCode(t, resp, http.StatusCreated)
 	})
 }
 
@@ -124,7 +128,7 @@ func TestCheckHeaderNoHeader(t *testing.T) {
 	if resp, err := client.Do(req); err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	} else {
-		z.TestStatusCode(t, resp, http.StatusNotAcceptable)
+		z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
 	}
 }
 
@@ -152,36 +156,37 @@ func TestCheckHeaderWrongHeader(t *testing.T) {
 	if resp, err := client.Do(req); err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	} else {
-		z.TestStatusCode(t, resp, http.StatusNotAcceptable)
+		z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
 	}
 }
 
 func TestCheckHeader(t *testing.T) {
 	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c IContext) error {
 		return c.JSONBlob(200, []byte(h_body))
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusOK)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
 }
 
 func TestJSONBlobPretty(t *testing.T) {
 	wrapperGet(t, "/test", "/test?pjson", func(c IContext) error {
 		return c.JSONBlob(http.StatusOK, []byte(h_body))
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBodyDiffere(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusOK)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBodyDiffere(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
 }
 
 func TestJSONBlob(t *testing.T) {
 	wrapperGet(t, "/test", "/test", func(c IContext) error {
 		return c.JSONBlob(http.StatusOK, []byte(h_body))
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
+	}, func(t *testing.T, resp *http.Response) {
 		for _, test_val := range []string{"Content-Type", "Accept", "Produce"} {
-			if !z.TestHeader(t, resp, test_val, json_encode) {
-				return false
-			}
+			z.AssertHeader(t, resp, test_val, json_encode)
 		}
-		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusOK)
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
 }
 
@@ -191,9 +196,9 @@ func TestJSONNotImplemented(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONNotImplemented(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) &&
-			z.TestStatusCode(t, resp, http.StatusNotImplemented)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusNotImplemented)
 	})
 }
 
@@ -203,8 +208,9 @@ func TestJSONCreated(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONCreated(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusCreated)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusCreated)
 	})
 }
 
@@ -214,8 +220,9 @@ func TestJSONUnprocessable(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONUnprocessable(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusUnprocessableEntity)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusUnprocessableEntity)
 	})
 }
 
@@ -225,9 +232,9 @@ func TestJSONOk(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONOk(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) &&
-			z.TestStatusCode(t, resp, http.StatusOK)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
 }
 
@@ -237,9 +244,9 @@ func TestJSONNotFound(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONNotFound(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) &&
-			z.TestStatusCode(t, resp, http.StatusNotFound)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusNotFound)
 	})
 }
 
@@ -249,9 +256,9 @@ func TestJSONConflict(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONConflict(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) &&
-			z.TestStatusCode(t, resp, http.StatusConflict)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusConflict)
 	})
 }
 
@@ -261,7 +268,8 @@ func TestJSONInternalError(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		return c.JSONInternalError(ret)
-	}, func(t *testing.T, resp *http.Response) (ok bool) {
-		return z.TestBody(t, resp, h_body) && z.TestStatusCode(t, resp, http.StatusInternalServerError)
+	}, func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, h_body)
+		z.AssertStatusCode(t, resp, http.StatusInternalServerError)
 	})
 }

@@ -73,27 +73,31 @@ func TestUseCase(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	// request each routes
-	z.RequestAndTestAPI(t, "/api/hello", func(t *testing.T, resp *http.Response) bool {
+	z.RequestAndTestAPI(t, "/api/hello", func(t *testing.T, resp *http.Response) {
 		for _, test_val := range []string{"Content-Type", "Accept", "Produce"} {
-			if !z.TestHeader(t, resp, test_val, json_encode) {
-				return false
-			}
+			z.AssertHeader(t, resp, test_val, json_encode)
 		}
-		return z.TestBody(t, resp, `{"message":"hello world"}`) && z.TestStatusCode(t, resp, http.StatusOK)
+		z.AssertBody(t, resp, `{"message":"hello world"}`)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
-	z.RequestAndTestAPI(t, "/api/routes", func(t *testing.T, resp *http.Response) bool {
-		return z.TestBody(t, resp, `{"test":"hello"}`) && z.TestStatusCode(t, resp, http.StatusOK)
+	z.RequestAndTestAPI(t, "/api/routes", func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, `{"test":"hello"}`)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
-	z.RequestAndTestAPI(t, "/api/hello/you", func(t *testing.T, resp *http.Response) bool {
-		return z.TestBody(t, resp, `{"message":"hello you"}`) && z.TestStatusCode(t, resp, http.StatusOK)
+	z.RequestAndTestAPI(t, "/api/hello/you", func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, `{"message":"hello you"}`)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
-	z.RequestAndTestAPI(t, "/api/testquery?pjson=1", func(t *testing.T, resp *http.Response) bool {
-		return z.TestBodyDiffere(t, resp, `{"pjson":["1"]}`) && z.TestStatusCode(t, resp, http.StatusOK)
+	z.RequestAndTestAPI(t, "/api/testquery?pjson=1", func(t *testing.T, resp *http.Response) {
+		z.AssertBodyDiffere(t, resp, `{"pjson":["1"]}`)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
-	z.RequestAndTestAPI(t, "/api/testContext", func(t *testing.T, resp *http.Response) bool {
-		return z.TestBodyDiffere(t, resp, `{"message":"hello tutu"}`) && z.TestStatusCode(t, resp, http.StatusOK)
+	z.RequestAndTestAPI(t, "/api/testContext", func(t *testing.T, resp *http.Response) {
+		z.AssertBodyDiffere(t, resp, `{"message":"hello tutu"}`)
+		z.AssertStatusCode(t, resp, http.StatusOK)
 	})
-	z.PushAndTestAPI(t, "/api/world", []byte(string(`{"first_name":"jean"}`)), func(t *testing.T, resp *http.Response) bool {
-		return z.TestBody(t, resp, `{"first_name":"jean"}`) && z.TestStatusCode(t, resp, http.StatusCreated)
+	z.PushAndTestAPI(t, "/api/world", []byte(string(`{"first_name":"jean"}`)), func(t *testing.T, resp *http.Response) {
+		z.AssertBody(t, resp, `{"first_name":"jean"}`)
+		z.AssertStatusCode(t, resp, http.StatusCreated)
 	})
 }

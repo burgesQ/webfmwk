@@ -59,5 +59,5 @@ func TestHandleParam(t *testing.T) {
 	}()
 	time.Sleep(1 * time.Second)
 
-	z.RequestAndTestAPI(t, "/test/toto?pjson=1", func(t *testing.T, resp *http.Response) (ok bool) { return ok })
+	z.RequestAndTestAPI(t, "/test/toto?pjson=1", func(t *testing.T, resp *http.Response) {})
 }

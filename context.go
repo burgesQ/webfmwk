@@ -102,7 +102,7 @@ func (c Context) IsPretty() bool {
 	return false
 }
 
-// CheckFetchContent extract the content from the body.
+// FetchContent extract the content from the body.
 func (c *Context) FetchContent(dest interface{}) (e error) {
 	defer c.r.Body.Close()
 	if e = json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
