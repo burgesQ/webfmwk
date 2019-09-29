@@ -15,9 +15,10 @@ var (
 )
 
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
-	handlerRoute func(c IContext) error, handlerTest z.HandlerForTest) {
+	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
 
 	s := InitServer(false)
+	// TODO:	s.SetLogLevel(-1)
 	defer func() {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
@@ -35,7 +36,7 @@ func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 }
 
 func wrapperGet(t *testing.T, route, routeReq string,
-	handlerRoute func(c IContext) error, handlerTest z.HandlerForTest) {
+	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
 
 	s := InitServer(false)
 	defer func() {
@@ -55,12 +56,12 @@ func wrapperGet(t *testing.T, route, routeReq string,
 }
 
 func TestParam(t *testing.T) {
-	wrapperGet(t, "/test/{id}", "/test/tutu", func(c IContext) error {
+	wrapperGet(t, "/test/{id}", "/test/tutu", func(c IContext) {
 		id := c.GetVar("id")
 		if id != "tutu" {
 			t.Errorf("error fetching the url param : [%s] expected [tutu]", id)
 		}
-		return c.JSONOk(id)
+		c.JSONOk(id)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, `"tutu"`)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -69,36 +70,30 @@ func TestParam(t *testing.T) {
 
 func TestFetchContentUnprocessable(t *testing.T) {
 
-	wrapperPost(t, "/test", "/test", []byte(`{"first_name": tutu"}`), func(c IContext) error {
+	wrapperPost(t, "/test", "/test", []byte(`{"first_name": tutu"}`), func(c IContext) {
 
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 		}{}
 
-		if err := c.FetchContent(&anonymous); err != nil {
-			return err // c.JSONUnprocessable(AnonymousError{err.Error()})
-		} else if err = c.Validate(anonymous); err != nil {
-			return err // c.JSONUnprocessable(AnonymousError{err.Error()})
-		}
+		c.FetchContent(&anonymous)
+		c.Validate(anonymous)
 
-		return c.JSON(http.StatusCreated, anonymous)
+		c.JSON(http.StatusCreated, anonymous)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertStatusCode(t, resp, http.StatusUnprocessableEntity)
 	})
 }
 
 func TestFetchContent(t *testing.T) {
-	wrapperPost(t, "/test", "/test", []byte(`{"first_name": "tutu"}`), func(c IContext) error {
+	wrapperPost(t, "/test", "/test", []byte(`{"first_name": "tutu"}`), func(c IContext) {
 
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 		}{}
 
-		if err := c.FetchContent(&anonymous); err != nil {
-			return err
-		}
-
-		return c.JSON(http.StatusCreated, anonymous)
+		c.FetchContent(&anonymous)
+		c.JSON(http.StatusCreated, anonymous)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, `{"first_name":"tutu"}`)
 		z.AssertStatusCode(t, resp, http.StatusCreated)
@@ -112,8 +107,8 @@ func TestCheckHeaderNoHeader(t *testing.T) {
 		s.WaitAndStop()
 	}()
 
-	s.POST("/test", func(c IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(hBody))
+	s.POST("/test", func(c IContext) {
+		c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 
 	go func() {
@@ -140,8 +135,8 @@ func TestCheckHeaderWrongHeader(t *testing.T) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
 	}()
-	s.POST("/test", func(c IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(hBody))
+	s.POST("/test", func(c IContext) {
+		c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 
 	go func() {
@@ -164,8 +159,8 @@ func TestCheckHeaderWrongHeader(t *testing.T) {
 }
 
 func TestCheckHeader(t *testing.T) {
-	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c IContext) error {
-		return c.JSONBlob(200, []byte(hBody))
+	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c IContext) {
+		c.JSONBlob(200, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -173,8 +168,8 @@ func TestCheckHeader(t *testing.T) {
 }
 
 func TestJSONBlobPretty(t *testing.T) {
-	wrapperGet(t, "/test", "/test?pjson", func(c IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(hBody))
+	wrapperGet(t, "/test", "/test?pjson", func(c IContext) {
+		c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBodyDiffere(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -182,8 +177,8 @@ func TestJSONBlobPretty(t *testing.T) {
 }
 
 func TestJSONBlob(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(hBody))
+	wrapperGet(t, "/test", "/test", func(c IContext) {
+		c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
 		for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
 			z.AssertHeader(t, resp, testVal, jsonEncode)
@@ -194,11 +189,11 @@ func TestJSONBlob(t *testing.T) {
 }
 
 func TestJSONNotImplemented(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONNotImplemented(ret)
+		c.JSONNotImplemented(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusNotImplemented)
@@ -206,11 +201,11 @@ func TestJSONNotImplemented(t *testing.T) {
 }
 
 func TestJSONCreated(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONCreated(ret)
+		c.JSONCreated(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusCreated)
@@ -218,11 +213,11 @@ func TestJSONCreated(t *testing.T) {
 }
 
 func TestJSONUnprocessable(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONUnprocessable(ret)
+		c.JSONUnprocessable(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusUnprocessableEntity)
@@ -230,11 +225,11 @@ func TestJSONUnprocessable(t *testing.T) {
 }
 
 func TestJSONOk(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONOk(ret)
+		c.JSONOk(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -242,11 +237,11 @@ func TestJSONOk(t *testing.T) {
 }
 
 func TestJSONNotFound(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONNotFound(ret)
+		c.JSONNotFound(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusNotFound)
@@ -254,11 +249,11 @@ func TestJSONNotFound(t *testing.T) {
 }
 
 func TestJSONConflict(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONConflict(ret)
+		c.JSONConflict(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusConflict)
@@ -266,11 +261,11 @@ func TestJSONConflict(t *testing.T) {
 }
 
 func TestJSONInternalError(t *testing.T) {
-	wrapperGet(t, "/test", "/test", func(c IContext) error {
+	wrapperGet(t, "/test", "/test", func(c IContext) {
 		ret := struct {
 			Message string `json:"message"`
 		}{"nul"}
-		return c.JSONInternalError(ret)
+		c.JSONInternalError(ret)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusInternalServerError)

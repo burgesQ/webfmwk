@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var emptyController = func(c IContext) {}
+
 func TestSetPrefix(t *testing.T) {
 	s := InitServer(false)
 	defer func() {
@@ -15,7 +17,7 @@ func TestSetPrefix(t *testing.T) {
 	}()
 
 	s.SetPrefix("/api")
-	s.GET("/test", func(c IContext) error { return nil })
+	s.GET("/test", emptyController)
 
 	r := s.SetRouter()
 
@@ -77,7 +79,7 @@ func TestAddRoute(t *testing.T) {
 	s.AddRoute(Route{
 		Pattern: "/test/1",
 		Method:  "GET",
-		Handler: func(c IContext) error { return nil },
+		Handler: emptyController,
 	})
 
 	if !(s.routes[0].Pattern == "/test/1" && s.routes[0].Method == "GET") {
@@ -96,12 +98,12 @@ func TestAddRoutes(t *testing.T) {
 		Route{
 			Pattern: "/test/1",
 			Method:  "GET",
-			Handler: func(c IContext) error { return nil },
+			Handler: emptyController,
 		},
 		Route{
 			Pattern: "/test/2",
 			Method:  "GET",
-			Handler: func(c IContext) error { return nil },
+			Handler: emptyController,
 		},
 	})
 
@@ -117,9 +119,7 @@ func TestGET(t *testing.T) {
 		s.WaitAndStop()
 	}()
 
-	s.GET("/test", func(c IContext) error {
-		return nil
-	})
+	s.GET("/test", emptyController)
 
 	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "GET") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
@@ -133,9 +133,7 @@ func TestDELETE(t *testing.T) {
 		s.WaitAndStop()
 	}()
 
-	s.DELETE("/test", func(c IContext) error {
-		return nil
-	})
+	s.DELETE("/test", emptyController)
 
 	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "DELETE") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
@@ -149,9 +147,7 @@ func TestPOST(t *testing.T) {
 		s.WaitAndStop()
 	}()
 
-	s.POST("/test", func(c IContext) error {
-		return nil
-	})
+	s.POST("/test", emptyController)
 
 	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "POST") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
@@ -164,9 +160,7 @@ func TestPUT(t *testing.T) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
 	}()
-	s.PUT("/test", func(c IContext) error {
-		return nil
-	})
+	s.PUT("/test", emptyController)
 
 	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "PUT") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
@@ -180,9 +174,7 @@ func TestPATCH(t *testing.T) {
 		s.WaitAndStop()
 	}()
 
-	s.PATCH("/test", func(c IContext) error {
-		return nil
-	})
+	s.PATCH("/test", emptyController)
 
 	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "PATCH") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])

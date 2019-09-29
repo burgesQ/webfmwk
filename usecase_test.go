@@ -36,33 +36,31 @@ func TestUseCase(t *testing.T) {
 	})
 
 	// declare routes
-	s.GET("/hello", func(c IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
+	s.GET("/hello", func(c IContext) {
+		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
-	s.GET("/routes", func(c IContext) error {
-		return c.JSON(http.StatusOK, &testSerial{"hello"})
+	s.GET("/routes", func(c IContext) {
+		c.JSON(http.StatusOK, &testSerial{"hello"})
 	})
-	s.GET("/hello/{who}", func(c IContext) error {
+	s.GET("/hello/{who}", func(c IContext) {
 		var content = `{ "message": "hello ` + c.GetVar("who") + `" }`
-		return c.JSONBlob(http.StatusOK, []byte(content))
+		c.JSONBlob(http.StatusOK, []byte(content))
 	})
-	s.GET("/testquery", func(c IContext) error {
-		return c.JSONOk(c.GetQueries())
+	s.GET("/testquery", func(c IContext) {
+		c.JSONOk(c.GetQueries())
 	})
-	s.GET("/testContext", func(c IContext) error {
+	s.GET("/testContext", func(c IContext) {
 		cc := c.(*customContext)
-		return c.JSONBlob(http.StatusOK, []byte(string(`{ "message": "hello `+cc.Value+`" }`)))
+		c.JSONBlob(http.StatusOK, []byte(string(`{ "message": "hello `+cc.Value+`" }`)))
 	})
-	s.POST("/world", func(c IContext) error {
+	s.POST("/world", func(c IContext) {
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 			LastName  string `json:"last_name,omitempty"  validate:"required"`
 		}{}
 		// check body handle the error management, so no return needed
-		if err := c.FetchContent(&anonymous); err != nil {
-			return c.JSONUnprocessable(err)
-		}
-		return c.JSONCreated(anonymous)
+		c.FetchContent(&anonymous)
+		c.JSONCreated(anonymous)
 	})
 
 	go func() {

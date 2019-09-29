@@ -15,6 +15,7 @@
    - [X] implement error class
    - [ ] propagate change
 
+
 ** TODO stuffs [2/5] [40%]
   - [ ] cleaner doc
     - [ ] up to date example
@@ -28,7 +29,6 @@
     - [ ] route
     - [ ] middleware
   - [X] CI
-
 
 * DONE v1 [4/4] [100%]
 ** DONE server [3/3] [100%]
