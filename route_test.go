@@ -16,7 +16,7 @@ func TestSetRouter(t *testing.T) {
 	defer s.Shutdown(*s.GetContext())
 
 	s.SetPrefix("/api")
-	s.GET("/test", func(c IContext) error { return nil })
+	s.GET("/test", func(c IContext) { c.JSONNoContent() })
 
 	r := s.SetRouter()
 
@@ -41,15 +41,13 @@ func TestHandleParam(t *testing.T) {
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.GET("/test/{id}", func(c IContext) error {
-
+	s.GET("/test/{id}", func(c IContext) {
 		if val, ok := c.GetQuery("pjson"); !ok || val != "1" {
 			t.Errorf("query Param wrongly decoded %s", val)
 		} else if c.GetVar("id") != "toto" {
 			t.Errorf("URL Param wrongly decoded")
 		}
-
-		return nil
+		c.JSONNoContent()
 	})
 
 	go func() {

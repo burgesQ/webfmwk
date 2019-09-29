@@ -20,10 +20,10 @@ type IContext interface {
 	SetRoutes(rt *Routes)
 
 	// FetchContent extract the content from the body
-	FetchContent(interface{}) error
+	FetchContent(content interface{})
 
 	// Validate is used to validate a content of a request
-	Validate(content interface{}) error
+	Validate(content interface{})
 
 	// SetVars is used to save the url vars
 	SetVars(vars map[string]string)
@@ -34,9 +34,6 @@ type IContext interface {
 	// SetQuery save the query param object
 	SetQuery(query map[string][]string)
 
-	// SetLogger set the logger of the ctx
-	SetLogger(logger log.ILog)
-
 	// GetQueries return the queries object
 	GetQueries() map[string][]string
 
@@ -46,40 +43,45 @@ type IContext interface {
 	// IsPretty toggle the compact outptu mode
 	IsPretty() bool
 
-	// CheckHeader ensure the Content-Type in case of request
-	CheckHeader() bool
+	// SetLogger set the logger of the ctx
+	SetLogger(logger log.ILog)
+
+	// CheckHeader ensure the Content-Type of the request
+	CheckHeader()
 
 	// OwnRecover is used to encapsulate the wanted panic
 	OwnRecover()
 
 	// JSONBlob answer the JSON content with the status code op
-	JSONBlob(op int, content []byte) error
-	JSON(int, interface{}) error
+	JSONBlob(op int, content []byte)
+
+	// JSON answer the JSON content with the status code op
+	JSON(op int, content interface{})
 
 	//
-	JSONNotImplemented(interface{}) error
+	JSONNotImplemented(interface{})
 
 	//
-	JSONNoContent() error
+	JSONNoContent()
 
 	//
-	JSONBadRequest(interface{}) error
+	JSONBadRequest(interface{})
 
 	// 201
-	JSONCreated(interface{}) error
+	JSONCreated(interface{})
 
 	//
-	JSONUnprocessable(interface{}) error
+	JSONUnprocessable(interface{})
 
 	// 200
-	JSONOk(interface{}) error
+	JSONOk(interface{})
 
 	// 404
-	JSONNotFound(interface{}) error
+	JSONNotFound(interface{})
 
 	//
-	JSONConflict(interface{}) error
+	JSONConflict(interface{})
 
 	//
-	JSONInternalError(interface{}) error
+	JSONInternalError(interface{})
 }

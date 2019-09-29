@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	handlerSign func(c IContext) error
+	handlerSign func(c IContext)
 
 	// Route hold the data for one route
 	Route struct {

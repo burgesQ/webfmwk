@@ -32,22 +32,6 @@ type (
 )
 
 var (
-	missingContentType = func(c *Context) {
-		c.JSON(http.StatusNotAcceptable, AnonymousError{"Missing Content-Type header"})
-	}
-	mismatchContentType = func(c *Context) {
-		c.JSON(http.StatusNotAcceptable, AnonymousError{"Content-Type is not application/json"})
-	}
-	unprocessableEntity = func(c *Context) {
-		c.JSONUnprocessable(AnonymousError{"Unprocessable Payload, wrong json ?"})
-	}
-	unprocessableQueryParam = func(c *Context) {
-		c.JSONUnprocessable(AnonymousError{"Unprocessable query param"})
-	}
-	validationFailed = func(c *Context, e error) {
-		c.JSONUnprocessable(AnonymousError{e.Error()})
-	}
-
 	formChecker = validator.New()
 )
 
@@ -67,27 +51,21 @@ func (c *Context) SetRoutes(r *Routes) {
 }
 
 // FetchContent implement IContext
-func (c *Context) FetchContent(dest interface{}) (e error) {
+func (c *Context) FetchContent(dest interface{}) {
 	defer c.r.Body.Close()
-	if e = json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
+	if e := json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
 		c.log.Errorf("while decoding the payload : %s", e.Error())
-		//		panic(New422(AnonymousError{"Unprocessable Payload, wrong json ?"}))
-		unprocessableEntity(c)
-		return e
+		panic(NewUnprocessable(AnonymousError{"Unprocessable payload, wrong json ?"}))
 	}
-	return
 }
 
 // Validate implement IContext
 // this implemt use validator to anotate & check struct
-func (c Context) Validate(dest interface{}) (e error) {
-	if e = formChecker.Struct(dest); e != nil {
+func (c Context) Validate(dest interface{}) {
+	if e := formChecker.Struct(dest); e != nil {
 		c.log.Errorf("error while validating the payload :\n%s", e.Error())
-		// panic(New422(AnonymousError{e.Error()}))
-		validationFailed(&c, e)
-		return e
+		panic(NewUnprocessable(AnonymousError{e.Error()}))
 	}
-	return
 }
 
 // SetVars implement IContext
@@ -132,30 +110,22 @@ func (c *Context) SetLogger(logger log.ILog) {
 }
 
 // CheckHeader implement IContext
-func (c Context) CheckHeader() (ret bool) {
-	ctype := c.r.Header.Get("Content-Type")
-
-	// if no application/json
-	if len(ctype) == 0 {
-		missingContentType(&c)
-		// panic(New406(AnonymousError{"Missing Content-Type header"}))
+func (c Context) CheckHeader() {
+	if ctype := c.r.Header.Get("Content-Type"); len(ctype) == 0 {
+		panic(NewNotAcceptable(AnonymousError{"Missing Content-Type header"}))
 	} else if !strings.HasPrefix(ctype, "application/json") {
-		mismatchContentType(&c)
-		// panic(New406(AnonymousError{"Content-Type is not application/json"}))
-	} else {
-		ret = true
+		panic(NewNotAcceptable(AnonymousError{"Content-Type is not application/json"}))
 	}
-
-	return
 }
 
 // OwnRecover implement IContext
 func (c Context) OwnRecover() {
 	if r := recover(); r != nil {
 		switch err := r.(type) {
-		case ErrorHandled:
+		case IErrorHandled:
 			c.JSON(err.GetOPCode(), err.GetContent())
 		default:
+			log.Errorf("catched %T %#v", err, err)
 			panic(err)
 		}
 	}
@@ -175,8 +145,7 @@ func (c *Context) setHeaders(headers ...[2]string) {
 	}
 }
 
-func (c *Context) response(statusCode int, content []byte) error {
-
+func (c *Context) response(statusCode int, content []byte) {
 	(*c.w).WriteHeader(statusCode)
 	(*c.w).Write(content)
 
@@ -185,18 +154,16 @@ func (c *Context) response(statusCode int, content []byte) error {
 	} else {
 		c.log.Infof("[%d](%d)", statusCode, len(content))
 	}
-
-	return nil
 }
 
 // sendResponse create & send a response according to the parameters
-func (c *Context) sendResponse(statusCode int, content []byte, headers ...[2]string) error {
+func (c *Context) sendResponse(statusCode int, content []byte, headers ...[2]string) {
 	c.setHeaders(headers...)
-	return c.response(statusCode, content)
+	c.response(statusCode, content)
 }
 
 // JSONBlob sent a JSON response already encoded
-func (c *Context) JSONBlob(statusCode int, content []byte) error {
+func (c *Context) JSONBlob(statusCode int, content []byte) {
 
 	c.setHeader("Accept", "application/json; charset=UTF-8")
 	if statusCode != http.StatusNoContent {
@@ -209,60 +176,60 @@ func (c *Context) JSONBlob(statusCode int, content []byte) error {
 		c.log.Errorf("while prettier the content : %s", err.Error())
 	}
 
-	return c.response(statusCode, []byte(pcontent))
+	c.response(statusCode, []byte(pcontent))
 }
 
 // JSON create a JSON response based on the param content.
-func (c *Context) JSON(statusCode int, content interface{}) error {
+func (c *Context) JSON(statusCode int, content interface{}) {
 	data, err := json.Marshal(content)
 	if err != nil {
 		c.log.Errorf("%s", err.Error())
-		return c.JSONInternalError(AnonymousError{"Error creating the JSON response."})
+		panic(NewInternal(AnonymousError{"Error creating the JSON response."}))
 	}
-	return c.JSONBlob(statusCode, data)
+	c.JSONBlob(statusCode, data)
 }
 
 // JSONOk implement IContext
-func (c *Context) JSONOk(content interface{}) error {
-	return c.JSON(http.StatusOK, content)
+func (c *Context) JSONOk(content interface{}) {
+	c.JSON(http.StatusOK, content)
 }
 
 // JSONNoContent implement IContext
-func (c *Context) JSONNoContent() error {
-	return c.JSON(http.StatusNoContent, nil)
+func (c *Context) JSONNoContent() {
+	c.JSON(http.StatusNoContent, nil)
 }
 
 // JSONBadRequest implement IContext
-func (c *Context) JSONBadRequest(content interface{}) error {
-	return c.JSON(http.StatusBadRequest, content)
+func (c *Context) JSONBadRequest(content interface{}) {
+	c.JSON(http.StatusBadRequest, content)
 }
 
 // JSONCreated implement IContext
-func (c *Context) JSONCreated(content interface{}) error {
-	return c.JSON(http.StatusCreated, content)
+func (c *Context) JSONCreated(content interface{}) {
+	c.JSON(http.StatusCreated, content)
 }
 
 // JSONUnprocessable implement IContext
-func (c *Context) JSONUnprocessable(content interface{}) error {
-	return c.JSON(http.StatusUnprocessableEntity, content)
+func (c *Context) JSONUnprocessable(content interface{}) {
+	c.JSON(http.StatusUnprocessableEntity, content)
 }
 
 // JSONNotFound implement IContext
-func (c *Context) JSONNotFound(content interface{}) error {
-	return c.JSON(http.StatusNotFound, content)
+func (c *Context) JSONNotFound(content interface{}) {
+	c.JSON(http.StatusNotFound, content)
 }
 
 // JSONConflict implement IContext
-func (c *Context) JSONConflict(content interface{}) error {
-	return c.JSON(http.StatusConflict, content)
+func (c *Context) JSONConflict(content interface{}) {
+	c.JSON(http.StatusConflict, content)
 }
 
 // JSONNotImplemented implement IContext
-func (c *Context) JSONNotImplemented(content interface{}) error {
-	return c.JSON(http.StatusNotImplemented, content)
+func (c *Context) JSONNotImplemented(content interface{}) {
+	c.JSON(http.StatusNotImplemented, content)
 }
 
 // JSONInternalError implement IContext
-func (c *Context) JSONInternalError(content interface{}) error {
-	return c.JSON(http.StatusInternalServerError, content)
+func (c *Context) JSONInternalError(content interface{}) {
+	c.JSON(http.StatusInternalServerError, content)
 }

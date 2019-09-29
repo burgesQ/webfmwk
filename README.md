@@ -30,18 +30,6 @@ Their is a few main under the `./test` directory
 
 ## Example
 
-***Pre-requisite : init logging***
-
-For the moment webfmwk use a static logger 
-
-```go
-import "github.com/burgesQ/webfmwk/log"
-
-// init logging
-log.SetLogLevel(log.LogDebug)
-log.Init(log.LoggerSTDOUT | log.LogFormatLong)
-```
-
 ### Hello world !
 
 <details><summary>hello world</summary>

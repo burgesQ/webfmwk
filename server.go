@@ -148,9 +148,12 @@ func (s *Server) hasBody(r *http.Request) bool {
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) customHandler(handler handlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		// copy context & set data
 		ctx := s.context
+		body := s.hasBody(r)
 
+		// run handler
 		ctx.SetRequest(r)
 		ctx.SetWriter(&w)
 		ctx.SetRoutes(&s.routes)
@@ -159,17 +162,12 @@ func (s *Server) customHandler(handler handlerSign) func(http.ResponseWriter, *h
 		ctx.IsPretty()
 		ctx.SetLogger(s.log)
 
-		// check for header if needed
-		if s.hasBody(r) && !ctx.CheckHeader() {
-			return
-		}
-
-		// run handler
 		defer ctx.OwnRecover()
-
-		if err := handler(ctx); err != nil {
-			s.log.Errorf("%s", err.Error())
+		if body {
+			ctx.CheckHeader()
 		}
+		handler(ctx)
+
 	}
 }
 
