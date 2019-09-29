@@ -64,7 +64,7 @@ func (l logger) Errorf(format string, v ...interface{}) {
 
 func (l logger) Fatalf(format string, v ...interface{}) {
 	l.logContent(logERR, format, v...)
-	panic(fmt.Sprintf(format, v))
+	panic(fmt.Sprintf(format, v...))
 }
 
 func Debugf(format string, v ...interface{}) {
@@ -85,5 +85,4 @@ func Errorf(format string, v ...interface{}) {
 
 func Fatalf(format string, v ...interface{}) {
 	lg.logContent(logERR, format, v...)
-	panic(fmt.Sprintf(format, v))
 }
