@@ -22,6 +22,7 @@ type (
 		vars   map[string]string
 		query  map[string][]string
 		custom IContext
+		log    log.ILog
 	}
 
 	// AnonymousError struct is used to answer error
@@ -69,7 +70,7 @@ func (c *Context) SetRoutes(r *Routes) {
 func (c *Context) FetchContent(dest interface{}) (e error) {
 	defer c.r.Body.Close()
 	if e = json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
-		log.Errorf("while decoding the payload : %s", e.Error())
+		c.log.Errorf("while decoding the payload : %s", e.Error())
 		//		panic(New422(AnonymousError{"Unprocessable Payload, wrong json ?"}))
 		unprocessableEntity(c)
 		return e
@@ -81,7 +82,7 @@ func (c *Context) FetchContent(dest interface{}) (e error) {
 // this implemt use validator to anotate & check struct
 func (c Context) Validate(dest interface{}) (e error) {
 	if e = formChecker.Struct(dest); e != nil {
-		log.Errorf("error while validating the payload :\n%s", e.Error())
+		c.log.Errorf("error while validating the payload :\n%s", e.Error())
 		// panic(New422(AnonymousError{e.Error()}))
 		validationFailed(&c, e)
 		return e
@@ -125,6 +126,11 @@ func (c Context) IsPretty() bool {
 	return false
 }
 
+func (c *Context) SetLogger(logger log.ILog) {
+	c.log = logger
+
+}
+
 // CheckHeader implement IContext
 func (c Context) CheckHeader() (ret bool) {
 	ctype := c.r.Header.Get("Content-Type")
@@ -164,7 +170,7 @@ func (c *Context) setHeaders(headers ...[2]string) {
 		if h[0] != "" && h[1] != "" {
 			c.setHeader(h[0], h[1])
 		} else {
-			log.Warnf("can't set header [%s] to [%s] (empty value)", h[0], h[1])
+			c.log.Warnf("can't set header [%s] to [%s] (empty value)", h[0], h[1])
 		}
 	}
 }
@@ -175,9 +181,9 @@ func (c *Context) response(statusCode int, content []byte) error {
 	(*c.w).Write(content)
 
 	if utf8.Valid(content) {
-		log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
+		c.log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
 	} else {
-		log.Infof("[%d](%d)", statusCode, len(content))
+		c.log.Infof("[%d](%d)", statusCode, len(content))
 	}
 
 	return nil
@@ -198,7 +204,10 @@ func (c *Context) JSONBlob(statusCode int, content []byte) error {
 		c.setHeader("Produce", "application/json; charset=UTF-8")
 	}
 
-	pcontent := util.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
+	pcontent, err := util.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
+	if err != nil {
+		c.log.Errorf("while prettier the content : %s", err.Error())
+	}
 
 	return c.response(statusCode, []byte(pcontent))
 }
@@ -207,7 +216,7 @@ func (c *Context) JSONBlob(statusCode int, content []byte) error {
 func (c *Context) JSON(statusCode int, content interface{}) error {
 	data, err := json.Marshal(content)
 	if err != nil {
-		log.Errorf("%s", err.Error())
+		c.log.Errorf("%s", err.Error())
 		return c.JSONInternalError(AnonymousError{"Error creating the JSON response."})
 	}
 	return c.JSONBlob(statusCode, data)
