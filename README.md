@@ -100,6 +100,88 @@ go func() {
 </p>
 </details>
 
+### Set a base url
+
+<details><summary>base url</summary>
+<p>
+
+```go
+package main
+
+import (
+	w "github.com/burgesQ/webfmwk"
+)
+
+func main() {
+	// init server w/ ctrl+c support
+	s := w.InitServer(true)
+
+	s.SetPrefix("/api")
+
+	s.GET("/test", func(c w.IContext) error {
+		return c.JSONOk("ok")
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4242")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
+```
+
+</p>
+</details>
+
+Then reach `:4242/api/test`
+
+### Register a custom logger
+
+The logger must implement the `webfmwk/log.ILog` interface.
+
+<details><summary>custom logger</summary>
+<p>
+
+```go
+package main
+
+import (
+	w "github.com/burgesQ/webfmwk"
+	"github.com/burgesQ/webfmwk/log"
+)
+
+// GetLogger return a log.ILog interface
+var logger = log.GetLogger()
+
+func main() {
+	// init server w/ ctrl+c support
+	s := w.InitServer(true)
+
+	s.SetLogger(logger)
+
+	s.GET("/test", func(c w.IContext) error {
+		return c.JSONOk("ok")
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.StartTLS(":4242", TLSConfig{
+			Cert:     "/path/to/cert",
+			Key:      "/path/to/key",
+			Insecure: true,
+		})
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
+```
+
+</p>
+</details>
+
 ### Register a extended context
 
 Create a struct that extend `webfmwk.Context`

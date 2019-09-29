@@ -15,11 +15,12 @@
    - [X] implement error class
    - [ ] propagate change
 
-** TODO stuffs [1/4] [25%]
+** TODO stuffs [2/5] [40%]
   - [ ] cleaner doc
     - [ ] up to date example
     - [ ] comment and example when needed
     - [ ] no linter error
+  - [X] ILog
   - [ ] cleaner test
   - [ ] Code Coverage [0/4] [0%]
     - [ ] context

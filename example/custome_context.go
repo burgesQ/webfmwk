@@ -2,7 +2,6 @@ package main
 
 import (
 	w "github.com/burgesQ/webfmwk"
-	"github.com/burgesQ/webfmwk/log"
 )
 
 type customContext struct {
@@ -11,11 +10,6 @@ type customContext struct {
 }
 
 func main() {
-
-	// init logging
-	log.SetLogLevel(log.LOG_DEBUG)
-	log.Init(log.LOGGER_STDOUT | log.LOGFORMAT_LONG)
-
 	// init server w/ ctrl+c support
 	s := w.InitServer(true)
 

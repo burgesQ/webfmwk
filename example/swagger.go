@@ -2,12 +2,11 @@ package main
 
 import (
 	w "github.com/burgesQ/webfmwk"
-	"github.com/burgesQ/webfmwk/log"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Answer struct {
-	message string `json:"message"`
+	Message string `json:"message"`
 }
 
 // @Summary hello world
@@ -30,11 +29,6 @@ func hello(c w.IContext) error {
 // @license.name GFO
 // @host localhost:4242
 func main() {
-
-	// init logging
-	log.SetLogLevel(log.LogDebug)
-	log.Init(log.LoggerSTDOUT | log.LogFormatLong)
-
 	// init server w/ ctrl+c support
 	s := w.InitServer(true)
 

@@ -1,6 +1,10 @@
 package webfmwk
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/burgesQ/webfmwk/log"
+)
 
 // IContext Interface implement the context used in this project
 type IContext interface {
@@ -29,6 +33,9 @@ type IContext interface {
 
 	// SetQuery save the query param object
 	SetQuery(query map[string][]string)
+
+	// SetLogger set the logger of the ctx
+	SetLogger(logger log.ILog)
 
 	// GetQueries return the queries object
 	GetQueries() map[string][]string

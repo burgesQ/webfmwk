@@ -1,157 +1,89 @@
 package log
 
 import (
-	"errors"
 	"fmt"
-	"log"
-	"log/syslog"
-	"os"
 )
-
-// Level is a shortcut
-type Level syslog.Priority
 
 const (
-	// LoggerSTDOUT is used to output to stdout
-	LoggerSTDOUT = iota
-	// LoggerSTDERR is used to putpit to stderr
-	LoggerSTDERR
-
-	loggerMask = 3
-
-	// LogFormatShort is the flag for short logs
-	LogFormatShort = 0
-
-	// LogFormatLong is the flag for long logs
-	LogFormatLong = 1 << 3
-
-	// From /usr/include/sys/syslog.h.
-	// These are the same on Linux, BSD, and OS X.
-
-	// LogEmerg is the emergency log level
-	LogEmerg Level = iota
-	// LogAlert is the alert log level
-	LogAlert
-	// LogCrit is the critical log level
-	LogCrit
-	// LogErr is the error log level
-	LogErr
-	// LogWarning is the warning log level
-	LogWarning
-	// LogNotice is the notice log level
-	LogNotice
-	// LogInfo is the info log level
-	LogInfo
-	// LogDebug is the debug log level
-	LogDebug
+	logERR   = 0
+	logWARN  = 1
+	logINFO  = 2
+	logDEBUG = 3
 )
+
+type logger struct {
+	level int
+}
 
 var (
-	logger         *log.Logger
-	level2str      map[int]string
-	fac2str        map[int]string
-	loglevel       Level = LogErr
-	errBadLogLevel error = errors.New("unknown log level")
+	lg = logger{
+		level: logERR,
+	}
+
+	out = map[int]string{
+		logERR:   "! ERR  : ",
+		logWARN:  "* WARN : ",
+		logINFO:  "+ INFO : ",
+		logDEBUG: "- DBG  : ",
+	}
 )
 
-// Init package
-func init() {
-
-	level2str = make(map[int]string)
-	level2str[int(LogErr)] = "ERROR"
-	level2str[int(LogWarning)] = "WARNING"
-	level2str[int(LogInfo)] = "INFO"
-	level2str[int(LogDebug)] = "DEBUG"
-}
-
-//
-// Misc code
-//
-
-// Init initialize the logger package
-func Init(flags int) {
-	var logFlags int = log.Ldate | log.Ltime
-	if (flags & LogFormatLong) != 0 {
-		logFlags = logFlags | log.Lmicroseconds | log.Lshortfile
-	}
-
-	switch flags & loggerMask {
-	case LoggerSTDOUT:
-		logger = log.New(os.Stdout, "", logFlags)
-	case LoggerSTDERR:
-		logger = log.New(os.Stderr, "", logFlags)
+func SetLogLevel(level int) {
+	if level >= logERR && level <= logDEBUG {
+		lg.level = level
 	}
 }
 
-func (l *Level) String() string {
-	return level2str[int(*l)]
-}
-
-// Set set the log level from a string input
-func (l *Level) Set(val string) error {
-	for i, str := range level2str {
-		if val == str {
-			*l = Level(i)
-			return nil
-		}
-	}
-
-	return errBadLogLevel
-}
-
-// Get return the log level as a string
-func (l *Level) Get() interface{} {
-	return l.String()
-}
-
-// SetLogLevel set the log level of the logger
-func SetLogLevel(level Level) {
-	loglevel = level
-}
-
-func logf(level Level, s string, v ...interface{}) {
-	if logger != nil {
-		logger.Output(3, fmt.Sprintf(level2str[int(level)]+": "+s, v...))
+func (l *logger) logContent(level int, format string, v ...interface{}) {
+	if level <= l.level {
+		fmt.Printf("%s"+format+"\n", append([]interface{}{
+			out[level],
+		}, v...)...)
 	}
 }
 
-// Debugf log as an debug
+func GetLogger() ILog {
+	return lg
+}
+
+func (l logger) Debugf(format string, v ...interface{}) {
+	l.logContent(logDEBUG, format, v...)
+}
+
+func (l logger) Infof(format string, v ...interface{}) {
+	l.logContent(logINFO, format, v...)
+}
+
+func (l logger) Warnf(format string, v ...interface{}) {
+	l.logContent(logWARN, format, v...)
+}
+
+func (l logger) Errorf(format string, v ...interface{}) {
+	l.logContent(logERR, format, v...)
+}
+
+func (l logger) Fatalf(format string, v ...interface{}) {
+	l.logContent(logERR, format, v...)
+	panic(fmt.Sprintf(format, v))
+}
+
 func Debugf(format string, v ...interface{}) {
-	if loglevel < LogDebug {
-		return
-	}
-	logf(LogDebug, format, v...)
+	lg.logContent(logDEBUG, format, v...)
 }
 
-// Infof log as an info
 func Infof(format string, v ...interface{}) {
-	if loglevel < LogInfo {
-		return
-	}
-	logf(LogInfo, format, v...)
+	lg.logContent(logINFO, format, v...)
 }
 
-// Warnf log as an warning
 func Warnf(format string, v ...interface{}) {
-	if loglevel < LogWarning {
-		return
-	}
-	logf(LogWarning, format, v...)
+	lg.logContent(logWARN, format, v...)
 }
 
-// Errorf log as an Error
 func Errorf(format string, v ...interface{}) {
-	if loglevel < LogErr {
-		return
-	}
-	logf(LogErr, format, v...)
+	lg.logContent(logERR, format, v...)
 }
 
-// Fatalf log as an Error and then run a panic
 func Fatalf(format string, v ...interface{}) {
-	// Copied code from Errorf() to have correct line numbers printed...
-	if loglevel >= LogErr {
-		logf(LogErr, format, v...)
-	}
-	os.Exit(1)
+	lg.logContent(logERR, format, v...)
+	panic(fmt.Sprintf(format, v))
 }

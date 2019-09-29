@@ -5,14 +5,14 @@ import (
 	"github.com/burgesQ/webfmwk/log"
 )
 
+// GetLogger return a log.ILog interface
+var logger = log.GetLogger()
+
 func main() {
-
-	// init logging
-	log.SetLogLevel(log.LOG_DEBUG)
-	log.Init(log.LOGGER_STDOUT | log.LOGFORMAT_LONG)
-
 	// init server w/ ctrl+c support
 	s := w.InitServer(true)
+
+	s.SetLogger(logger)
 
 	s.GET("/test", func(c w.IContext) error {
 		return c.JSONOk("ok")
@@ -20,7 +20,11 @@ func main() {
 
 	// start asynchronously on :4242
 	go func() {
-		s.Start(":4242")
+		s.StartTLS(":4242", TLSConfig{
+			Cert:     "/path/to/cert",
+			Key:      "/path/to/key",
+			Insecure: true,
+		})
 	}()
 
 	// ctrl+c is handled internaly

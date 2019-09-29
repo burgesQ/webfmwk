@@ -6,7 +6,6 @@ import (
 	"io"
 	"sync"
 
-	"github.com/burgesQ/webfmwk/log"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -150,7 +149,7 @@ func (p *PrettyJson) Close() error {
 }
 
 // Use the pretty json utilitary to create well, pretty json ? :nerd_face:
-func SimplePrettyJSON(r io.Reader, pretty bool) string {
+func SimplePrettyJSON(r io.Reader, pretty bool) (string, error) {
 
 	o := new(bytes.Buffer)
 	pj := NewPrettyJson(r, o)
@@ -162,8 +161,8 @@ func SimplePrettyJSON(r io.Reader, pretty bool) string {
 	pj.Start()
 
 	if err := pj.Close(); err != nil {
-		log.Errorf("JSON error: %s", err.Error())
+		return "", err
 	}
 
-	return o.String()
+	return o.String(), nil
 }

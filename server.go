@@ -36,6 +36,7 @@ type Server struct {
 	context     IContext
 	docHandler  http.Handler
 	CORS        bool
+	log         log.ILog
 }
 
 var (
@@ -156,6 +157,7 @@ func (s *Server) customHandler(handler handlerSign) func(http.ResponseWriter, *h
 		ctx.SetVars(mux.Vars(r))
 		ctx.SetQuery(r.URL.Query())
 		ctx.IsPretty()
+		ctx.SetLogger(s.log)
 
 		// check for header if needed
 		if s.hasBody(r) && !ctx.CheckHeader() {
@@ -166,7 +168,7 @@ func (s *Server) customHandler(handler handlerSign) func(http.ResponseWriter, *h
 		defer ctx.OwnRecover()
 
 		if err := handler(ctx); err != nil {
-			log.Errorf("%s", err.Error())
+			s.log.Errorf("%s", err.Error())
 		}
 	}
 }
@@ -180,7 +182,7 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
 	var err error
 	cert, err := tls.LoadX509KeyPair(tlsCfg.Cert, tlsCfg.Key)
 	if err != nil {
-		log.Fatalf("%s", err.Error())
+		s.log.Fatalf("%s", err.Error())
 	}
 	worker.TLSConfig.Certificates[0] = cert
 }
@@ -213,7 +215,7 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 
 	// save the server
 	poolOfServers = append(poolOfServers, &worker)
-	log.Debugf("[+] server %d (%s) ", len(poolOfServers), addr)
+	s.log.Debugf("[+] server %d (%s) ", len(poolOfServers), addr)
 
 	return &worker
 }
@@ -240,17 +242,16 @@ func Shutdown(ctx context.Context) error {
 
 	for _, server := range poolOfServers {
 		server.Shutdown(ctx)
-		log.Debugf("-1")
 	}
 
 	poolOfServers = []*http.Server{}
 
-	log.Infof("ctx bye")
 	return nil
 }
 
 // Shutdown call the framework shutdown to stop all running server
 func (s *Server) Shutdown(ctx context.Context) error {
+	s.log.Debugf("-1")
 	return Shutdown(ctx)
 }
 
@@ -258,7 +259,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 // Use of a sync.waitGroup to properly wait all group.
 func (s *Server) WaitAndStop() {
 	s.wg.Wait()
-	log.Infof("wg bye")
 }
 
 // ExitHandler handle ctrl+c in intern
@@ -270,9 +270,13 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	case <-ctx.Done():
 		return
 	case si := <-c:
-		log.Infof("captured %v, exiting...", si)
+		s.log.Infof("captured %v, exiting...", si)
 		return
 	}
+}
+
+func (s *Server) SetLogger(lg *log.ILog) {
+	s.log = *lg
 }
 
 // InitServer set the server struct & pre-launch the exit handler.
@@ -287,6 +291,7 @@ func InitServer(withCtrl bool) Server {
 		ctx:      &ctx,
 		wg:       &wg,
 		context:  &Context{},
+		log:      log.GetLogger(),
 	}
 
 	// launch the ctrl+c job

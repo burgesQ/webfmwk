@@ -3,7 +3,6 @@ package webfmwk
 import (
 	"strings"
 
-	"github.com/burgesQ/webfmwk/log"
 	"github.com/gorilla/mux"
 )
 
@@ -51,7 +50,7 @@ func (s *Server) SetRouter() *mux.Router {
 
 	// register doc handler
 	if s.docHandler != nil {
-		log.Infof("load swagger doc")
+		s.log.Infof("load swagger doc")
 		subRouter.PathPrefix("/doc/").Handler(s.docHandler)
 	}
 
@@ -60,7 +59,7 @@ func (s *Server) SetRouter() *mux.Router {
 			pathTemplate, _ = route.GetPathTemplate()
 			methods, _      = route.GetMethods()
 		)
-		log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
+		s.log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
 		return nil
 	})
 
