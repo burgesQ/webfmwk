@@ -7,14 +7,14 @@ import (
 )
 
 type (
-	handlerSign func(c IContext)
+	HandlerSign func(c IContext)
 
 	// Route hold the data for one route
 	Route struct {
 		Pattern string      `json:"pattern"`
 		Method  string      `json:"method"`
 		Name    string      `json:"name"`
-		Handler handlerSign `json:"-"`
+		Handler HandlerSign `json:"-"`
 	}
 
 	// Routes hold an array of route
