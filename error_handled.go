@@ -33,6 +33,21 @@ func factory(op int, content interface{}) ErrorHandled {
 	}
 }
 
+// NewNoContent produce an ErrorHandled with the status code 204
+func NewNoContent() ErrorHandled {
+	return factory(http.StatusNoContent, nil)
+}
+
+// NewBadRequest produce an ErrorHandled with the status code 400
+func NewBadRequest(content interface{}) ErrorHandled {
+	return factory(http.StatusBadRequest, content)
+}
+
+// NewNotAcceptable produce an ErrorHandled with the status code 404
+func NewNotFound(content interface{}) ErrorHandled {
+	return factory(http.StatusNotFound, content)
+}
+
 // NewNotAcceptable produce an ErrorHandled with the status code 406
 func NewNotAcceptable(content interface{}) ErrorHandled {
 	return factory(http.StatusNotAcceptable, content)
