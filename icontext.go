@@ -52,6 +52,9 @@ type IContext interface {
 	// OwnRecover is used to encapsulate the wanted panic
 	OwnRecover()
 
+	// SendResponse create & send a response according to the parameters
+	SendResponse(op int, content []byte, headers ...[2]string)
+
 	// JSONBlob answer the JSON content with the status code op
 	JSONBlob(op int, content []byte)
 

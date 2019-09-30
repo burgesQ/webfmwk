@@ -156,8 +156,8 @@ func (c *Context) response(statusCode int, content []byte) {
 	}
 }
 
-// sendResponse create & send a response according to the parameters
-func (c *Context) sendResponse(statusCode int, content []byte, headers ...[2]string) {
+// Send Response implement IContext
+func (c *Context) SendResponse(statusCode int, content []byte, headers ...[2]string) {
 	c.setHeaders(headers...)
 	c.response(statusCode, content)
 }
