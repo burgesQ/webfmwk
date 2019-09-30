@@ -5,29 +5,29 @@ Example:
   package main
 
   import (
-	  w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v2"
   )
   // Handler
   func hello(c w.IContext) error {
-	  return c.JSONOk("Hello, World!")
+    return c.JSONOk("Hello, World!")
   }
 
   func main() {
-	  // Echo instance
-	  s := w.InitServer(true)
+    // Echo instance
+    s := w.InitServer(true)
 
-  	// Routes
-	  s.GET("/hello", hello)
+    // Routes
+    s.GET("/hello", hello)
 
     // start server on :4242
-	  go func() {
-		  s.Start(":4242")
-	  }()
+    go func() {
+      s.Start(":4242")
+    }()
 
-  	// ctrl+c is handled internaly
-	  defer s.WaitAndStop()
+    // ctrl+c is handled internaly
+    defer s.WaitAndStop()
   }
 
-Learn more at https://github.com/burgesQ/echo
+Learn more at https://github.com/burgesQ/webfmwk
 */
 package webfmwk
