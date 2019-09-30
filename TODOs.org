@@ -2,7 +2,7 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* WIP v2 [1/3] [33%]
+* WIP v2 [2/4] [50%]
 ** TODO stuffs [2/4] [50%]
   - [ ] cleaner doc
     - [ ] up to date example
@@ -28,6 +28,10 @@
    - [X] interface implement
    - [X] redo context extensions
    - [X] propagate IContext
+
+** DONE fix logger implem
+   CLOSED: [2019-09-30 Mon 19:11]
+   Some part of the code wasn't using the same logger than the server
 
 
 * DONE v1 [4/4] [100%]
