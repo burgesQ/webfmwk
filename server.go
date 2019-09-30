@@ -68,7 +68,7 @@ func (s *Server) SetPrefix(prefix string) {
 }
 
 // GetLauncher return a pointer on the util.workerLauncher used
-func (s *Server) GetLauncher() *util.WorkerLauncher {
+func (s *Server) GetLauncher() *WorkerLauncher {
 	return &s.launcher
 }
 
@@ -285,11 +285,11 @@ func InitServer(withCtrl bool) Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	s := Server{
-		launcher: util.CreateWorkerLauncher(&wg, cancel),
+		launcher: CreateWorkerLauncher(&wg, cancel),
 		ctx:      &ctx,
 		wg:       &wg,
 		context:  &Context{},
-		log:      log.GetLogger(),
+		log:      logger,
 	}
 
 	// launch the ctrl+c job

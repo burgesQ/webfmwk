@@ -1,10 +1,8 @@
-package util
+package webfmwk
 
 import (
 	"context"
 	"sync"
-
-	"github.com/burgesQ/webfmwk/log"
 )
 
 type WorkerLauncher struct {
@@ -20,12 +18,12 @@ func CreateWorkerLauncher(wg *sync.WaitGroup, cancel context.CancelFunc) WorkerL
 // launch a worker who will be wait & kill at the same time than the others
 func (l *WorkerLauncher) Start(name string, fn func() error) {
 	l.wg.Add(1)
-	log.Debugf("%s: starting", name)
+	logger.Debugf("%s: starting", name)
 	go func() {
 		if err := fn(); err != nil {
-			log.Errorf("%s: %s", name, err)
+			logger.Errorf("%s: %s", name, err)
 		} else {
-			log.Infof("%s: done", name)
+			logger.Infof("%s: done", name)
 		}
 		l.cancel()
 		l.wg.Done()
