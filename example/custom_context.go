@@ -18,14 +18,14 @@ func main() {
 		return ctx
 	})
 
-	s.GET("/test", func(c w.IContext) error {
+	s.GET("/test", func(c w.IContext) {
 		ctx := c.(*customContext)
-		return c.JSONOk(ctx.customVal)
+		c.JSONOk(ctx.customVal)
 	})
 
 	// start asynchronously on :4242
 	go func() {
-		s.Start(":4242")
+		s.Start(":4244")
 	}()
 
 	// ctrl+c is handled internaly
