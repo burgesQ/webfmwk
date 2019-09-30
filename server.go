@@ -97,7 +97,7 @@ func (s *Server) AddRoutes(r []Route) {
 //
 
 // GET expose a route to the http verb GET
-func (s *Server) GET(path string, handler handlerSign) {
+func (s *Server) GET(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "GET",
@@ -106,7 +106,7 @@ func (s *Server) GET(path string, handler handlerSign) {
 }
 
 // DELETE expose a route to the http verb DELETE
-func (s *Server) DELETE(path string, handler handlerSign) {
+func (s *Server) DELETE(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "DELETE",
@@ -115,7 +115,7 @@ func (s *Server) DELETE(path string, handler handlerSign) {
 }
 
 // POST expose a route to the http verb POST
-func (s *Server) POST(path string, handler handlerSign) {
+func (s *Server) POST(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "POST",
@@ -124,7 +124,7 @@ func (s *Server) POST(path string, handler handlerSign) {
 }
 
 // PUT expose a route to the http verb PUT
-func (s *Server) PUT(path string, handler handlerSign) {
+func (s *Server) PUT(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "PUT",
@@ -133,7 +133,7 @@ func (s *Server) PUT(path string, handler handlerSign) {
 }
 
 // PATCH expose a route to the http verb PATCH
-func (s *Server) PATCH(path string, handler handlerSign) {
+func (s *Server) PATCH(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Pattern: path,
 		Method:  "PATCH",
@@ -146,7 +146,7 @@ func (s *Server) hasBody(r *http.Request) bool {
 }
 
 // webfmwk main logic, return a http handler wrapped by webfmwk
-func (s *Server) customHandler(handler handlerSign) func(http.ResponseWriter, *http.Request) {
+func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// copy context & set data
