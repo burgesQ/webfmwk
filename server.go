@@ -10,38 +10,40 @@ import (
 	"time"
 
 	"github.com/burgesQ/webfmwk/log"
-	"github.com/burgesQ/webfmwk/util"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 // TODO: route restriction
 
-// TLSConfig contain the tls config passed by the config file
-type TLSConfig struct {
-	Cert     string `json:"cert"`
-	Key      string `json:"key"`
-	Insecure bool   `json:"insecure"`
-	// CaCert string `json:"ca-cert"`
-}
+type (
+	// TLSConfig contain the tls config passed by the config file
+	TLSConfig struct {
+		Cert     string `json:"cert"`
+		Key      string `json:"key"`
+		Insecure bool   `json:"insecure"`
+		// CaCert string `json:"ca-cert"`
+	}
 
-// Server is a struct holding all the necessary data / struct
-type Server struct {
-	routes      Routes
-	ctx         *context.Context
-	wg          *sync.WaitGroup
-	launcher    util.WorkerLauncher
-	middlewares []mux.MiddlewareFunc
-	prefix      string
-	context     IContext
-	docHandler  http.Handler
-	CORS        bool
-	log         log.ILog
-}
+	// Server is a struct holding all the necessary data / struct
+	Server struct {
+		routes      Routes
+		ctx         *context.Context
+		wg          *sync.WaitGroup
+		launcher    WorkerLauncher
+		middlewares []mux.MiddlewareFunc
+		prefix      string
+		context     IContext
+		docHandler  http.Handler
+		CORS        bool
+		log         log.ILog
+	}
+)
 
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*http.Server
+	logger        = log.GetLogger()
 )
 
 //
@@ -273,8 +275,9 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	}
 }
 
-func (s *Server) SetLogger(lg *log.ILog) {
-	s.log = *lg
+func (s *Server) SetLogger(lg log.ILog) {
+	logger = lg
+	s.log = logger
 }
 
 // InitServer set the server struct & pre-launch the exit handler.
