@@ -3,6 +3,25 @@
 #+DESCRIPTION: Quick summary of web framework todo's
 
 * WIP v2 [1/3] [33%]
+** TODO stuffs [2/4] [50%]
+  - [ ] cleaner doc
+    - [ ] up to date example
+    - [ ] comment and example when needed
+    - [ ] no linter error
+  - [X] ILog
+  - [ ] Code Coverage [0/5] [0%]
+    - [ ] cleaner test
+    - [ ] context
+    - [ ] server
+    - [ ] route
+    - [ ] middleware
+  - [X] CI
+
+** WIP Panic / Recover [2/3] [66%]
+   - [X] implement pattern
+   - [X] implement error class
+   - [ ] propagate change
+
 ** DONE IContext [4/4] [100%]
    CLOSED: [2019-09-29 Sun 00:58]
    - [X] base interface
@@ -10,25 +29,6 @@
    - [X] redo context extensions
    - [X] propagate IContext
 
-** TODO Panic / Recover [2/3] [66%]
-   - [X] implement pattern
-   - [X] implement error class
-   - [ ] propagate change
-
-
-** TODO stuffs [2/5] [40%]
-  - [ ] cleaner doc
-    - [ ] up to date example
-    - [ ] comment and example when needed
-    - [ ] no linter error
-  - [X] ILog
-  - [ ] cleaner test
-  - [ ] Code Coverage [0/4] [0%]
-    - [ ] context
-    - [ ] server
-    - [ ] route
-    - [ ] middleware
-  - [X] CI
 
 * DONE v1 [4/4] [100%]
 ** DONE server [3/3] [100%]
