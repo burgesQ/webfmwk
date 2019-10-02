@@ -1,4 +1,4 @@
-module github.com/burgesQ/webfmwk
+module github.com/burgesQ/webfmwk/v2
 
 require (
 	github.com/go-playground/locales v0.12.1 // indirect
