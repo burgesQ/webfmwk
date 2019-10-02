@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	z "github.com/burgesQ/webfmwk/testing"
+	z "github.com/burgesQ/webfmwk/v2/testing"
 	"github.com/gorilla/mux"
 )
 

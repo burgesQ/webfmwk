@@ -1,8 +1,8 @@
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk"
-	"github.com/burgesQ/webfmwk/log"
+	w "github.com/burgesQ/webfmwk/v2"
+	"github.com/burgesQ/webfmwk/v2/log"
 )
 
 // GetLogger return a log.ILog interface

@@ -7,7 +7,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/log"
+	"github.com/burgesQ/webfmwk/v2/log"
 )
 
 // Logging log information about the newly receive request

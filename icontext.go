@@ -3,7 +3,7 @@ package webfmwk
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/log"
+	"github.com/burgesQ/webfmwk/v2/log"
 )
 
 // IContext Interface implement the context used in this project

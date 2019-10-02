@@ -98,7 +98,7 @@ go func() {
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk"
+	w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {
@@ -137,8 +137,8 @@ The logger must implement the `webfmwk/log.ILog` interface.
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk"
-	"github.com/burgesQ/webfmwk/log"
+	w "github.com/burgesQ/webfmwk/v2"
+	"github.com/burgesQ/webfmwk/v2/log"
 )
 
 // GetLogger return a log.ILog interface
@@ -180,7 +180,7 @@ Create a struct that extend `webfmwk.Context`
 
 ```go
 import (
-    w "github.com/burgesQ/webfmwk"
+    w "github.com/burgesQ/webfmwk/v2"
 )
 
 type customContext struct {
@@ -208,15 +208,15 @@ func main() {
 
 ### Register middlewares
 
-Import `github.com/burgesQ/webfmwk/middleware`
+Import `github.com/burgesQ/webfmwk/v2/middleware`
 
 <details><summary>extend middleware</summary>
 <p>
 
 ```go
 import (
-    w "github.com/burgesQ/webfmwk"
-    m "github.com/burgesQ/webfmwk/middleware"
+    w "github.com/burgesQ/webfmwk/v2"
+    m "github.com/burgesQ/webfmwk/v2/middleware"
 )
 
 func main() {
@@ -240,8 +240,8 @@ Import `github.com/swaggo/http-swagger`
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk"
-	"github.com/burgesQ/webfmwk/log"
+	w "github.com/burgesQ/webfmwk/v2"
+	"github.com/burgesQ/webfmwk/v2/log"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 

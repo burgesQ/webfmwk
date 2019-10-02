@@ -1,7 +1,7 @@
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk"
+	w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {

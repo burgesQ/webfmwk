@@ -1,8 +1,8 @@
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk"
-	m "github.com/burgesQ/webfmwk/middleware"
+	w "github.com/burgesQ/webfmwk/v2"
+	m "github.com/burgesQ/webfmwk/v2/middleware"
 )
 
 func main() {

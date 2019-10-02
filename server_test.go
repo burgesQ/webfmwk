@@ -3,7 +3,7 @@ package webfmwk
 import (
 	"testing"
 
-	m "github.com/burgesQ/webfmwk/middleware"
+	m "github.com/burgesQ/webfmwk/v2/middleware"
 	"github.com/gorilla/mux"
 )
 

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/burgesQ/webfmwk/log"
+	"github.com/burgesQ/webfmwk/v2/log"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )

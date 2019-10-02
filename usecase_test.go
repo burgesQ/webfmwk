@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	m "github.com/burgesQ/webfmwk/middleware"
-	z "github.com/burgesQ/webfmwk/testing"
+	m "github.com/burgesQ/webfmwk/v2/middleware"
+	z "github.com/burgesQ/webfmwk/v2/testing"
 )
 
 type customContext struct {

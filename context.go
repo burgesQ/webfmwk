@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/burgesQ/webfmwk/log"
-	"github.com/burgesQ/webfmwk/util"
+	"github.com/burgesQ/webfmwk/v2/log"
+	"github.com/burgesQ/webfmwk/v2/util"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
