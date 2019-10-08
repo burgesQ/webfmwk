@@ -1,20 +1,17 @@
 package main
 
 import (
+	"net/http"
+
 	w "github.com/burgesQ/webfmwk/v2"
-	m "github.com/burgesQ/webfmwk/v2/middleware"
 )
 
 func main() {
-
-	// init server w/ ctrl+c support
+	// create server
 	s := w.InitServer(true)
 
-	s.AddMiddleware(m.Logging)
-	s.AddMiddleware(m.Security)
-
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
+	s.GET("/hello/{id}", func(c w.IContext) {
+		c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))
 	})
 
 	// start asynchronously on :4242

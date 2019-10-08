@@ -1,15 +1,17 @@
 package main
 
 import (
+	"net/http"
+
 	w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {
-	// init server w/ ctrl+c support
+	// create server
 	s := w.InitServer(true)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
+	s.GET("/hello", func(c w.IContext) {
+		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
 	// start asynchronously on :4242
