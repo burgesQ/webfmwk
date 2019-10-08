@@ -50,6 +50,11 @@ var (
 // Setter - Getter
 //
 
+// GetLogger return an instance of the ILog interface used
+func GetLogger() log.ILog {
+	return logger
+}
+
 // RegisterDocHandler is used to save an swagger doc handler
 func (s *Server) RegisterDocHandler(handler http.Handler) {
 	s.docHandler = handler
