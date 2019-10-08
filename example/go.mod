@@ -8,4 +8,4 @@ require (
 	golang.org/x/net v0.0.0-20190926025831-c00fd9afed17 // indirect
 )
 
-replace github.com/burgesQ/webfmwk => ../
+replace github.com/burgesQ/webfmwk/v2 => ../
