@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	m "github.com/burgesQ/webfmwk/v2/middleware"
 	z "github.com/burgesQ/webfmwk/v2/testing"
 )
 
@@ -24,7 +23,7 @@ func TestUseCase(t *testing.T) {
 	defer s.Shutdown(*s.GetContext())
 
 	// add middleware TODO: check headers
-	s.AddMiddleware(m.Security)
+	// s.AddMiddleware(m.Security)
 
 	// set url prefix
 	s.SetPrefix("/api")
