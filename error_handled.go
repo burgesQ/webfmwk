@@ -62,3 +62,8 @@ func NewUnprocessable(content interface{}) ErrorHandled {
 func NewInternal(content interface{}) ErrorHandled {
 	return factory(http.StatusInternalServerError, content)
 }
+
+// NewUnprocessable produce an ErrorHandled with the status code 501
+func NewNotImplemented(content interface{}) ErrorHandled {
+	return factory(http.StatusNotImplemented, content)
+}
