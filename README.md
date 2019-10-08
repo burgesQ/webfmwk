@@ -7,8 +7,11 @@
 
 # What
 
-`webfmwk` is a minimalist go web framework design for JSON API. 
-His purpose is to use as few as possible external library for a lighter build package.
+`webfmwk` is an internal framework build and own by Frafos GmbH. 
+
+It was designed to be a minimalist go web framework supporting JSON API. 
+
+The purpose of the framework is to use as few external library than possible.
 
 The server handle ctrl+c on it's own.
 
