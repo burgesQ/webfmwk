@@ -1,9 +1,9 @@
 package webfmwk
 
 import (
+	"net/http"
 	"testing"
 
-	m "github.com/burgesQ/webfmwk/v2/middleware"
 	"github.com/gorilla/mux"
 )
 
@@ -62,7 +62,10 @@ func TestAddMiddleware(t *testing.T) {
 		s.WaitAndStop()
 	}()
 
-	s.AddMiddleware(m.Logging)
+	s.AddMiddleware(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		})
+	})
 
 	if len(s.middlewares) != 1 {
 		t.Errorf("Middleware wrongly saved : %v.", s.middlewares)
