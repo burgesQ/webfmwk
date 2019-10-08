@@ -30,7 +30,7 @@ Simply run `go test .`
 
 # How to use it
 
-Their is a few main under the `./test` directory
+Their are a few mains in the `./exmaple` directory. The content of the mains or used later in the `README.md`.
 
 ## Example
 
@@ -409,7 +409,8 @@ func main() {
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()
-}```
+}
+```
 
 </p>
 </details>
@@ -477,6 +478,56 @@ func main() {
 	defer s.WaitAndStop()
 }
 ```
+</p>
+</details>
+
+### Add worker 
+
+Use the `Server.GetWorkerLauncher()` method.
+
+Run the test main and wait 10 sec.
+
+<details><summary>extra worker</summary>
+<p>
+
+```go
+package main
+
+import (
+	"time"
+
+	w "github.com/burgesQ/webfmwk/v2"
+	"github.com/burgesQ/webfmwk/v2/log"
+)
+
+func main() {
+
+	log.SetLogLevel(log.LogDEBUG)
+
+	// init server w/ ctrl+c support
+	s := w.InitServer(true)
+	wl := s.GetLauncher()
+
+	s.GET("/test", func(c w.IContext) {
+		c.JSONOk("ok")
+	})
+
+	wl.Start("custom worker", func() error {
+		time.Sleep(10 * time.Second)
+		log.Debugf("done")
+		return nil
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4242")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
+```
+
 </p>
 </details>
 
