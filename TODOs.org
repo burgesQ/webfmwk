@@ -2,12 +2,13 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* WIP v2 [2/4] [50%]
-** TODO stuffs [2/4] [50%]
+* WIP v2 [3/4] [75%]
+** TODO stuffs [2/5] [40%]
   - [ ] cleaner doc
     - [ ] up to date example
     - [ ] comment and example when needed
-    - [ ] no linter error
+    - [ ] full readme
+  - [ ] no linter error
   - [X] ILog
   - [ ] Code Coverage [0/5] [0%]
     - [ ] cleaner test
@@ -17,7 +18,8 @@
     - [ ] middleware
   - [X] CI
 
-** WIP Panic / Recover [2/3] [66%]
+** DONE Panic / Recover [2/3] [66%]
+   CLOSED: [2019-10-08 Tue 18:44]
    - [X] implement pattern
    - [X] implement error class
    - [ ] propagate change

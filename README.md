@@ -21,8 +21,8 @@ The server handle ctrl+c on it's own.
 | :-:                 | :-:                                             |
 | [gorilla-mux][1]    | for a easy & robust routing logic               |
 | [gorilla-hanler][2] | for some useful already coded middlewares       |
+| [validator][3]       | use by the custom implementation of the context |
 | json-iterator       | use by the custom implementation of the context |
-| validator           | use by the custom implementation of the context |
 
 # Test
 
@@ -36,23 +36,29 @@ Their is a few main under the `./test` directory
 
 ### Hello world !
 
+Reach the endpoint with `curl -X GET 'http://localhost:4242/hello'`.
+
 <details><summary>hello world</summary>
 <p>
 
 ```go
+package main
+
 import (
-    w "github.com/burgesQ/webfmwk"
+	"net/http"
+
+	w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {
 	// create server
 	s := w.InitServer(true)
 
-    s.GET("/hello", func(c w.IContext) error {
-		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
+	s.GET("/hello", func(c w.IContext) {
+		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
-    // start asynchronously on :4242
+	// start asynchronously on :4242
 	go func() {
 		s.Start(":4242")
 	}()
@@ -67,32 +73,141 @@ func main() {
 
 ### fetch query param
 
+Reach the endpoint with `curl -X GET 'http://localhost:4242/hello?&pjson&turlu=tutu'`.
+
+<details><summary>query param</summary>
+<p>
+
+
+```go
+package main
+
+import (
+	"net/http"
+
+	w "github.com/burgesQ/webfmwk/v2"
+	"github.com/burgesQ/webfmwk/v2/log"
+)
+
+func main() {
+	// create server
+	s := w.InitServer(true)
+
+	s.GET("/hello", func(c w.IContext) {
+		var (
+			queries   = c.GetQueries()
+			pjson, ok = c.GetQuery("pjson")
+		)
+		if ok {
+			log.Errorf("%#v", pjson)
+		}
+		c.JSON(http.StatusOK, queries)
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4242")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
+```
+
+</p>
+</details>
+
 ### fetch url params
 
-### fetch body / validate
+Reach the endpoint with `curl -X GET 'http://localhost:4242/hello/you'`.
 
-### Use tls
-
-Simply use the method `Server.StartTLS(addr, certPath, keyPath string)`.
-
-<details><summary>use tls</summary>
+<details><summary>url param</summary>
 <p>
 
 ```go
-// start tls asynchronously on :4242
-go func() {
-  s.StartTLS(":4242", TLSConfig{
-    Cert:     "/path/to/cert",
-    Key:      "/path/to/key",
-    Insecure: true,
-  })
-}()
+package main
+
+import (
+	"net/http"
+
+	w "github.com/burgesQ/webfmwk/v2"
+)
+
+func main() {
+	// create server
+	s := w.InitServer(true)
+
+	s.GET("/hello/{id}", func(c w.IContext) {
+		c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4242")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
+```
+
+</p>
+</details>
+
+### fetch body / validate
+
+Reach the endpoint with `curl -X POST -d '{"name": "test", "age": 12}' -H "Content-Type: application/json" "http://localhost:4242/hello"`.
+
+Note that the `webfmwk` only accept `application/json` content.
+
+Don't hesitate to play with the payload to inspect the behavior of the Validate method.
+
+The struct annotation are done via the `schema` keyword. Please refer to the [`validator` documentation][3].
+
+<details><summary>POST content</summary>
+<p>
+
+```go
+package main
+
+import (
+	"net/http"
+
+	w "github.com/burgesQ/webfmwk/v2"
+)
+
+type Content struct {
+	Name string `schema:"name" json:"name" validate:"omitempty"`
+	Age  int    `schema:"age" json:"age" vallidate:"gte=1"`
+}
+
+func main() {
+	// create server
+	s := w.InitServer(true)
+
+	s.POST("/hello", func(c w.IContext) {
+		data := Content{}
+		c.FetchContent(&data)
+		c.Validate(data)
+		c.JSON(http.StatusOK, data)
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4242")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
 ```
 
 </p>
 </details>
 
 ### Set a base url
+
+Reach the endpoint with `curl -X GET 'http://localhost:4242/api/test`.
 
 <details><summary>base url</summary>
 <p>
@@ -127,7 +242,45 @@ func main() {
 </p>
 </details>
 
-Then reach `:4242/api/test`
+
+### Use tls
+
+Use the method `Server.StartTLS(addr, certPath, keyPath string)`.
+
+<details><summary>use tls</summary>
+<p>
+
+```go
+package main
+
+import (
+	w "github.com/burgesQ/webfmwk/v2"
+)
+
+func main() {
+	// init server w/ ctrl+c support
+	s := w.InitServer(true)
+
+	s.GET("/test", func(c w.IContext) error {
+		return c.JSONOk("ok")
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.StartTLS(":4242", TLSConfig{
+			Cert:     "/path/to/cert",
+			Key:      "/path/to/key",
+			Insecure: true,
+		})
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
+```
+
+</p>
+</details>
 
 ### Register a custom logger
 
@@ -176,14 +329,18 @@ func main() {
 
 ### Register a extended context
 
-Create a struct that extend `webfmwk.Context`
+Create a struct that extend `webfmwk.Context`. 
+
+Then, add a middleware to extend the context using the `Server.SetCustomContext(func(c *Context) IContext)`
 
 <details><summary>extend context</summary>
 <p>
 
 ```go
+package main
+
 import (
-    w "github.com/burgesQ/webfmwk/v2"
+	w "github.com/burgesQ/webfmwk/v2"
 )
 
 type customContext struct {
@@ -200,10 +357,19 @@ func main() {
 		return ctx
 	})
 
-	s.GET("/test", func(c w.IContext) error {
-		ctx := c.(*custom Context)
-		return c.JSONOk(ctx.customVal)
+	s.GET("/test", func(c w.IContext) {
+		ctx := c.(*customContext)
+		c.JSONOk(ctx.customVal)
 	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4244")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}
 ```
 
 </p>
@@ -217,24 +383,44 @@ Import `github.com/burgesQ/webfmwk/v2/middleware`
 <p>
 
 ```go
+package main
+
 import (
-    w "github.com/burgesQ/webfmwk/v2"
-    m "github.com/burgesQ/webfmwk/v2/middleware"
+	w "github.com/burgesQ/webfmwk/v2"
+	m "github.com/burgesQ/webfmwk/v2/middleware"
 )
 
 func main() {
-	// create server
-	s := w.InitServer()
 
-    s.AddMiddleware(m.WithLogging)
-```
+	// init server w/ ctrl+c support
+	s := w.InitServer(true)
+
+	s.AddMiddleware(m.Logging)
+	s.AddMiddleware(m.Security)
+
+	s.GET("/test", func(c w.IContext) error {
+		return c.JSONOk("ok")
+	})
+
+	// start asynchronously on :4242
+	go func() {
+		s.Start(":4242")
+	}()
+
+	// ctrl+c is handled internaly
+	defer s.WaitAndStop()
+}```
 
 </p>
 </details>
 
 ### Swagger doc compatibility
 
-Import `github.com/swaggo/http-swagger`
+Import `github.com/swaggo/http-swagger`.
+
+Then, from a browser reach `:4242/api/doc/index.html`. 
+
+Or, run `curl -X GET 'http://localhost:4242/api/doc/swagger.json'`.
 
 <details><summary>swagger doc</summary>
 <p>
@@ -244,12 +430,11 @@ package main
 
 import (
 	w "github.com/burgesQ/webfmwk/v2"
-	"github.com/burgesQ/webfmwk/v2/log"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Answer struct {
-	message string `json:"message"`
+	Message string `json:"message"`
 }
 
 // @Summary hello world
@@ -272,15 +457,12 @@ func hello(c w.IContext) error {
 // @license.name GFO
 // @host localhost:4242
 func main() {
-
-	// init logging
-	log.SetLogLevel(log.LogDebug)
-	log.Init(log.LoggerSTDOUT | log.LogFormatLong)
-
 	// init server w/ ctrl+c support
 	s := w.InitServer(true)
 
-	s.RegisterDocHandler(httpSwagger.WrapHandler)
+    s.SetPrefix("/api")
+
+    s.RegisterDocHandler(httpSwagger.WrapHandler)
 
 	s.GET("/test", func(c w.IContext) error {
 		return c.JSONOk("ok")
@@ -295,11 +477,9 @@ func main() {
 	defer s.WaitAndStop()
 }
 ```
-
-Then reach `:4242/api/doc/index.html`
-
 </p>
 </details>
 
 [1]: https://github.com/gorilla/gorilla-mux
 [2]: https://github.com/gorilla/gorilla-handler
+[3]: gopkg.in/go-playground/validator.v9 
