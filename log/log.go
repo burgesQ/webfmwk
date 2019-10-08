@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	logERR   = 0
-	logWARN  = 1
-	logINFO  = 2
-	logDEBUG = 3
+	LogERR   = 0
+	LogWARN  = 1
+	LogINFO  = 2
+	LogDEBUG = 3
 )
 
 type logger struct {
@@ -17,21 +17,27 @@ type logger struct {
 
 var (
 	lg = logger{
-		level: logERR,
+		level: LogERR,
 	}
 
 	out = map[int]string{
-		logERR:   "! ERR  : ",
-		logWARN:  "* WARN : ",
-		logINFO:  "+ INFO : ",
-		logDEBUG: "- DBG  : ",
+		LogERR:   "! ERR  : ",
+		LogWARN:  "* WARN : ",
+		LogINFO:  "+ INFO : ",
+		LogDEBUG: "- DBG  : ",
 	}
 )
 
-func SetLogLevel(level int) {
-	if level >= logERR && level <= logDEBUG {
+func init() {
+
+}
+
+func SetLogLevel(level int) (ok bool) {
+	if level >= LogERR && level <= LogDEBUG {
 		lg.level = level
+		ok = true
 	}
+	return
 }
 
 func (l *logger) logContent(level int, format string, v ...interface{}) {
@@ -47,42 +53,42 @@ func GetLogger() ILog {
 }
 
 func (l logger) Debugf(format string, v ...interface{}) {
-	l.logContent(logDEBUG, format, v...)
+	l.logContent(LogDEBUG, format, v...)
 }
 
 func (l logger) Infof(format string, v ...interface{}) {
-	l.logContent(logINFO, format, v...)
+	l.logContent(LogINFO, format, v...)
 }
 
 func (l logger) Warnf(format string, v ...interface{}) {
-	l.logContent(logWARN, format, v...)
+	l.logContent(LogWARN, format, v...)
 }
 
 func (l logger) Errorf(format string, v ...interface{}) {
-	l.logContent(logERR, format, v...)
+	l.logContent(LogERR, format, v...)
 }
 
 func (l logger) Fatalf(format string, v ...interface{}) {
-	l.logContent(logERR, format, v...)
+	l.logContent(LogERR, format, v...)
 	panic(fmt.Sprintf(format, v...))
 }
 
 func Debugf(format string, v ...interface{}) {
-	lg.logContent(logDEBUG, format, v...)
+	lg.logContent(LogDEBUG, format, v...)
 }
 
 func Infof(format string, v ...interface{}) {
-	lg.logContent(logINFO, format, v...)
+	lg.logContent(LogINFO, format, v...)
 }
 
 func Warnf(format string, v ...interface{}) {
-	lg.logContent(logWARN, format, v...)
+	lg.logContent(LogWARN, format, v...)
 }
 
 func Errorf(format string, v ...interface{}) {
-	lg.logContent(logERR, format, v...)
+	lg.logContent(LogERR, format, v...)
 }
 
 func Fatalf(format string, v ...interface{}) {
-	lg.logContent(logERR, format, v...)
+	lg.logContent(LogERR, format, v...)
 }
