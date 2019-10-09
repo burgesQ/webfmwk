@@ -146,13 +146,18 @@ func (c *Context) setHeaders(headers ...[2]string) {
 }
 
 func (c *Context) response(statusCode int, content []byte) {
-	(*c.w).WriteHeader(statusCode)
-	(*c.w).Write(content)
 
 	if utf8.Valid(content) {
 		c.log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
 	} else {
 		c.log.Infof("[%d](%d)", statusCode, len(content))
+	}
+
+	(*c.w).WriteHeader(statusCode)
+
+	l, e := (*c.w).Write(content)
+	if e != nil {
+		c.log.Errorf("while sending response (%d) : %s", l, e.Error())
 	}
 }
 
