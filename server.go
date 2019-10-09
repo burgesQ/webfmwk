@@ -16,6 +16,8 @@ import (
 
 // TODO: route restriction
 
+const noTime = 0
+
 type (
 	// TLSConfig contain the tls config passed by the config file
 	TLSConfig struct {
@@ -38,12 +40,25 @@ type (
 		CORS        bool
 		log         log.ILog
 	}
+
+	// WorkerConfig hold the worker config per server instance
+	WorkerConfig struct {
+		ReadTimeout    time.Duration
+		WriteTimeout   time.Duration
+		MaxHeaderBytes int
+		// TODO: expand it
+	}
 )
 
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*http.Server
 	logger        = log.GetLogger()
+	workerConfig  = WorkerConfig{
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
 )
 
 //
@@ -197,17 +212,38 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
 	worker.TLSConfig.Certificates[0] = cert
 }
 
+func toWorker(addr string) http.Server {
+	return http.Server{
+		Addr:           addr,
+		ReadTimeout:    workerConfig.ReadTimeout,
+		WriteTimeout:   workerConfig.WriteTimeout,
+		MaxHeaderBytes: workerConfig.MaxHeaderBytes,
+	}
+}
+
+// SetWorkerParams merge the WorkerConfig param with the
+// package variable workerConfig. The workerConfig is then used
+// to spawn an http.Server
+func (s *Server) SetWorkerParams(w WorkerConfig) {
+	if workerConfig.ReadTimeout != w.ReadTimeout && w.ReadTimeout != noTime {
+		workerConfig.ReadTimeout = w.ReadTimeout
+		s.log.Debugf("read timeout setted to %d", w.ReadTimeout)
+	}
+	if workerConfig.WriteTimeout != w.WriteTimeout && w.WriteTimeout != noTime {
+		workerConfig.WriteTimeout = w.WriteTimeout
+		s.log.Debugf("write timeout setted to %d", w.WriteTimeout)
+	}
+	if workerConfig.MaxHeaderBytes != w.MaxHeaderBytes && w.MaxHeaderBytes != 0 {
+		workerConfig.MaxHeaderBytes = w.MaxHeaderBytes
+		s.log.Debugf("max header bytes setted to %d", w.MaxHeaderBytes)
+	}
+}
+
 // Initialize a http.Server struct. Save the server in the pool of workers.
 func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 
+	worker := toWorker(addr)
 	// ! handlers.CORS() must be the first handler
-	worker := http.Server{
-		Addr:           addr,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   60 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
-
 	if s.CORS {
 		worker.Handler = handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"}),
