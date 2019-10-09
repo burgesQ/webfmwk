@@ -204,7 +204,7 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 	worker := http.Server{
 		Addr:           addr,
 		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   30 * time.Second,
+		WriteTimeout:   60 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 

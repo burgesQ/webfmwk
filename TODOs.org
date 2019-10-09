@@ -3,11 +3,13 @@
 #+DESCRIPTION: Quick summary of web framework todo's
 
 * WIP v2 [3/4] [75%]
-** TODO stuffs [2/5] [40%]
-  - [ ] cleaner doc
-    - [ ] up to date example
-    - [ ] comment and example when needed
-    - [ ] full readme
+** TODO stuffs [2/6] [33%]
+  - [-] cleaner doc
+    - [X] up to date example
+    - [ ] incode comment and example when needed
+    - [ ] full readme [0/2] [0%]
+      - [ ] miss http error handling
+      - [ ]
   - [ ] no linter error
   - [X] ILog
   - [ ] Code Coverage [0/5] [0%]
@@ -17,6 +19,7 @@
     - [ ] route
     - [ ] middleware
   - [X] CI
+  - [ ] timeout should be parametrable
 
 ** DONE Panic / Recover [2/3] [66%]
    CLOSED: [2019-10-08 Tue 18:44]
