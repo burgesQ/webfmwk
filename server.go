@@ -43,10 +43,16 @@ type (
 
 	// WorkerConfig hold the worker config per server instance
 	WorkerConfig struct {
+		// ReadTimeout is a timing constraint on the client http request imposed by the server from the moment
+		// of initial connection up to the time the entire request body has been read.
+		// [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
 		ReadTimeout       time.Duration
 		ReadHeaderTimeout time.Duration
-		WriteTimeout      time.Duration
-		MaxHeaderBytes    int
+		// WriteTimeout is a time limit imposed on client connecting to the server via http from the
+		// time the server has completed reading the request header up to the time it has finished writing the response.
+		// [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
+		WriteTimeout   time.Duration
+		MaxHeaderBytes int
 		// TODO: expand it
 	}
 )
@@ -178,6 +184,8 @@ func (s *Server) hasBody(r *http.Request) bool {
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		// use s.Getcontext ...
+
 		// copy context & set data
 		ctx := s.context
 		body := s.hasBody(r)
@@ -196,7 +204,6 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 			ctx.CheckHeader()
 		}
 		handler(ctx)
-
 	}
 }
 
@@ -212,15 +219,6 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
 		s.log.Fatalf("%s", err.Error())
 	}
 	worker.TLSConfig.Certificates[0] = cert
-}
-
-func toWorker(addr string) http.Server {
-	return http.Server{
-		Addr:           addr,
-		ReadTimeout:    workerConfig.ReadTimeout,
-		WriteTimeout:   workerConfig.WriteTimeout,
-		MaxHeaderBytes: workerConfig.MaxHeaderBytes,
-	}
 }
 
 // SetWorkerParams merge the WorkerConfig param with the
@@ -245,9 +243,17 @@ func (s *Server) SetWorkerParams(w WorkerConfig) {
 	}
 }
 
+func toWorker(addr string) http.Server {
+	return http.Server{
+		Addr:           addr,
+		ReadTimeout:    workerConfig.ReadTimeout,
+		WriteTimeout:   workerConfig.WriteTimeout,
+		MaxHeaderBytes: workerConfig.MaxHeaderBytes,
+	}
+}
+
 // Initialize a http.Server struct. Save the server in the pool of workers.
 func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
-
 	worker := toWorker(addr)
 	// ! handlers.CORS() must be the first handler
 	if s.CORS {
@@ -283,7 +289,8 @@ func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) error {
 // Start expose an server to an HTTP endpoint
 func (s *Server) Start(addr string) error {
 	s.launcher.Start("http server "+addr, func() error {
-		return s.setServer(addr).ListenAndServe()
+		worker := s.setServer(addr)
+		return worker.ListenAndServe()
 	})
 	return nil
 }
@@ -327,6 +334,7 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	}
 }
 
+// SetLogger set the logger of the server
 func (s *Server) SetLogger(lg log.ILog) {
 	logger = lg
 	s.log = logger
@@ -334,18 +342,20 @@ func (s *Server) SetLogger(lg log.ILog) {
 
 // InitServer set the server struct & pre-launch the exit handler.
 // Init the worker internal launcher.
+// If withCtrl is set to true, the server will handle ctrl+C internall.y
+// Please add worker to the package's WorkerLauncher to sync them.
 func InitServer(withCtrl bool) Server {
-
-	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
-
-	s := Server{
-		launcher: CreateWorkerLauncher(&wg, cancel),
-		ctx:      &ctx,
-		wg:       &wg,
-		context:  &Context{},
-		log:      logger,
-	}
+	var (
+		wg          sync.WaitGroup
+		ctx, cancel = context.WithCancel(context.Background())
+		s           = Server{
+			launcher: CreateWorkerLauncher(&wg, cancel),
+			ctx:      &ctx,
+			wg:       &wg,
+			context:  &Context{},
+			log:      logger,
+		}
+	)
 
 	// launch the ctrl+c job
 	if withCtrl {
