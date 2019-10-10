@@ -263,7 +263,10 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 			handlers.AllowedMethods([]string{"POST", "PUT", "PATCH", "OPTIONS"}))(
 			s.SetRouter())
 	} else {
-		worker.Handler = s.SetRouter()
+		worker.Handler = http.TimeoutHandler(
+			s.SetRouter(),
+			worker.WriteTimeout-(50*time.Millisecond),
+			`{"error": "timeout reached"}`)
 	}
 
 	// load tls for https
