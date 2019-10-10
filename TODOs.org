@@ -11,6 +11,7 @@
       - [ ] miss http error handling
       - [ ] schema / validate
       - [ ] workerConfig
+      - [ ] pjson
   - [ ] no linter error
   - [X] ILog
   - [ ] Code Coverage [0/6] [0%]

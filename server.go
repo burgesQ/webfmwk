@@ -43,9 +43,10 @@ type (
 
 	// WorkerConfig hold the worker config per server instance
 	WorkerConfig struct {
-		ReadTimeout    time.Duration
-		WriteTimeout   time.Duration
-		MaxHeaderBytes int
+		ReadTimeout       time.Duration
+		ReadHeaderTimeout time.Duration
+		WriteTimeout      time.Duration
+		MaxHeaderBytes    int
 		// TODO: expand it
 	}
 )
@@ -55,9 +56,10 @@ var (
 	poolOfServers []*http.Server
 	logger        = log.GetLogger()
 	workerConfig  = WorkerConfig{
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		ReadTimeout:       10 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		MaxHeaderBytes:    1 << 20,
 	}
 )
 
@@ -228,6 +230,10 @@ func (s *Server) SetWorkerParams(w WorkerConfig) {
 	if workerConfig.ReadTimeout != w.ReadTimeout && w.ReadTimeout != noTime {
 		workerConfig.ReadTimeout = w.ReadTimeout
 		s.log.Debugf("read timeout setted to %d", w.ReadTimeout)
+	}
+	if workerConfig.ReadHeaderTimeout != w.ReadHeaderTimeout && w.ReadHeaderTimeout != noTime {
+		workerConfig.ReadHeaderTimeout = w.ReadHeaderTimeout
+		s.log.Debugf("read header timeout setted to %d", w.ReadHeaderTimeout)
 	}
 	if workerConfig.WriteTimeout != w.WriteTimeout && w.WriteTimeout != noTime {
 		workerConfig.WriteTimeout = w.WriteTimeout
