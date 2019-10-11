@@ -60,5 +60,5 @@ func (s *Server) SetRouter() *mux.Router {
 		return nil
 	})
 
-	return router
+	return subRouter
 }
