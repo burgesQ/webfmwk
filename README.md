@@ -63,7 +63,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -109,7 +109,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -146,7 +146,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -197,7 +197,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -234,7 +234,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -274,7 +274,7 @@ func main() {
 		})
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -319,7 +319,7 @@ func main() {
 		})
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -367,7 +367,7 @@ func main() {
 		s.Start(":4244")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -407,7 +407,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -474,7 +474,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
@@ -523,7 +523,7 @@ func main() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internaly
+	// ctrl+c is handled internally
 	defer s.WaitAndStop()
 }
 ```
