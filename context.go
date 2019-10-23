@@ -21,7 +21,6 @@ type (
 		routes *Routes
 		vars   map[string]string
 		query  map[string][]string
-		custom IContext
 		log    log.ILog
 	}
 
