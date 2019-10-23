@@ -329,10 +329,10 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	signal.Notify(c, sig...)
 	defer s.Shutdown(ctx)
 	select {
-	case <-ctx.Done():
-		return
 	case si := <-c:
 		s.log.Infof("captured %v, exiting...", si)
+		return
+	case <-ctx.Done():
 		return
 	}
 }
