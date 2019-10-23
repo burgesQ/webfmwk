@@ -9,6 +9,7 @@ import (
 
 	"github.com/burgesQ/webfmwk/v2/log"
 	"github.com/burgesQ/webfmwk/v2/util"
+	"github.com/gorilla/schema"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -31,7 +32,10 @@ type (
 )
 
 var (
+	// formChecker annotation : `validate` : go-playground
 	formChecker = validator.New()
+	// decoder annotation : `schema` : gorilla
+	decoder = schema.NewDecoder()
 )
 
 // SetRequest implement IContext
@@ -50,6 +54,7 @@ func (c *Context) SetRoutes(r *Routes) {
 }
 
 // FetchContent implement IContext
+// It load payload in the dest interface{} using the system json library
 func (c *Context) FetchContent(dest interface{}) {
 	defer c.r.Body.Close()
 	if e := json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
@@ -63,6 +68,15 @@ func (c *Context) FetchContent(dest interface{}) {
 func (c Context) Validate(dest interface{}) {
 	if e := formChecker.Struct(dest); e != nil {
 		c.log.Errorf("error while validating the payload :\n%s", e.Error())
+		panic(NewUnprocessable(AnonymousError{e.Error()}))
+	}
+}
+
+// DecodeQP implement IContext
+func (c Context) DecodeQP(dest interface{}) {
+	if e := decoder.Decode(&dest, c.GetQueries()); e != nil {
+		c.log.Errorf("error while validating the content :\n%s", e.Error())
+		c.log.Debugf("[%#v]", dest)
 		panic(NewUnprocessable(AnonymousError{e.Error()}))
 	}
 }
