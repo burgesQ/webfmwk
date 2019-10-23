@@ -17,12 +17,15 @@ The server handle ctrl+c on it's own.
 
 ## dep
 
-| what                | for                                             |
-| :-:                 | :-:                                             |
-| [gorilla-mux][1]    | for a easy & robust routing logic               |
-| [gorilla-hanler][2] | for some useful already coded middlewares       |
+| what                 | for                                             |
+| :-:                  | :-:                                             |
+| [gorilla/mux][1]     | for a easy & robust routing logic               |
+| [gorilla/hanlers][2] | for some useful already coded middlewares       |
+| [gorilla/schema][4]  | for some useful already coded middlewares       |
 | [validator][3]       | use by the custom implementation of the context |
-| json-iterator       | use by the custom implementation of the context |
+| [json-iterator]      | use by the custom implementation of the context |
+
+
 
 # Test
 
@@ -154,7 +157,7 @@ func main() {
 </p>
 </details>
 
-### fetch body / validate
+### deserialize body / query param / validate
 
 Reach the endpoint with `curl -X POST -d '{"name": "test", "age": 12}' -H "Content-Type: application/json" "http://localhost:4242/hello"`.
 
@@ -162,7 +165,7 @@ Note that the `webfmwk` only accept `application/json` content.
 
 Don't hesitate to play with the payload to inspect the behavior of the Validate method.
 
-The struct annotation are done via the `schema` keyword. Please refer to the [`validator` documentation][3].
+The struct annotation are done via the `validator`  and `schema` keywords. Please refer to the [`validator` documentation][3] and the [`gorilla/schema`][5] one.
 
 <details><summary>POST content</summary>
 <p>
@@ -176,20 +179,38 @@ import (
 	w "github.com/burgesQ/webfmwk/v2"
 )
 
-type Content struct {
-	Name string `schema:"name" json:"name" validate:"omitempty"`
-	Age  int    `schema:"age" json:"age" vallidate:"gte=1"`
-}
+type (
+	Content struct {
+		Name string `schema:"name" json:"name" validate:"omitempty"`
+		Age  int    `schema:"age" json:"age" validate:"gte=1"`
+	}
+
+	QueryParam struct {
+		pjson bool `schema:"pjson" json:"pjson"`
+		ok    int  `schema:"pjson" json:"pjson" validate:"gte=1"`
+	}
+
+	Payload struct {
+		content Content    `json:"content"`
+		qp      QueryParam `json:"query_param"`
+	}
+)
 
 func main() {
 	// create server
 	s := w.InitServer(true)
 
 	s.POST("/hello", func(c w.IContext) {
-		data := Content{}
-		c.FetchContent(&data)
-		c.Validate(data)
-		c.JSON(http.StatusOK, data)
+
+		out := Payload{}
+
+		c.FetchContent(&out.content)
+		c.Validate(out.content)
+
+		c.DecodeQP(&out.qp)
+		c.Validate(out.qp)
+
+		c.JSON(http.StatusOK, out)
 	})
 
 	// start asynchronously on :4242
@@ -531,6 +552,7 @@ func main() {
 </p>
 </details>
 
-[1]: https://github.com/gorilla/gorilla-mux
-[2]: https://github.com/gorilla/gorilla-handler
+[1]: https://github.com/gorilla/mux
+[2]: https://github.com/gorilla/handlers
 [3]: gopkg.in/go-playground/validator.v9 
+[4]: https://github.com/gorilla/schema

@@ -22,8 +22,11 @@ type IContext interface {
 	// FetchContent extract the content from the body
 	FetchContent(content interface{})
 
-	// Validate is used to validate a content of a request
+	// Validate is used to validate a content of the content params
 	Validate(content interface{})
+
+	// Decode load the query param in the content object
+	DecodeQP(content interface{})
 
 	// SetVars is used to save the url vars
 	SetVars(vars map[string]string)
