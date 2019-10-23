@@ -189,7 +189,7 @@ type (
 	// QueryParam hold the query params
 	QueryParam struct {
 		PJSON bool `schema:"pjson" json:"pjson"`
-		OK    int  `schema:"pjson" json:"pjson" validate:"gte=1"`
+		Val   int  `schema:"val" json:"val" validate:"gte=1"`
 	}
 
 	// Payload hold the output of the endpoint
