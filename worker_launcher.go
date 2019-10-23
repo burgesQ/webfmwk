@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"net/http"
 	"sync"
 )
 
@@ -18,14 +19,14 @@ func CreateWorkerLauncher(wg *sync.WaitGroup, cancel context.CancelFunc) WorkerL
 // launch a worker who will be wait & kill at the same time than the others
 func (l *WorkerLauncher) Start(name string, fn func() error) {
 	l.wg.Add(1)
-	logger.Debugf("%s: starting", name)
-	go func() {
-		if err := fn(); err != nil {
-			logger.Errorf("%s: %s", name, err)
+	go func(n string) {
+		logger.Debugf("%s: starting", n)
+		if err := fn(); err != nil && err != http.ErrServerClosed {
+			logger.Errorf("%s (%T): %s", n, err, err)
 		} else {
-			logger.Infof("%s: done", name)
+			logger.Infof("%s: done", n)
 		}
 		l.cancel()
 		l.wg.Done()
-	}()
+	}(name)
 }
