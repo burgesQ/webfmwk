@@ -180,19 +180,22 @@ import (
 )
 
 type (
+	// Content hold the body of the request
 	Content struct {
 		Name string `schema:"name" json:"name" validate:"omitempty"`
 		Age  int    `schema:"age" json:"age" validate:"gte=1"`
 	}
 
+	// QueryParam hold the query params
 	QueryParam struct {
-		pjson bool `schema:"pjson" json:"pjson"`
-		ok    int  `schema:"pjson" json:"pjson" validate:"gte=1"`
+		PJSON bool `schema:"pjson" json:"pjson"`
+		OK    int  `schema:"pjson" json:"pjson" validate:"gte=1"`
 	}
 
+	// Payload hold the output of the endpoint
 	Payload struct {
-		content Content    `json:"content"`
-		qp      QueryParam `json:"query_param"`
+		Content Content    `json:"content"`
+		QP      QueryParam `json:"query_param"`
 	}
 )
 
@@ -215,7 +218,7 @@ func main() {
 
 	// start asynchronously on :4242
 	go func() {
-		s.Start(":4242")
+		s.Start(":4244")
 	}()
 
 	// ctrl+c is handled internally
