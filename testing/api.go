@@ -17,15 +17,18 @@ type (
 // PushAPI is used to push a request to a local API
 func PushAPI(t *testing.T, path string, content []byte) *http.Response {
 	t.Helper()
-	url := baseAPI + path
+
+	var url = baseAPI + path
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(content))
 	if err != nil {
 		t.Fatalf("can't post the new request : %s", err.Error())
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	var client = &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
@@ -40,15 +43,20 @@ func RequestAPI(t *testing.T, path string) (resp *http.Response) {
 	if err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	}
+
 	return resp
 }
 
 func PushAndTestAPI(t *testing.T, path string, content []byte, handler HandlerForTest) {
-	handler(t, PushAPI(t, path, content))
+	resp := PushAPI(t, path, content)
+	defer resp.Body.Close()
+	handler(t, resp)
 }
 
 func RequestAndTestAPI(t *testing.T, path string, handler HandlerForTest) {
-	handler(t, RequestAPI(t, path))
+	resp := RequestAPI(t, path)
+	defer resp.Body.Close()
+	handler(t, resp)
 }
 
 func FetchBody(t *testing.T, resp *http.Response) (body string, err error) {
@@ -89,5 +97,6 @@ func AssertHeader(t *testing.T, resp *http.Response, key, val string) bool {
 		t.Errorf("Invalid response header [%s] expected: [%s]", out[0], val)
 		return false
 	}
+
 	return true
 }

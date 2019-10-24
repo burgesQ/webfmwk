@@ -19,8 +19,11 @@ type testSerial struct {
 
 func TestUseCase(t *testing.T) {
 	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
 
 	// add middleware TODO: check headers
 	// s.AddMiddleware(m.Security)
@@ -50,7 +53,7 @@ func TestUseCase(t *testing.T) {
 	})
 	s.GET("/testContext", func(c IContext) {
 		cc := c.(*customContext)
-		c.JSONBlob(http.StatusOK, []byte(string(`{ "message": "hello `+cc.Value+`" }`)))
+		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello `+cc.Value+`" }`))
 	})
 	s.POST("/world", func(c IContext) {
 		anonymous := struct {
@@ -62,11 +65,7 @@ func TestUseCase(t *testing.T) {
 		c.JSONCreated(anonymous)
 	})
 
-	go func() {
-		if e := s.Start(":4242"); e != nil {
-			t.Fatalf("error while booting the server : %s", e.Error())
-		}
-	}()
+	go s.Start(":4242")
 	time.Sleep(50 * time.Millisecond)
 
 	// request each routes

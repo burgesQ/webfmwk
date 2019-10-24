@@ -7,17 +7,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	testURL = "/test"
+)
+
 var emptyController = func(c IContext) {}
 
 func TestSetPrefix(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.SetPrefix("/api")
-	s.GET("/test", emptyController)
+	s.GET(testURL, emptyController)
 
 	r := s.SetRouter()
 
@@ -33,10 +38,11 @@ func TestSetPrefix(t *testing.T) {
 
 func TestGetLauncher(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
@@ -45,10 +51,11 @@ func TestGetLauncher(t *testing.T) {
 
 func TestGetContext(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	if s.GetContext() == nil {
 		t.Errorf("Context wrongly created : %v.", s.ctx)
@@ -57,10 +64,11 @@ func TestGetContext(t *testing.T) {
 
 func TestAddMiddleware(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.AddMiddleware(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -74,10 +82,11 @@ func TestAddMiddleware(t *testing.T) {
 
 func TestAddRoute(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.AddRoute(Route{
 		Pattern: "/test/1",
@@ -92,10 +101,11 @@ func TestAddRoute(t *testing.T) {
 
 func TestAddRoutes(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.AddRoutes([]Route{
 		Route{
@@ -117,69 +127,75 @@ func TestAddRoutes(t *testing.T) {
 
 func TestGET(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
-	s.GET("/test", emptyController)
+	s.GET(testURL, emptyController)
 
-	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "GET") {
+	if !(s.routes[0].Pattern == testURL && s.routes[0].Method == "GET") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
 	}
 }
 
 func TestDELETE(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
-	s.DELETE("/test", emptyController)
+	s.DELETE(testURL, emptyController)
 
-	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "DELETE") {
+	if !(s.routes[0].Pattern == testURL && s.routes[0].Method == "DELETE") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
 	}
 }
 
 func TestPOST(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
-	s.POST("/test", emptyController)
+	s.POST(testURL, emptyController)
 
-	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "POST") {
+	if !(s.routes[0].Pattern == testURL && s.routes[0].Method == "POST") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
 	}
 }
 
 func TestPUT(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
-	s.PUT("/test", emptyController)
+	}(s)
 
-	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "PUT") {
+	s.PUT(testURL, emptyController)
+
+	if !(s.routes[0].Pattern == testURL && s.routes[0].Method == "PUT") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
 	}
 }
 
 func TestPATCH(t *testing.T) {
 	s := InitServer(false)
-	defer func() {
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
-	s.PATCH("/test", emptyController)
+	s.PATCH(testURL, emptyController)
 
-	if !(s.routes[0].Pattern == "/test" && s.routes[0].Method == "PATCH") {
+	if !(s.routes[0].Pattern == testURL && s.routes[0].Method == "PATCH") {
 		t.Errorf("Routes wrongly saved : %v.", s.routes[0])
 	}
 }
@@ -193,10 +209,12 @@ func TestPATCH(t *testing.T) {
 func TestInitServer(t *testing.T) {
 	t.Run("simple init server", func(t *testing.T) {
 		s := InitServer(false)
-		defer func() {
+
+		defer func(s Server) {
 			s.Shutdown(*s.GetContext())
 			s.WaitAndStop()
-		}()
+		}(s)
+
 		if s.GetLauncher() == nil || s.GetContext() == nil {
 			t.Errorf("Error while creating the server entity")
 		}

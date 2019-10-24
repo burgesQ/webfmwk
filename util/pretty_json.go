@@ -19,7 +19,6 @@ type PrettyJson struct {
 }
 
 func NewPrettyJson(in io.Reader, out io.Writer) *PrettyJson {
-
 	return &PrettyJson{
 		in,
 		bufio.NewWriterSize(out, 1024),
@@ -41,13 +40,10 @@ func (p *PrettyJson) printSimpleValue() {
 }
 
 func (p *PrettyJson) parseElmt(prefix string) bool {
-
-	t := p.iter.WhatIsNext()
+	var t = p.iter.WhatIsNext()
 
 	switch t {
-
 	case jsoniter.ArrayValue:
-
 		p.output.WriteByte('[')
 		count := 0
 		p.iter.ReadArrayCB(func(*jsoniter.Iterator) bool {
@@ -72,7 +68,6 @@ func (p *PrettyJson) parseElmt(prefix string) bool {
 		p.output.WriteByte(']')
 
 	case jsoniter.ObjectValue:
-
 		p.output.WriteByte('{')
 		count := 0
 		p.iter.ReadMapCB(func(Iter *jsoniter.Iterator, field string) bool {

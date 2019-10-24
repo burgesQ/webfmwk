@@ -1,15 +1,18 @@
 package webfmwk
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type (
-	// Interface ErrorHandled implement the panic recovering
+	// IErrorHandled interface implement the panic recovering
 	IErrorHandled interface {
 		GetOPCode() int
 		GetContent() interface{}
 	}
 
-	// Error implement the ErrorHandled interface
+	// ErrorHandled implement the IErrorHandled interface
 	ErrorHandled struct {
 		op      int
 		content interface{}
@@ -21,9 +24,20 @@ func (e ErrorHandled) GetOPCode() int {
 	return e.op
 }
 
-// GetContentimplement the IErrorHandled interface
+// GetContent implement the IErrorHandled interface
 func (e ErrorHandled) GetContent() interface{} {
 	return e.content
+}
+
+// func (e ErrorHandled) String() string {
+// 	if utf8.Valid(e.content) {
+// 		return fmt.Sprintf("[%d]: %s", e.op, e.content)
+// 	}
+// 	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
+// }
+
+func (e ErrorHandled) Error() string {
+	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
 }
 
 func factory(op int, content interface{}) ErrorHandled {
@@ -31,6 +45,15 @@ func factory(op int, content interface{}) ErrorHandled {
 		op:      op,
 		content: content,
 	}
+}
+
+// NewError return a new ErrorHandled var
+func NewErrorHandled(op int, content interface{}) ErrorHandled {
+	return factory(op, content)
+}
+
+func NewProcessing(content interface{}) ErrorHandled {
+	return factory(http.StatusProcessing, content)
 }
 
 // NewNoContent produce an ErrorHandled with the status code 204
@@ -41,6 +64,10 @@ func NewNoContent() ErrorHandled {
 // NewBadRequest produce an ErrorHandled with the status code 400
 func NewBadRequest(content interface{}) ErrorHandled {
 	return factory(http.StatusBadRequest, content)
+}
+
+func NewUnauthorized(content interface{}) ErrorHandled {
+	return factory(http.StatusUnauthorized, content)
 }
 
 // NewNotAcceptable produce an ErrorHandled with the status code 404
