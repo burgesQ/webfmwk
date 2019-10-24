@@ -57,6 +57,7 @@ func (c *Context) SetRoutes(r *Routes) {
 // It load payload in the dest interface{} using the system json library
 func (c *Context) FetchContent(dest interface{}) {
 	defer c.r.Body.Close()
+
 	if e := json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
 		c.log.Errorf("while decoding the payload : %s", e.Error())
 		panic(NewUnprocessable(AnonymousError{"Unprocessable payload, wrong json ?"}))
@@ -74,8 +75,8 @@ func (c Context) Validate(dest interface{}) {
 
 // DecodeQP implement IContext
 func (c Context) DecodeQP(dest interface{}) {
-	if e := decoder.Decode(&dest, c.GetQueries()); e != nil {
-		c.log.Errorf("error while validating the content :\n%s", e.Error())
+	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
+		c.log.Errorf("error while validating the query params :\n%s", e.Error())
 		c.log.Debugf("[%#v]", dest)
 		panic(NewUnprocessable(AnonymousError{e.Error()}))
 	}
@@ -106,20 +107,17 @@ func (c *Context) GetQuery(key string) (string, bool) {
 	if len(c.query[key]) > 0 {
 		return c.query[key][0], true
 	}
+
 	return "", false
 }
 
 // IsPretty implement IContext
 func (c Context) IsPretty() bool {
-	if len(c.query["pjson"]) > 0 {
-		return true
-	}
-	return false
+	return len(c.query["pjson"]) > 0
 }
 
 func (c *Context) SetLogger(logger log.ILog) {
 	c.log = logger
-
 }
 
 // CheckHeader implement IContext
@@ -159,7 +157,6 @@ func (c *Context) setHeaders(headers ...[2]string) {
 }
 
 func (c *Context) response(statusCode int, content []byte) {
-
 	if utf8.Valid(content) {
 		c.log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
 	} else {
@@ -182,8 +179,8 @@ func (c *Context) SendResponse(statusCode int, content []byte, headers ...[2]str
 
 // JSONBlob sent a JSON response already encoded
 func (c *Context) JSONBlob(statusCode int, content []byte) {
-
 	c.setHeader("Accept", "application/json; charset=UTF-8")
+
 	if statusCode != http.StatusNoContent {
 		c.setHeader("Content-Type", "application/json; charset=UTF-8")
 		c.setHeader("Produce", "application/json; charset=UTF-8")
@@ -204,6 +201,7 @@ func (c *Context) JSON(statusCode int, content interface{}) {
 		c.log.Errorf("%s", err.Error())
 		panic(NewInternal(AnonymousError{"Error creating the JSON response."}))
 	}
+
 	c.JSONBlob(statusCode, data)
 }
 

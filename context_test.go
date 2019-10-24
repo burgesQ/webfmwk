@@ -16,20 +16,17 @@ var (
 
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
+	var s = InitServer(false)
 
-	s := InitServer(false)
-	// TODO:	s.SetLogLevel(-1)
-	defer func() {
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.POST(route, handlerRoute)
-	go func() {
-		if e := s.Start(":4242"); e != nil {
-			t.Fatalf("error while booting the server : %s", e.Error())
-		}
-	}()
+
+	go s.Start(":4242")
+
 	time.Sleep(50 * time.Millisecond)
 
 	z.PushAndTestAPI(t, routeReq, content, handlerTest)
@@ -37,21 +34,17 @@ func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 
 func wrapperGet(t *testing.T, route, routeReq string,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
+	var s = InitServer(false)
 
-	s := InitServer(false)
-	defer func() {
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.GET(route, handlerRoute)
-	go func() {
-		if e := s.Start(":4242"); e != nil {
-			t.Fatalf("error while booting the server : %s", e.Error())
-		}
-	}()
-	time.Sleep(50 * time.Millisecond)
 
+	go s.Start(":4242")
+	time.Sleep(50 * time.Millisecond)
 	z.RequestAndTestAPI(t, routeReq, handlerTest)
 }
 
@@ -69,9 +62,7 @@ func TestParam(t *testing.T) {
 }
 
 func TestFetchContentUnprocessable(t *testing.T) {
-
 	wrapperPost(t, "/test", "/test", []byte(`{"first_name": tutu"}`), func(c IContext) {
-
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 		}{}
@@ -87,7 +78,6 @@ func TestFetchContentUnprocessable(t *testing.T) {
 
 func TestFetchContent(t *testing.T) {
 	wrapperPost(t, "/test", "/test", []byte(`{"first_name": "tutu"}`), func(c IContext) {
-
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 		}{}
@@ -101,21 +91,18 @@ func TestFetchContent(t *testing.T) {
 }
 
 func TestCheckHeaderNoHeader(t *testing.T) {
-	s := InitServer(false)
-	defer func() {
+	var s = InitServer(false)
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
 
 	s.POST("/test", func(c IContext) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 
-	go func() {
-		if e := s.Start(":4242"); e != nil {
-			t.Fatalf("error while booting the server : %s", e.Error())
-		}
-	}()
+	go s.Start(":4242")
 	time.Sleep(50 * time.Millisecond)
 
 	url := "http://127.0.0.1:4242" + "/test"
@@ -125,25 +112,24 @@ func TestCheckHeaderNoHeader(t *testing.T) {
 	if resp, err := client.Do(req); err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	} else {
+		defer resp.Body.Close()
 		z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
 	}
 }
 
 func TestCheckHeaderWrongHeader(t *testing.T) {
-	s := InitServer(false)
-	defer func() {
+	var s = InitServer(false)
+
+	defer func(s Server) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
-	}()
+	}(s)
+
 	s.POST("/test", func(c IContext) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 
-	go func() {
-		if e := s.Start(":4242"); e != nil {
-			t.Fatalf("error while booting the server : %s", e.Error())
-		}
-	}()
+	go s.Start(":4242")
 	time.Sleep(50 * time.Millisecond)
 
 	url := "http://127.0.0.1:4242" + "/test"
@@ -154,6 +140,7 @@ func TestCheckHeaderWrongHeader(t *testing.T) {
 	if resp, err := client.Do(req); err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	} else {
+		defer resp.Body.Close()
 		z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
 	}
 }

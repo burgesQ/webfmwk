@@ -6,6 +6,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	GET    = "GET"
+	POST   = "POST"
+	PATCH  = "PATCH"
+	PUT    = "PUT"
+	DELETE = "DELETE"
+)
+
 type (
 	HandlerSign func(c IContext)
 
@@ -23,7 +31,7 @@ type (
 
 // check if a routes is compilent
 // TODO: all
-func (r *Route) check() bool { return true }
+// func (r *Route) check() bool { return true }
 
 // SetRouter create a mux.Handler router and then :
 // register the middlewares,
@@ -31,6 +39,7 @@ func (r *Route) check() bool { return true }
 // and return the routes handler
 func (s *Server) SetRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+
 	for _, mw := range s.middlewares {
 		router.Use(mw)
 	}

@@ -27,7 +27,7 @@ func TestSetRouter(t *testing.T) {
 			method          = strings.Join(methods, ",")
 		)
 
-		if method != "GET" || pathTemplate != "/api/test" {
+		if method != GET || pathTemplate != "/api/test" {
 			t.Errorf("Router Routing wrongly created : [%s](%s)", methods, pathTemplate)
 		}
 		return nil
@@ -50,11 +50,7 @@ func TestHandleParam(t *testing.T) {
 		c.JSONNoContent()
 	})
 
-	go func() {
-		if e := s.Start(":4242"); e != nil {
-			t.Fatalf("error while booting the server : %s", e.Error())
-		}
-	}()
+	go s.Start(":4242")
 	time.Sleep(50 * time.Millisecond)
 
 	z.RequestAndTestAPI(t, "/test/toto?pjson=1", func(t *testing.T, resp *http.Response) {})

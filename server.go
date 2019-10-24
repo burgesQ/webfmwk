@@ -94,6 +94,7 @@ func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
 	if ok {
 		s.context = setter(ctx)
 	}
+
 	return ok
 }
 
@@ -183,10 +184,6 @@ func (s *Server) hasBody(r *http.Request) bool {
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		// use s.Getcontext ...
-
-		// copy context & set data
 		ctx := s.context
 		body := s.hasBody(r)
 
@@ -200,6 +197,7 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 		ctx.SetLogger(s.log)
 
 		defer ctx.OwnRecover()
+
 		if body {
 			ctx.CheckHeader()
 		}
@@ -213,11 +211,11 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
 		Certificates:       make([]tls.Certificate, 1),
 	}
 
-	var err error
 	cert, err := tls.LoadX509KeyPair(tlsCfg.Cert, tlsCfg.Key)
 	if err != nil {
 		s.log.Fatalf("%s", err.Error())
 	}
+
 	worker.TLSConfig.Certificates[0] = cert
 }
 
@@ -229,14 +227,17 @@ func (s *Server) SetWorkerParams(w WorkerConfig) {
 		workerConfig.ReadTimeout = w.ReadTimeout
 		s.log.Debugf("read timeout setted to %d", w.ReadTimeout)
 	}
+
 	if workerConfig.ReadHeaderTimeout != w.ReadHeaderTimeout && w.ReadHeaderTimeout != noTime {
 		workerConfig.ReadHeaderTimeout = w.ReadHeaderTimeout
 		s.log.Debugf("read header timeout setted to %d", w.ReadHeaderTimeout)
 	}
+
 	if workerConfig.WriteTimeout != w.WriteTimeout && w.WriteTimeout != noTime {
 		workerConfig.WriteTimeout = w.WriteTimeout
 		s.log.Debugf("write timeout setted to %d", w.WriteTimeout)
 	}
+
 	if workerConfig.MaxHeaderBytes != w.MaxHeaderBytes && w.MaxHeaderBytes != 0 {
 		workerConfig.MaxHeaderBytes = w.MaxHeaderBytes
 		s.log.Debugf("max header bytes setted to %d", w.MaxHeaderBytes)
@@ -282,39 +283,34 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 }
 
 // StartTLS expose an server to an HTTPS endpoint
-func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) error {
+func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
 	s.launcher.Start("https server "+addr, func() error {
 		return s.setServer(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.Cert, tlsStuffs.Key)
 	})
-	return nil
 }
 
 // Start expose an server to an HTTP endpoint
-func (s *Server) Start(addr string) error {
+func (s *Server) Start(addr string) {
 	s.launcher.Start("http server "+addr, func() error {
 		worker := s.setServer(addr)
 		return worker.ListenAndServe()
 	})
-	return nil
 }
 
 // Shutdown terminate all running servers.
 // Call shutdown with a context.context on each http(s) server.
-func Shutdown(ctx context.Context) error {
-
+func Shutdown(ctx context.Context) {
 	for _, server := range poolOfServers {
 		server.Shutdown(ctx)
 	}
 
 	poolOfServers = []*http.Server{}
-
-	return nil
 }
 
 // Shutdown call the framework shutdown to stop all running server
-func (s *Server) Shutdown(ctx context.Context) error {
+func (s *Server) Shutdown(ctx context.Context) {
 	s.log.Debugf("-1")
-	return Shutdown(ctx)
+	Shutdown(ctx)
 }
 
 // WaitAndStop wait for all servers to terminate.
@@ -327,7 +323,9 @@ func (s *Server) WaitAndStop() {
 func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	c := make(chan os.Signal)
 	signal.Notify(c, sig...)
+
 	defer s.Shutdown(ctx)
+
 	select {
 	case si := <-c:
 		s.log.Infof("captured %v, exiting...", si)

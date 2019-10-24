@@ -28,15 +28,12 @@ var (
 	}
 )
 
-func init() {
-
-}
-
 func SetLogLevel(level int) (ok bool) {
 	if level >= LogERR && level <= LogDEBUG {
 		lg.level = level
 		ok = true
 	}
+
 	return
 }
 

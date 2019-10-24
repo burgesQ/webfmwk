@@ -8,9 +8,9 @@ const (
 	notEqual = "assertion failed\ngot :\t>[\t%v\t]<\nwant :\t>[\t%v\t]<"
 )
 
-func assert(t *testing.T, method func() bool,
-	context string, args ...interface{}) {
+func assert(t *testing.T, method func() bool, context string, args ...interface{}) {
 	t.Helper()
+
 	if !method() {
 		if len(args) > 0 {
 			t.Errorf(context, args...)
@@ -84,9 +84,11 @@ func AssertTrue(t *testing.T, have bool) {
 	assertSimpleEqual(t, have, true)
 }
 
-// func AssertTrueContext(have bool, context string, args ...interface{}) {
-// 	assertSimpleEqualContext(have, true, context, args...)
-// }
+// AssertTrueContext run an assertion that the bool argument is true
+func AssertTrueContext(t *testing.T, have bool, fmt string, args ...interface{}) {
+	t.Helper()
+	assertSimpleEqualContext(t, have, true, fmt, args...)
+}
 
 // AssertFalse run an assertion that the bool argument is false
 func AssertFalse(t *testing.T, have bool) {
@@ -94,9 +96,10 @@ func AssertFalse(t *testing.T, have bool) {
 	assertSimpleEqual(t, have, false)
 }
 
-// func AssertFalseContext(have bool, context string, args ...interface{}) {
-// 	assertSimpleEqualContext(have, false, context, args...)
-// }
+func AssertFalseContext(t *testing.T, have bool, context string, args ...interface{}) {
+	t.Helper()
+	assertSimpleEqualContext(t, have, false, context, args...)
+}
 
 // AssertStringEqual run an assertion that the two string arguments are equal
 func AssertStringEqual(t *testing.T, have, want string) {
@@ -124,10 +127,28 @@ func AssertIntEqual(t *testing.T, have, want int) {
 	assertSimpleEqual(t, have, want)
 }
 
-// func AssertIntNotEqual(have, want int) {
-// 	assertSimpleNotEqual(have, want)
-// }
+// AssertIntEqual run an assertion that the two int arguments are not equal
+func AssertIntNotEqual(t *testing.T, have, want int) {
+	t.Helper()
+	assertSimpleNotEqual(t, have, want)
+}
 
 // func AssertMapEqual(have, want map[string]string) {
 // 	Assert(func() bool { return reflect.DeepEqual(have, want) }, notEqual, have, want)
 // }
+
+func AssertIsString(t *testing.T, have interface{}) {
+	t.Helper()
+
+	var _, ok = have.(string)
+
+	AssertTrueContext(t, ok, "%s is not a string (%T)", have, have)
+}
+
+func AssertIsInt(t *testing.T, have interface{}) {
+	t.Helper()
+
+	var _, ok = have.(int)
+
+	AssertTrueContext(t, ok, "%s is not a int (%T)", have, have)
+}
