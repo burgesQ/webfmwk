@@ -41,10 +41,6 @@ func (rpp *RoutesPerPrefix) addRoutes(p string, r Routes) {
 	(*rpp)[p] = append((*rpp)[p], r...)
 }
 
-// check if a routes is compilent
-// TODO: all
-// func (r *Route) check() bool { return true }
-
 //
 // Routes method
 //
@@ -68,7 +64,7 @@ func (s *Server) AddRoutes(r Routes) {
 func (s *Server) GET(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Path:    path,
-		Verbe:   "GET",
+		Verbe:   GET,
 		Handler: handler,
 	})
 }
@@ -77,7 +73,7 @@ func (s *Server) GET(path string, handler HandlerSign) {
 func (s *Server) DELETE(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Path:    path,
-		Verbe:   "DELETE",
+		Verbe:   DELETE,
 		Handler: handler,
 	})
 }
@@ -86,7 +82,7 @@ func (s *Server) DELETE(path string, handler HandlerSign) {
 func (s *Server) POST(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Path:    path,
-		Verbe:   "POST",
+		Verbe:   POST,
 		Handler: handler,
 	})
 }
@@ -95,7 +91,7 @@ func (s *Server) POST(path string, handler HandlerSign) {
 func (s *Server) PUT(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Path:    path,
-		Verbe:   "PUT",
+		Verbe:   PUT,
 		Handler: handler,
 	})
 }
@@ -104,7 +100,7 @@ func (s *Server) PUT(path string, handler HandlerSign) {
 func (s *Server) PATCH(path string, handler HandlerSign) {
 	s.AddRoute(Route{
 		Path:    path,
-		Verbe:   "PATCH",
+		Verbe:   PATCH,
 		Handler: handler,
 	})
 }
@@ -115,15 +111,15 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 		s.SetPrefix(prefix)
 		for _, route := range routes {
 			switch route.Verbe {
-			case "GET":
+			case GET:
 				s.GET(route.Path, route.Handler)
-			case "POST":
+			case POST:
 				s.POST(route.Path, route.Handler)
-			case "PUT":
+			case PUT:
 				s.PUT(route.Path, route.Handler)
-			case "PATCH":
+			case PATCH:
 				s.PATCH(route.Path, route.Handler)
-			case "DELETE":
+			case DELETE:
 				s.DELETE(route.Path, route.Handler)
 			default:
 				s.log.Warnf("Cannot load route [%s](%s)", route.Path, route.Verbe)
