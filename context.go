@@ -17,12 +17,11 @@ import (
 // It hold the data used by the request
 type (
 	Context struct {
-		r      *http.Request
-		w      *http.ResponseWriter
-		routes *Routes
-		vars   map[string]string
-		query  map[string][]string
-		log    log.ILog
+		r     *http.Request
+		w     *http.ResponseWriter
+		vars  map[string]string
+		query map[string][]string
+		log   log.ILog
 	}
 
 	// AnonymousError struct is used to answer error
@@ -46,11 +45,6 @@ func (c *Context) SetRequest(r *http.Request) {
 // SetWriter implement IContext
 func (c *Context) SetWriter(w *http.ResponseWriter) {
 	c.w = w
-}
-
-// SetRoutes implement IContext
-func (c *Context) SetRoutes(r *Routes) {
-	c.routes = r
 }
 
 // FetchContent implement IContext
