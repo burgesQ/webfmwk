@@ -14,8 +14,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TODO: route restriction
-
 const noTime = 0
 
 type (
@@ -29,7 +27,7 @@ type (
 
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
-		routes      Routes
+		routes      RoutesPerPrefix
 		ctx         *context.Context
 		wg          *sync.WaitGroup
 		launcher    WorkerLauncher
@@ -78,6 +76,35 @@ func GetLogger() log.ILog {
 	return logger
 }
 
+// InitServer set the server struct & pre-launch the exit handler.
+// Init the worker internal launcher.
+// If withCtrl is set to true, the server will handle ctrl+C internall.y
+// Please add worker to the package's WorkerLauncher to sync them.
+func InitServer(withCtrl bool) Server {
+	var (
+		wg          sync.WaitGroup
+		ctx, cancel = context.WithCancel(context.Background())
+		s           = Server{
+			launcher: CreateWorkerLauncher(&wg, cancel),
+			ctx:      &ctx,
+			wg:       &wg,
+			context:  &Context{},
+			log:      logger,
+			routes:   make(RoutesPerPrefix),
+		}
+	)
+
+	// launch the ctrl+c job
+	if withCtrl {
+		s.launcher.Start("exit handler", func() error {
+			s.ExitHandler(ctx, os.Interrupt)
+			return nil
+		})
+	}
+
+	return s
+}
+
 // GetLogger return an instance of the ILog interface used
 func (s Server) GetLogger() log.ILog {
 	return s.log
@@ -98,11 +125,6 @@ func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
 	return ok
 }
 
-// SetPrefix set the url path to prefix
-func (s *Server) SetPrefix(prefix string) {
-	s.prefix = prefix
-}
-
 // GetLauncher return a pointer on the util.workerLauncher used
 func (s *Server) GetLauncher() *WorkerLauncher {
 	return &s.launcher
@@ -113,68 +135,9 @@ func (s *Server) GetContext() *context.Context {
 	return s.ctx
 }
 
-// AddMiddleware append a middleware to the list of middleware
+// Enamelware append a middleware to the list of middleware
 func (s *Server) AddMiddleware(mw mux.MiddlewareFunc) {
 	s.middlewares = append(s.middlewares, mw)
-}
-
-// AddRoute add a new route to expose
-func (s *Server) AddRoute(r Route) {
-	s.routes = append(s.routes, r)
-}
-
-// AddRoutes save all the routes to expose
-func (s *Server) AddRoutes(r []Route) {
-	s.routes = append(s.routes, r...)
-}
-
-//
-// Routes method
-//
-
-// GET expose a route to the http verb GET
-func (s *Server) GET(path string, handler HandlerSign) {
-	s.AddRoute(Route{
-		Pattern: path,
-		Method:  "GET",
-		Handler: handler,
-	})
-}
-
-// DELETE expose a route to the http verb DELETE
-func (s *Server) DELETE(path string, handler HandlerSign) {
-	s.AddRoute(Route{
-		Pattern: path,
-		Method:  "DELETE",
-		Handler: handler,
-	})
-}
-
-// POST expose a route to the http verb POST
-func (s *Server) POST(path string, handler HandlerSign) {
-	s.AddRoute(Route{
-		Pattern: path,
-		Method:  "POST",
-		Handler: handler,
-	})
-}
-
-// PUT expose a route to the http verb PUT
-func (s *Server) PUT(path string, handler HandlerSign) {
-	s.AddRoute(Route{
-		Pattern: path,
-		Method:  "PUT",
-		Handler: handler,
-	})
-}
-
-// PATCH expose a route to the http verb PATCH
-func (s *Server) PATCH(path string, handler HandlerSign) {
-	s.AddRoute(Route{
-		Pattern: path,
-		Method:  "PATCH",
-		Handler: handler,
-	})
 }
 
 func (s *Server) hasBody(r *http.Request) bool {
@@ -190,7 +153,6 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 		// run handler
 		ctx.SetRequest(r)
 		ctx.SetWriter(&w)
-		ctx.SetRoutes(&s.routes)
 		ctx.SetVars(mux.Vars(r))
 		ctx.SetQuery(r.URL.Query())
 		ctx.IsPretty()
@@ -339,32 +301,4 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 func (s *Server) SetLogger(lg log.ILog) {
 	logger = lg
 	s.log = logger
-}
-
-// InitServer set the server struct & pre-launch the exit handler.
-// Init the worker internal launcher.
-// If withCtrl is set to true, the server will handle ctrl+C internall.y
-// Please add worker to the package's WorkerLauncher to sync them.
-func InitServer(withCtrl bool) Server {
-	var (
-		wg          sync.WaitGroup
-		ctx, cancel = context.WithCancel(context.Background())
-		s           = Server{
-			launcher: CreateWorkerLauncher(&wg, cancel),
-			ctx:      &ctx,
-			wg:       &wg,
-			context:  &Context{},
-			log:      logger,
-		}
-	)
-
-	// launch the ctrl+c job
-	if withCtrl {
-		s.launcher.Start("exit handler", func() error {
-			s.ExitHandler(ctx, os.Interrupt)
-			return nil
-		})
-	}
-
-	return s
 }

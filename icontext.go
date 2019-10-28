@@ -16,9 +16,6 @@ type IContext interface {
 	// TODO: use io.Writer ?
 	SetWriter(rw *http.ResponseWriter)
 
-	// SetRoutes is used to save the route array
-	SetRoutes(rt *Routes)
-
 	// FetchContent extract the content from the body
 	FetchContent(content interface{})
 
