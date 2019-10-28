@@ -25,9 +25,7 @@ The server handle ctrl+c on it's own.
 | [gorilla/hanlers][2] | for some useful already coded middlewares       |
 | [gorilla/schema][4]  | for some useful already coded middlewares       |
 | [validator][3]       | use by the custom implementation of the context |
-| [json-iterator]      | use by the custom implementation of the context |
-
-
+| [json-iterator][5]   | use by the custom implementation of the context |
 
 # Test
 
@@ -163,11 +161,11 @@ func main() {
 
 Reach the endpoint with `curl -X POST -d '{"name": "test", "age": 12}' -H "Content-Type: application/json" "http://localhost:4242/hello"`.
 
-Note that the `webfmwk` only accept `application/json` content.
+Note that the `webfmwk` only accept `application/json` content (for the moment ?).
 
 Don't hesitate to play with the payload to inspect the behavior of the Validate method.
 
-The struct annotation are done via the `validator`  and `schema` keywords. Please refer to the [`validator` documentation][3] and the [`gorilla/schema`][5] one.
+The struct annotation are done via the `validator`  and `schema` keywords. Please refer to the [`validator` documentation][3] and the [`gorilla/schema`][4] one.
 
 <details><summary>POST content</summary>
 <p>
@@ -233,7 +231,7 @@ func main() {
 
 ### Set a base url
 
-Reach the endpoint with `curl -X GET 'http://localhost:4242/api/test`.
+Reach the endpoint with `curl -X GET 'http://localhost:4242/api/v1/test` and `curl -X GET 'http://localhost:4242/api/v2/test`.
 
 <details><summary>base url</summary>
 <p>
@@ -242,26 +240,48 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/api/test`.
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v2"
+	"github.com/burgesQ/webfmwk/v2"
+)
+
+var (
+	routes = webfmwk.RoutesPerPrefix{
+		"/api/v1": {
+			{
+				Verbe: "GET",
+				Path:  "/test",
+				Name:  "test v1",
+				Handler: func(c webfmwk.IContext) {
+					c.JSONOk("v1 ok")
+				},
+			},
+		},
+		"/api/v2": {
+			{
+				Verbe: "GET",
+				Path:  "/test",
+				Name:  "test v2",
+				Handler: func(c webfmwk.IContext) {
+					c.JSONOk("v2 ok")
+				},
+			},
+		},
+	}
 )
 
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
 
-	s.SetPrefix("/api")
+	s := webfmwk.InitServer(true)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
-	})
+	s.RouteApplier(routes)
 
 	// start asynchronously on :4242
 	go func() {
 		s.Start(":4242")
 	}()
 
-	// ctrl+c is handled internally
+	// ctrl+c is handled internaly
 	defer s.WaitAndStop()
+
 }
 ```
 
@@ -561,3 +581,4 @@ func main() {
 [2]: https://github.com/gorilla/handlers
 [3]: gopkg.in/go-playground/validator.v9 
 [4]: https://github.com/gorilla/schema
+[5]: https://github.com/json-iterator/go
