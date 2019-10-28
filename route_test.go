@@ -10,31 +10,186 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	_testPrefix = "/api"
+	_testURL    = "/test"
+	_testURI    = _testPrefix + _testURL
+	_testURI2   = _testPrefix + _testURL + "/2"
+	_testVerbe  = GET
+)
+
+var _emptyController = func(c IContext) {}
+
+// TODO: func TestAddRoute(t *testing.T)  {}
+// TODO: func TestAddRoutes(t *testing.T) {}
+
+func TestSetPrefix(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.SetPrefix(_testPrefix)
+	s.GET(_testURL, _emptyController)
+
+	r := s.SetRouter()
+
+	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathTemplate, _ := route.GetPathTemplate()
+
+		if !(pathTemplate == _testURI || pathTemplate == _testPrefix) {
+			t.Errorf("route wrongly created : [%s]", pathTemplate)
+		}
+
+		return nil
+	})
+}
+
+func TestAddRoute(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.AddRoute(Route{
+		Path:    _testURI,
+		Verbe:   _testVerbe,
+		Handler: _emptyController,
+	})
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURI)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, _testVerbe)
+}
+
+func TestAddRoutes(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.AddRoutes(Routes{
+		{
+			Path:    _testURI,
+			Verbe:   _testVerbe,
+			Handler: _emptyController,
+		},
+		{
+			Path:    _testURI2,
+			Verbe:   _testVerbe,
+			Handler: _emptyController,
+		},
+	})
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURI)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, _testVerbe)
+	z.AssertStringEqual(t, s.routes[s.prefix][1].Path, _testURI2)
+	z.AssertStringEqual(t, s.routes[s.prefix][1].Verbe, _testVerbe)
+}
+
+func TestGET(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.GET(_testURL, _emptyController)
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, GET)
+}
+
+func TestDELETE(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.DELETE(_testURL, _emptyController)
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, DELETE)
+}
+
+func TestPOST(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.POST(_testURL, _emptyController)
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, POST)
+}
+
+func TestPUT(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.PUT(_testURL, _emptyController)
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, PUT)
+}
+
+func TestPATCH(t *testing.T) {
+	s := InitServer(false)
+
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
+
+	s.PATCH(_testURL, _emptyController)
+
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
+	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, PATCH)
+}
+
 func TestSetRouter(t *testing.T) {
 	s := InitServer(false)
 	defer s.WaitAndStop()
 	defer s.Shutdown(*s.GetContext())
 
-	s.SetPrefix("/api")
-	s.GET("/test", func(c IContext) { c.JSONNoContent() })
+	s.SetPrefix(_testPrefix)
+	s.GET(_testURL, func(c IContext) { c.JSONNoContent() })
 
 	r := s.SetRouter()
 
-	if err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		var (
-			pathTemplate, _ = route.GetPathTemplate()
-			methods, _      = route.GetMethods()
-			method          = strings.Join(methods, ",")
+			path, _   = route.GetPathTemplate()
+			verbes, _ = route.GetMethods()
+			verbe     = strings.Join(verbes, ",")
 		)
 
-		if method != GET || pathTemplate != "/api/test" {
-			t.Errorf("Router Routing wrongly created : [%s](%s)", methods, pathTemplate)
+		if !(path == _testURI || path == _testPrefix) {
+			t.Errorf("route wrongly created : [%s]", path)
+		}
+		if verbe != "" {
+			z.AssertStringEqual(t, verbe, GET)
 		}
 		return nil
-	}); err != nil {
-		t.Errorf("Router wrongly created : %s", err.Error())
-	}
+	})
 }
+
+// TODO: func TestRouteApplier(t *testing.T) {}
 
 func TestHandleParam(t *testing.T) {
 	s := InitServer(false)

@@ -16,11 +16,11 @@ type logger struct {
 }
 
 var (
-	lg = logger{
+	_lg = logger{
 		level: LogERR,
 	}
 
-	out = map[int]string{
+	_out = map[int]string{
 		LogERR:   "! ERR  : ",
 		LogWARN:  "* WARN : ",
 		LogINFO:  "+ INFO : ",
@@ -30,23 +30,26 @@ var (
 
 func SetLogLevel(level int) (ok bool) {
 	if level >= LogERR && level <= LogDEBUG {
-		lg.level = level
+		_lg.level = level
 		ok = true
 	}
-
 	return
 }
 
 func (l *logger) logContent(level int, format string, v ...interface{}) {
 	if level <= l.level {
 		fmt.Printf("%s"+format+"\n", append([]interface{}{
-			out[level],
+			_out[level],
 		}, v...)...)
 	}
 }
 
 func GetLogger() ILog {
-	return lg
+	return _lg
+}
+
+func (l logger) SetLogLevel(level int) bool {
+	return SetLogLevel(level)
 }
 
 func (l logger) Debugf(format string, v ...interface{}) {
@@ -71,21 +74,21 @@ func (l logger) Fatalf(format string, v ...interface{}) {
 }
 
 func Debugf(format string, v ...interface{}) {
-	lg.logContent(LogDEBUG, format, v...)
+	_lg.logContent(LogDEBUG, format, v...)
 }
 
 func Infof(format string, v ...interface{}) {
-	lg.logContent(LogINFO, format, v...)
+	_lg.logContent(LogINFO, format, v...)
 }
 
 func Warnf(format string, v ...interface{}) {
-	lg.logContent(LogWARN, format, v...)
+	_lg.logContent(LogWARN, format, v...)
 }
 
 func Errorf(format string, v ...interface{}) {
-	lg.logContent(LogERR, format, v...)
+	_lg.logContent(LogERR, format, v...)
 }
 
 func Fatalf(format string, v ...interface{}) {
-	lg.logContent(LogERR, format, v...)
+	_lg.logContent(LogERR, format, v...)
 }
