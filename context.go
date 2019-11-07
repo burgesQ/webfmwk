@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/burgesQ/webfmwk/v2/log"
-	"github.com/burgesQ/webfmwk/v2/util"
+	"github.com/burgesQ/webfmwk/v2/pretty"
 	"github.com/gorilla/schema"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -180,7 +180,7 @@ func (c *Context) JSONBlob(statusCode int, content []byte) {
 		c.setHeader("Produce", "application/json; charset=UTF-8")
 	}
 
-	pcontent, err := util.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
+	pcontent, err := pretty.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
 	if err != nil {
 		c.log.Errorf("while prettier the content : %s", err.Error())
 	}
