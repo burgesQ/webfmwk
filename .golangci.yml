@@ -7,6 +7,13 @@ run:
     - doc
     - testing
 
+# all available settings of specific linters
+linters-settings:
+  errcheck:
+    # path to a file containing a list of functions to exclude from checking
+    # see https://github.com/kisielk/errcheck#excluding-functions for details
+    exclude: .errcheck.txt
+
 linters:
   disable-all: true
   enable:
@@ -42,7 +49,7 @@ linters:
     - unused
     - varcheck
     - whitespace
-    - gochecknoglobals
+#    - gochecknoglobals
     - gocognit
     - godox
     - maligned
