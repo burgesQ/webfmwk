@@ -3,16 +3,18 @@
 #+DESCRIPTION: Quick summary of web framework todo's
 
 * WIP v2 [3/4] [75%]
-** TODO stuffs [3/7] [42%]
-  - [ ] group route per prefix (v1 - v2 ...)
+** WIP stuffs [6/11] [54%]
+  - [X] group route per prefix (v1 - v2 ...)
+  - [ ] clean that CI
   - [-] cleaner doc
     - [X] up to date example
     - [ ] in code comment and example when needed
-    - [ ] full readme [0/3] [0%]
+    - [-] full readme [1/4] [25%]
       - [ ] miss http error handling
-      - [ ] schema / validate
+      - [X] schema / validate
       - [ ] workerConfig
       - [ ] pjson
+  - [ ] `pjson` -> `pretty`
   - [ ] no linter error
   - [X] ILog
   - [ ] Code Coverage [0/6] [0%]
@@ -24,8 +26,8 @@
     - [ ] error handler
   - [X] CI
   - [X] timeout should be parametrable
-  - [ ] schema annotation / validate annotation
-  - [ ] server should return custom error so worker launcher can ignore it
+  - [X] schema annotation / validate annotation
+  - [X] server should return custom error so worker launcher can ignore it
 
 ** DONE Panic / Recover [2/3] [66%]
    CLOSED: [2019-10-08 Tue 18:44]
