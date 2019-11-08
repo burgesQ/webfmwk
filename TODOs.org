@@ -3,9 +3,9 @@
 #+DESCRIPTION: Quick summary of web framework todo's
 
 * WIP v2 [3/4] [75%]
-** WIP stuffs [6/11] [54%]
+** WIP stuffs [7/11] [63%]
   - [X] group route per prefix (v1 - v2 ...)
-  - [ ] clean that CI
+  - [X] clean that CI
   - [-] cleaner doc
     - [X] up to date example
     - [ ] in code comment and example when needed

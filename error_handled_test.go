@@ -8,52 +8,60 @@ import (
 )
 
 var (
-	testOP              = 200
-	testContent         = "ok"
-	testingErrorHandled = ErrorHandled{
-		op:      testOP,
-		content: testContent,
+	_testOP              = 200
+	_testContent         = "ok"
+	_testingErrorHandled = ErrorHandled{
+		op:      _testOP,
+		content: _testContent,
 	}
 )
 
 func TestGetOPCode(t *testing.T) {
-	z.AssertEqual(t, testOP, testingErrorHandled.GetOPCode())
+	z.AssertEqual(t, _testOP, _testingErrorHandled.GetOPCode())
 }
 
 func TestGetContent(t *testing.T) {
-	z.AssertEqual(t, testContent, testingErrorHandled.GetContent())
+	z.AssertEqual(t, _testContent, _testingErrorHandled.GetContent())
 }
 
 func TestFactory(t *testing.T) {
-	tested := factory(testOP, testContent)
-	z.AssertEqual(t, testOP, tested.GetOPCode())
-	z.AssertEqual(t, testContent, tested.GetContent())
+	test := factory(_testOP, _testContent)
+	z.AssertEqual(t, _testOP, test.GetOPCode())
+	z.AssertEqual(t, _testContent, test.GetContent())
 }
 
-func TestNewNoContent(t *testing.T) {
-	z.AssertEqual(t, http.StatusNoContent, NewNoContent().GetOPCode())
-}
+func TestMethod(t *testing.T) {
+	var tests = map[string]struct {
+		actual, expected int
+	}{
+		"no contet": {
+			NewNoContent().GetOPCode(), http.StatusNoContent,
+		},
+		"bad request": {
+			NewBadRequest(_testContent).GetOPCode(), http.StatusBadRequest,
+		},
+		"not found": {
+			NewNotFound(_testContent).GetOPCode(), http.StatusNotFound,
+		},
 
-func TestNewBadRequest(t *testing.T) {
-	z.AssertEqual(t, http.StatusBadRequest, NewBadRequest(testContent).GetOPCode())
-}
+		"not acceptable": {
+			NewNotAcceptable(_testContent).GetOPCode(), http.StatusNotAcceptable,
+		},
+		"unprocessable": {
+			NewUnprocessable(_testContent).GetOPCode(), http.StatusUnprocessableEntity,
+		},
 
-func TestNewNotFound(t *testing.T) {
-	z.AssertEqual(t, http.StatusNotFound, NewNotFound(testContent).GetOPCode())
-}
+		"internal": {
+			NewInternal(_testContent).GetOPCode(), http.StatusInternalServerError,
+		},
+		"new implemented": {
+			NewNotImplemented(_testContent).GetOPCode(), http.StatusNotImplemented,
+		},
+	}
 
-func TestNewNotAcceptable(t *testing.T) {
-	z.AssertEqual(t, http.StatusNotAcceptable, NewNotAcceptable(testContent).GetOPCode())
-}
-
-func TestNewUnprocessable(t *testing.T) {
-	z.AssertEqual(t, http.StatusUnprocessableEntity, NewUnprocessable(testContent).GetOPCode())
-}
-
-func TestNewInternal(t *testing.T) {
-	z.AssertEqual(t, http.StatusInternalServerError, NewInternal(testContent).GetOPCode())
-}
-
-func TestNewNotImplemented(t *testing.T) {
-	z.AssertEqual(t, http.StatusNotImplemented, NewNotImplemented(testContent).GetOPCode())
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			z.AssertEqual(t, test.actual, test.expected)
+		})
+	}
 }
