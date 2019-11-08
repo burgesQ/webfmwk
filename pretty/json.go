@@ -152,20 +152,20 @@ func (pj *JSON) newObject(prefix string) {
 	pj.output.WriteByte(_bodyClose)
 }
 
-func (p *JSON) parseElmt(prefix string) bool {
-	var t = p.iter.WhatIsNext()
+func (pj *JSON) parseElmt(prefix string) bool {
+	var t = pj.iter.WhatIsNext()
 
 	switch t {
 	case jsoniter.ArrayValue:
-		p.newArray(prefix)
+		pj.newArray(prefix)
 
 	case jsoniter.ObjectValue:
-		p.newObject(prefix)
+		pj.newObject(prefix)
 
 	case jsoniter.InvalidValue:
 		return false
 	default:
-		p.printSimpleValue()
+		pj.printSimpleValue()
 	}
 
 	return true

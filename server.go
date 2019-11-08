@@ -51,7 +51,6 @@ type (
 		// [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
 		WriteTimeout   time.Duration
 		MaxHeaderBytes int
-		// TODO: expand it
 	}
 )
 

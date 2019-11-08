@@ -1,6 +1,6 @@
 [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/burgesQ/webfmwk)
-[![Build Status](http://img.shields.io/travis/burgesQ/webfmwk.svg?style=flat-square)](https://travis-ci.org/burgesQ/webfmwk)
-[![Codecov](https://img.shields.io/codecov/c/github/burgesQ/webfmwk.svg?style=flat-square)](https://codecov.io/gh/burgesQ/webfmwk) 
+[![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoBuild/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoBuild)
+[![Codecov](https://img.shields.io/codecov/c/github/burgesQ/webfmwk.svg?style=flat-square)](https://codecov.io/gh/burgesQ/webfmwk)
 [![GolangCI](https://golangci.com/badges/github.com/burgesQ/webfmwk.svg)](https://golangci.com/r/github.com/burgesQ/webfmwk)
 [![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk?style=flat-square)](https://goreportcard.com/report/github.com/burgesQ/webfmwk)
 [![CodeFactor](https://www.codefactor.io/repository/github/burgesq/webfmwk/badge)](https://www.codefactor.io/repository/github/burgesq/webfmwk)
@@ -10,9 +10,9 @@
 
 # What
 
-`webfmwk` is an internal framework build and own by Frafos GmbH. 
+`webfmwk` is an internal framework build and own by Frafos GmbH.
 
-It was designed to be a minimalist go web framework supporting JSON API. 
+It was designed to be a minimalist go web framework supporting JSON API.
 
 The purpose of the framework is to use as few external library than possible.
 
@@ -49,26 +49,26 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/hello'`.
 package main
 
 import (
-	"net/http"
+    "net/http"
 
-	w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {
-	// create server
-	s := w.InitServer(true)
+    // create server
+    s := w.InitServer(true)
 
-	s.GET("/hello", func(c w.IContext) {
-		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
-	})
+    s.GET("/hello", func(c w.IContext) {
+        c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -87,34 +87,34 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/hello?&pjson&turlu=t
 package main
 
 import (
-	"net/http"
+    "net/http"
 
-	w "github.com/burgesQ/webfmwk/v2"
-	"github.com/burgesQ/webfmwk/v2/log"
+    w "github.com/burgesQ/webfmwk/v2"
+    "github.com/burgesQ/webfmwk/v2/log"
 )
 
 func main() {
-	// create server
-	s := w.InitServer(true)
+    // create server
+    s := w.InitServer(true)
 
-	s.GET("/hello", func(c w.IContext) {
-		var (
-			queries   = c.GetQueries()
-			pjson, ok = c.GetQuery("pjson")
-		)
-		if ok {
-			log.Errorf("%#v", pjson)
-		}
-		c.JSON(http.StatusOK, queries)
-	})
+    s.GET("/hello", func(c w.IContext) {
+        var (
+            queries   = c.GetQueries()
+            pjson, ok = c.GetQuery("pjson")
+        )
+        if ok {
+            log.Errorf("%#v", pjson)
+        }
+        c.JSON(http.StatusOK, queries)
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -132,26 +132,26 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/hello/you'`.
 package main
 
 import (
-	"net/http"
+    "net/http"
 
-	w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {
-	// create server
-	s := w.InitServer(true)
+    // create server
+    s := w.InitServer(true)
 
-	s.GET("/hello/{id}", func(c w.IContext) {
-		c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))
-	})
+    s.GET("/hello/{id}", func(c w.IContext) {
+        c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -175,55 +175,55 @@ The struct annotation are done via the `validator`  and `schema` keywords. Pleas
 package main
 
 import (
-	"net/http"
+    "net/http"
 
-	w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v2"
 )
 
 type (
-	// Content hold the body of the request
-	Content struct {
-		Name string `schema:"name" json:"name" validate:"omitempty"`
-		Age  int    `schema:"age" json:"age" validate:"gte=1"`
-	}
+    // Content hold the body of the request
+    Content struct {
+        Name string `schema:"name" json:"name" validate:"omitempty"`
+        Age  int    `schema:"age" json:"age" validate:"gte=1"`
+    }
 
-	// QueryParam hold the query params
-	QueryParam struct {
-		PJSON bool `schema:"pjson" json:"pjson"`
-		Val   int  `schema:"val" json:"val" validate:"gte=1"`
-	}
+    // QueryParam hold the query params
+    QueryParam struct {
+        PJSON bool `schema:"pjson" json:"pjson"`
+        Val   int  `schema:"val" json:"val" validate:"gte=1"`
+    }
 
-	// Payload hold the output of the endpoint
-	Payload struct {
-		Content Content    `json:"content"`
-		QP      QueryParam `json:"query_param"`
-	}
+    // Payload hold the output of the endpoint
+    Payload struct {
+        Content Content    `json:"content"`
+        QP      QueryParam `json:"query_param"`
+    }
 )
 
 func main() {
-	// create server
-	s := w.InitServer(true)
+    // create server
+    s := w.InitServer(true)
 
-	s.POST("/hello", func(c w.IContext) {
+    s.POST("/hello", func(c w.IContext) {
 
-		out := Payload{}
+        out := Payload{}
 
-		c.FetchContent(&out.content)
-		c.Validate(out.content)
+        c.FetchContent(&out.content)
+        c.Validate(out.content)
 
-		c.DecodeQP(&out.qp)
-		c.Validate(out.qp)
+        c.DecodeQP(&out.qp)
+        c.Validate(out.qp)
 
-		c.JSON(http.StatusOK, out)
-	})
+        c.JSON(http.StatusOK, out)
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4244")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4244")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -241,47 +241,47 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/api/v1/test` and `cu
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v2"
+    "github.com/burgesQ/webfmwk/v2"
 )
 
 var (
-	routes = webfmwk.RoutesPerPrefix{
-		"/api/v1": {
-			{
-				Verbe: "GET",
-				Path:  "/test",
-				Name:  "test v1",
-				Handler: func(c webfmwk.IContext) {
-					c.JSONOk("v1 ok")
-				},
-			},
-		},
-		"/api/v2": {
-			{
-				Verbe: "GET",
-				Path:  "/test",
-				Name:  "test v2",
-				Handler: func(c webfmwk.IContext) {
-					c.JSONOk("v2 ok")
-				},
-			},
-		},
-	}
+    routes = webfmwk.RoutesPerPrefix{
+        "/api/v1": {
+            {
+                Verbe: "GET",
+                Path:  "/test",
+                Name:  "test v1",
+                Handler: func(c webfmwk.IContext) {
+                    c.JSONOk("v1 ok")
+                },
+            },
+        },
+        "/api/v2": {
+            {
+                Verbe: "GET",
+                Path:  "/test",
+                Name:  "test v2",
+                Handler: func(c webfmwk.IContext) {
+                    c.JSONOk("v2 ok")
+                },
+            },
+        },
+    }
 )
 
 func main() {
 
-	s := webfmwk.InitServer(true)
+    s := webfmwk.InitServer(true)
 
-	s.RouteApplier(routes)
+    s.RouteApplier(routes)
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+    // ctrl+c is handled internaly
+    defer s.WaitAndStop()
 
 }
 ```
@@ -301,28 +301,28 @@ Use the method `Server.StartTLS(addr, certPath, keyPath string)`.
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v2"
 )
 
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
+    // init server w/ ctrl+c support
+    s := w.InitServer(true)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
-	})
+    s.GET("/test", func(c w.IContext) error {
+        return c.JSONOk("ok")
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.StartTLS(":4242", TLSConfig{
-			Cert:     "/path/to/cert",
-			Key:      "/path/to/key",
-			Insecure: true,
-		})
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.StartTLS(":4242", TLSConfig{
+            Cert:     "/path/to/cert",
+            Key:      "/path/to/key",
+            Insecure: true,
+        })
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -340,34 +340,34 @@ The logger must implement the `webfmwk/log.ILog` interface.
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v2"
-	"github.com/burgesQ/webfmwk/v2/log"
+    w "github.com/burgesQ/webfmwk/v2"
+    "github.com/burgesQ/webfmwk/v2/log"
 )
 
 // GetLogger return a log.ILog interface
 var logger = log.GetLogger()
 
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
+    // init server w/ ctrl+c support
+    s := w.InitServer(true)
 
-	s.SetLogger(logger)
+    s.SetLogger(logger)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
-	})
+    s.GET("/test", func(c w.IContext) error {
+        return c.JSONOk("ok")
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.StartTLS(":4242", TLSConfig{
-			Cert:     "/path/to/cert",
-			Key:      "/path/to/key",
-			Insecure: true,
-		})
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.StartTLS(":4242", TLSConfig{
+            Cert:     "/path/to/cert",
+            Key:      "/path/to/key",
+            Insecure: true,
+        })
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -376,7 +376,7 @@ func main() {
 
 ### Register a extended context
 
-Create a struct that extend `webfmwk.Context`. 
+Create a struct that extend `webfmwk.Context`.
 
 Then, add a middleware to extend the context using the `Server.SetCustomContext(func(c *Context) IContext)`
 
@@ -387,35 +387,35 @@ Then, add a middleware to extend the context using the `Server.SetCustomContext(
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v2"
 )
 
 type customContext struct {
-	w.Context
-	customVal string
+    w.Context
+    customVal string
 }
 
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
+    // init server w/ ctrl+c support
+    s := w.InitServer(true)
 
-	s.SetCustomContext(func(c *w.Context) w.IContext {
-		ctx := &customContext{*c, "42"}
-		return ctx
-	})
+    s.SetCustomContext(func(c *w.Context) w.IContext {
+        ctx := &customContext{*c, "42"}
+        return ctx
+    })
 
-	s.GET("/test", func(c w.IContext) {
-		ctx := c.(*customContext)
-		c.JSONOk(ctx.customVal)
-	})
+    s.GET("/test", func(c w.IContext) {
+        ctx := c.(*customContext)
+        c.JSONOk(ctx.customVal)
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4244")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4244")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -433,29 +433,29 @@ Import `github.com/burgesQ/webfmwk/v2/middleware`
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v2"
-	m "github.com/burgesQ/webfmwk/v2/middleware"
+    w "github.com/burgesQ/webfmwk/v2"
+    m "github.com/burgesQ/webfmwk/v2/middleware"
 )
 
 func main() {
 
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
+    // init server w/ ctrl+c support
+    s := w.InitServer(true)
 
-	s.AddMiddleware(m.Logging)
-	s.AddMiddleware(m.Security)
+    s.AddMiddleware(m.Logging)
+    s.AddMiddleware(m.Security)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
-	})
+    s.GET("/test", func(c w.IContext) error {
+        return c.JSONOk("ok")
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -466,7 +466,7 @@ func main() {
 
 Import `github.com/swaggo/http-swagger`.
 
-Then, from a browser reach `:4242/api/doc/index.html`. 
+Then, from a browser reach `:4242/api/doc/index.html`.
 
 Or, run `curl -X GET 'http://localhost:4242/api/doc/swagger.json'`.
 
@@ -477,12 +477,12 @@ Or, run `curl -X GET 'http://localhost:4242/api/doc/swagger.json'`.
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v2"
-	httpSwagger "github.com/swaggo/http-swagger"
+    w "github.com/burgesQ/webfmwk/v2"
+    httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Answer struct {
-	Message string `json:"message"`
+    Message string `json:"message"`
 }
 
 // @Summary hello world
@@ -492,7 +492,7 @@ type Answer struct {
 // @Produce application/json
 // @Router /hello [get]
 func hello(c w.IContext) error {
-	return c.JSONOk(Answer{"ok"})
+    return c.JSONOk(Answer{"ok"})
 }
 
 // @title hello world API
@@ -505,30 +505,30 @@ func hello(c w.IContext) error {
 // @license.name GFO
 // @host localhost:4242
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
+    // init server w/ ctrl+c support
+    s := w.InitServer(true)
 
     s.SetPrefix("/api")
 
     s.RegisterDocHandler(httpSwagger.WrapHandler)
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
-	})
+    s.GET("/test", func(c w.IContext) error {
+        return c.JSONOk("ok")
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 </p>
 </details>
 
-### Add worker 
+### Add worker
 
 Use the `Server.GetWorkerLauncher()` method.
 
@@ -541,37 +541,37 @@ Run the test main and wait 10 sec.
 package main
 
 import (
-	"time"
+    "time"
 
-	w "github.com/burgesQ/webfmwk/v2"
-	"github.com/burgesQ/webfmwk/v2/log"
+    w "github.com/burgesQ/webfmwk/v2"
+    "github.com/burgesQ/webfmwk/v2/log"
 )
 
 func main() {
 
-	log.SetLogLevel(log.LogDEBUG)
+    log.SetLogLevel(log.LogDEBUG)
 
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
-	wl := s.GetLauncher()
+    // init server w/ ctrl+c support
+    s := w.InitServer(true)
+    wl := s.GetLauncher()
 
-	s.GET("/test", func(c w.IContext) {
-		c.JSONOk("ok")
-	})
+    s.GET("/test", func(c w.IContext) {
+        c.JSONOk("ok")
+    })
 
-	wl.Start("custom worker", func() error {
-		time.Sleep(10 * time.Second)
-		log.Debugf("done")
-		return nil
-	})
+    wl.Start("custom worker", func() error {
+        time.Sleep(10 * time.Second)
+        log.Debugf("done")
+        return nil
+    })
 
-	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+    // start asynchronously on :4242
+    go func() {
+        s.Start(":4242")
+    }()
 
-	// ctrl+c is handled internally
-	defer s.WaitAndStop()
+    // ctrl+c is handled internally
+    defer s.WaitAndStop()
 }
 ```
 
@@ -580,6 +580,6 @@ func main() {
 
 [1]: https://github.com/gorilla/mux
 [2]: https://github.com/gorilla/handlers
-[3]: gopkg.in/go-playground/validator.v9 
+[3]: gopkg.in/go-playground/validator.v9
 [4]: https://github.com/gorilla/schema
 [5]: https://github.com/json-iterator/go
