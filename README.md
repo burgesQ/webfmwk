@@ -1,5 +1,5 @@
 [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/burgesQ/webfmwk)
-[![Build Status](HTTP://github.com/burgesQ/webfeet/workflows/GoBuild/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoBuild)
+[![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoBuild/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoBuild)
 [![Codecov](https://img.shields.io/codecov/c/GitHub/burgesQ/webfmwk.svg?style=flat-square)](https://codecov.io/gh/burgesQ/webfmwk)
 [![GolangCI](https://golangci.com/badges/github.com/burgesQ/webfmwk.svg)](https://golangci.com/r/github.com/burgesQ/webfmwk)
 [![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk?style=flat-square)](https://goreportcard.com/report/github.com/burgesQ/webfmwk)
