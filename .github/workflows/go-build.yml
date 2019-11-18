@@ -28,5 +28,5 @@ jobs:
 
     - name: Test
       run: |
-        go test `go list ./... | grep -v example` -cover -v -short -coverprofile=coverage.out -covermode=atomic
+        go test ./... -cover -v -short -coverprofile=coverage.out -covermode=atomic
         bash <(curl -s https://codecov.io/bash) -t 5abafd5f-9541-4c1b-962c-2fc05c89e2f0

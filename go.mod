@@ -6,7 +6,7 @@ require (
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/schema v1.1.0
-	github.com/json-iterator/go v1.1.7
+	github.com/json-iterator/go v1.1.5
 	github.com/leodido/go-urn v1.1.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.29.1

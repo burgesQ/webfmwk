@@ -1,0 +1,7 @@
+(io.Writer).Write
+(io.Writer).WriteByte
+(io.Writer).WriteString
+(pretty/json/output).Write
+(bufio/Writer).Write
+(bufio/Writer).WriteByte
+(bufio/Writer).WriteString
