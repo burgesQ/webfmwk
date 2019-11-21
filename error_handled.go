@@ -94,3 +94,8 @@ func NewInternal(content interface{}) ErrorHandled {
 func NewNotImplemented(content interface{}) ErrorHandled {
 	return factory(http.StatusNotImplemented, content)
 }
+
+// NewConflict produce an ErrorHandled with the status code 501
+func NewConflict(content interface{}) ErrorHandled {
+	return factory(http.StatusConflict, content)
+}
