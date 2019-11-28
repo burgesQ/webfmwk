@@ -15,6 +15,10 @@ func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log := webfmwk.GetLogger()
 		log.Infof("[+] (%s): [%s]%s", r.RemoteAddr, r.Method, r.RequestURI)
+
+		if r.Method == "POST" || r.Method == "PATCH" || r.Method == "PUT" {
+			log.Infof("[!] >>%s<<", r.Body)
+		}
 		next.ServeHTTP(w, r)
 	})
 }
