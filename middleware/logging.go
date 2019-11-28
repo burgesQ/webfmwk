@@ -5,7 +5,6 @@
 package middleware
 
 import (
-	"io/ioutil"
 	"net/http"
 
 	webfmwk "github.com/burgesQ/webfmwk/v2"
@@ -18,9 +17,7 @@ func Logging(next http.Handler) http.Handler {
 		log.Infof("[+] (%s): [%s]%s", r.RemoteAddr, r.Method, r.RequestURI)
 
 		if r.Method == "POST" || r.Method == "PATCH" || r.Method == "PUT" {
-			defer r.Body.Close()
-			body, _ := ioutil.ReadAll(r.Body)
-			log.Infof("[!] >>%s<<", body)
+			log.Infof("[!] >>%s<<", r.Body)
 		}
 		next.ServeHTTP(w, r)
 	})
