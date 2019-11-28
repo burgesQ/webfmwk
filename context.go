@@ -130,7 +130,7 @@ func (c Context) OwnRecover() {
 		case IErrorHandled:
 			c.JSON(err.GetOPCode(), err.GetContent())
 		default:
-			c.log.Errorf("catched %T %#v", err, err)
+			log.Errorf("catched %T %#v", err, err)
 			panic(err)
 		}
 	}

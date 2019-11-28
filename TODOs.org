@@ -3,7 +3,7 @@
 #+DESCRIPTION: Quick summary of web framework todo's
 
 * WIP v2 [3/4] [75%]
-** WIP stuffs [7/13] [53%]
+** WIP stuffs [7/11] [63%]
   - [X] group route per prefix (v1 - v2 ...)
   - [X] clean that CI
   - [-] cleaner doc
@@ -15,8 +15,6 @@
       - [ ] workerConfig
       - [ ] pjson
   - [ ] `pjson` -> `pretty`
-  - [ ] better handling over the validator
-  - [ ] validator v10
   - [ ] no linter error
   - [X] ILog
   - [ ] Code Coverage [0/6] [0%]
