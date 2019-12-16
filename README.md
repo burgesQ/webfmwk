@@ -18,6 +18,8 @@ The purpose of the framework is to use as few external library than possible.
 
 The server handle ctrl+c on it's own.
 
+**TODO: explain that perf is not the purpose. that's why panic are used - more user friendly.**
+
 ## dep
 
 | what                 | for                                             |

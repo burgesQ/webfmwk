@@ -18,6 +18,8 @@ type (
 	// HandlerSign hold the signature of the controller
 	HandlerSign func(c IContext)
 
+	// Handler Sign func(c IContext) error
+
 	// Route hold the data for one route
 	Route struct {
 		Verbe   string      `json:"verbe"`

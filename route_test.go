@@ -92,74 +92,58 @@ func TestAddRoutes(t *testing.T) {
 	z.AssertStringEqual(t, s.routes[s.prefix][1].Verbe, _testVerbe)
 }
 
-func TestGET(t *testing.T) {
-	s := InitServer(false)
+func TestRouteMethod(t *testing.T) {
+	const (
+		_get = iota
+		_delete
+		_post
+		_put
+		_patch
+	)
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	tests := map[string]struct {
+		reqType int
+	}{
+		"get":    {reqType: _get},
+		"delete": {reqType: _delete},
+		"post":   {reqType: _post},
+		"put":    {reqType: _put},
+		"patch":  {reqType: _patch},
+	}
 
-	s.GET(_testURL, _emptyController)
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			var s = InitServer(false)
 
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, GET)
-}
+			defer func(s Server) {
+				s.Shutdown(*s.GetContext())
+				s.WaitAndStop()
+			}(s)
 
-func TestDELETE(t *testing.T) {
-	s := InitServer(false)
+			testVerb := ""
+			switch test.reqType {
+			case _get:
+				s.GET(_testURL, _emptyController)
+				testVerb = GET
+			case _delete:
+				s.DELETE(_testURL, _emptyController)
+				testVerb = DELETE
+			case _post:
+				s.POST(_testURL, _emptyController)
+				testVerb = POST
+			case _put:
+				s.PUT(_testURL, _emptyController)
+				testVerb = PUT
+			case _patch:
+				s.PATCH(_testURL, _emptyController)
+				testVerb = PATCH
+			}
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+			z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
+			z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, testVerb)
+		})
+	}
 
-	s.DELETE(_testURL, _emptyController)
-
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, DELETE)
-}
-
-func TestPOST(t *testing.T) {
-	s := InitServer(false)
-
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
-
-	s.POST(_testURL, _emptyController)
-
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, POST)
-}
-
-func TestPUT(t *testing.T) {
-	s := InitServer(false)
-
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
-
-	s.PUT(_testURL, _emptyController)
-
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, PUT)
-}
-
-func TestPATCH(t *testing.T) {
-	s := InitServer(false)
-
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
-
-	s.PATCH(_testURL, _emptyController)
-
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, PATCH)
 }
 
 func TestSetRouter(t *testing.T) {

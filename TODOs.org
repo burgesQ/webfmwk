@@ -28,6 +28,7 @@
   - [X] timeout should be parametrable
   - [X] schema annotation / validate annotation
   - [X] server should return custom error so worker launcher can ignore it
+  - [ ] preload content ?
 
 ** DONE Panic / Recover [2/3] [66%]
    CLOSED: [2019-10-08 Tue 18:44]
