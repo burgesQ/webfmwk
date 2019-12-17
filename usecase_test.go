@@ -87,9 +87,9 @@ func TestUseCase(t *testing.T) {
 			z.AssertBody(t, resp, `{"message":"hello you"}`)
 			z.AssertStatusCode(t, resp, http.StatusOK)
 		})
-	z.RequestAndTestAPI(t, "/api/testquery?pjson=1",
+	z.RequestAndTestAPI(t, "/api/testquery?pretty=1",
 		func(t *testing.T, resp *http.Response) {
-			z.AssertBodyDiffere(t, resp, `{"pjson":["1"]}`)
+			z.AssertBodyDiffere(t, resp, `{"pretty":["1"]}`)
 			z.AssertStatusCode(t, resp, http.StatusOK)
 		})
 	z.RequestAndTestAPI(t, "/api/testContext",

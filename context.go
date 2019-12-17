@@ -107,7 +107,7 @@ func (c *Context) GetQuery(key string) (string, bool) {
 
 // IsPretty implement IContext
 func (c Context) IsPretty() bool {
-	return len(c.query["pjson"]) > 0
+	return len(c.query["pretty"]) > 0
 }
 
 func (c *Context) SetLogger(logger log.ILog) {

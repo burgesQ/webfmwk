@@ -155,7 +155,7 @@ func TestCheckHeader(t *testing.T) {
 }
 
 func TestJSONBlobPretty(t *testing.T) {
-	wrapperGet(t, "/test", "/test?pjson", func(c IContext) {
+	wrapperGet(t, "/test", "/test?pretty", func(c IContext) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBodyDiffere(t, resp, hBody)
