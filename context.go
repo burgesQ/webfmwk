@@ -10,7 +10,11 @@ import (
 	"github.com/burgesQ/webfmwk/v2/log"
 	"github.com/burgesQ/webfmwk/v2/pretty"
 	"github.com/gorilla/schema"
-	validator "gopkg.in/go-playground/validator.v9"
+
+	en_translator "github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	validator "github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
 // Context implement the IContext interface
@@ -28,14 +32,35 @@ type (
 	AnonymousError struct {
 		Error string `json:"error"`
 	}
+
+	ValidationError struct {
+		Error validator.ValidationErrorsTranslations `json:"error"`
+	}
 )
 
 var (
-	// formChecker annotation : `validate` : go-playground
-	formChecker = validator.New()
+	// validate annotation : `validate` : go-playground
+	validate = validator.New()
 	// decoder annotation : `schema` : gorilla
 	decoder = schema.NewDecoder()
+	// tranlator
+	en = en_translator.New()
+
+	// universal translator
+	uni *ut.UniversalTranslator
+	// this is usually know or extracted from http 'Accept-Language' header
+	// also see uni.FindTranslator(...)
+	trans ut.Translator
 )
+
+func init() {
+	// universal translator
+	uni = ut.New(en, en)
+	// this is usually know or extracted from http 'Accept-Language' header
+	// also see uni.FindTranslator(...)
+	trans, _ = uni.GetTranslator("en")
+	en_translations.RegisterDefaultTranslations(validate, trans)
+}
 
 // SetRequest implement IContext
 func (c *Context) SetRequest(r *http.Request) {
@@ -61,9 +86,10 @@ func (c *Context) FetchContent(dest interface{}) {
 // Validate implement IContext
 // this implemt use validator to anotate & check struct
 func (c Context) Validate(dest interface{}) {
-	if e := formChecker.Struct(dest); e != nil {
-		c.log.Errorf("error while validating the payload :\n%s", e.Error())
-		panic(NewUnprocessable(AnonymousError{e.Error()}))
+	if e := validate.Struct(dest); e != nil {
+		out := e.(validator.ValidationErrors).Translate(trans)
+		c.log.Errorf("error while validating the payload :\n%s", out)
+		panic(NewUnprocessable(ValidationError{out}))
 	}
 }
 
