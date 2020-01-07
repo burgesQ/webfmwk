@@ -230,6 +230,11 @@ func (c *Context) JSONOk(content interface{}) {
 	c.JSON(http.StatusOK, content)
 }
 
+// JSONOk implement IContext
+func (c *Context) JSONAccepted(content interface{}) {
+	c.JSON(http.StatusAccepted, content)
+}
+
 // JSONNoContent implement IContext
 func (c *Context) JSONNoContent() {
 	c.JSON(http.StatusNoContent, nil)

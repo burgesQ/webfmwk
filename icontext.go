@@ -61,6 +61,15 @@ type IContext interface {
 	// JSON answer the JSON content with the status code op
 	JSON(op int, content interface{})
 
+	// 200
+	JSONOk(interface{})
+
+	// 201
+	JSONCreated(interface{})
+
+	// 202
+	JSONAccepted(interface{})
+
 	//
 	JSONNotImplemented(interface{})
 
@@ -70,14 +79,8 @@ type IContext interface {
 	//
 	JSONBadRequest(interface{})
 
-	// 201
-	JSONCreated(interface{})
-
 	//
 	JSONUnprocessable(interface{})
-
-	// 200
-	JSONOk(interface{})
 
 	// 404
 	JSONNotFound(interface{})
