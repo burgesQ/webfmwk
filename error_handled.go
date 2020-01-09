@@ -8,16 +8,35 @@ import (
 type (
 	// IErrorHandled interface implement the panic recovering
 	IErrorHandled interface {
+		// error
+		Error() string
+		Unwrap() error
 		GetOPCode() int
 		GetContent() interface{}
+		SetWrapped(err error) IErrorHandled
 	}
 
 	// ErrorHandled implement the IErrorHandled interface
 	ErrorHandled struct {
 		op      int
 		content interface{}
+		err     error
 	}
 )
+
+// Error implement the error interface
+func (e ErrorHandled) Error() string {
+	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
+}
+
+func (e ErrorHandled) Unwrap() error {
+	return e.err
+}
+
+func (e ErrorHandled) SetWrapped(err error) IErrorHandled {
+	e.err = err
+	return e
+}
 
 // GetOPCode implement the IErrorHandled interface
 func (e ErrorHandled) GetOPCode() int {
@@ -27,17 +46,6 @@ func (e ErrorHandled) GetOPCode() int {
 // GetContent implement the IErrorHandled interface
 func (e ErrorHandled) GetContent() interface{} {
 	return e.content
-}
-
-// func (e ErrorHandled) String() string {
-// 	if utf8.Valid(e.content) {
-// 		return fmt.Sprintf("[%d]: %s", e.op, e.content)
-// 	}
-// 	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
-// }
-
-func (e ErrorHandled) Error() string {
-	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
 }
 
 func factory(op int, content interface{}) ErrorHandled {
@@ -52,6 +60,7 @@ func NewErrorHandled(op int, content interface{}) ErrorHandled {
 	return factory(op, content)
 }
 
+// NewProcessing produce an ErrorHandled with the status code 102
 func NewProcessing(content interface{}) ErrorHandled {
 	return factory(http.StatusProcessing, content)
 }
@@ -66,6 +75,7 @@ func NewBadRequest(content interface{}) ErrorHandled {
 	return factory(http.StatusBadRequest, content)
 }
 
+// NewUnauthorized  produce an ErrorHandled with the status code 401
 func NewUnauthorized(content interface{}) ErrorHandled {
 	return factory(http.StatusUnauthorized, content)
 }
@@ -78,6 +88,11 @@ func NewNotFound(content interface{}) ErrorHandled {
 // NewNotAcceptable produce an ErrorHandled with the status code 406
 func NewNotAcceptable(content interface{}) ErrorHandled {
 	return factory(http.StatusNotAcceptable, content)
+}
+
+// NewConflict produce an ErrorHandled with the status code 409
+func NewConflict(content interface{}) ErrorHandled {
+	return factory(http.StatusConflict, content)
 }
 
 // NewUnprocessable produce an ErrorHandled with the status code 422
@@ -93,9 +108,4 @@ func NewInternal(content interface{}) ErrorHandled {
 // NewUnprocessable produce an ErrorHandled with the status code 501
 func NewNotImplemented(content interface{}) ErrorHandled {
 	return factory(http.StatusNotImplemented, content)
-}
-
-// NewConflict produce an ErrorHandled with the status code 501
-func NewConflict(content interface{}) ErrorHandled {
-	return factory(http.StatusConflict, content)
 }

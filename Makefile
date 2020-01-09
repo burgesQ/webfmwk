@@ -15,7 +15,6 @@ VET					= $(CC) vet .
 all: $(NAME)
 
 $(NAME): test
-	@git status
 
 vet:
 	$(VET)

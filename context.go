@@ -63,13 +63,51 @@ func init() {
 }
 
 // SetRequest implement IContext
-func (c *Context) SetRequest(r *http.Request) {
+func (c *Context) SetRequest(r *http.Request) IContext {
 	c.r = r
+	return c
 }
 
 // SetWriter implement IContext
-func (c *Context) SetWriter(w *http.ResponseWriter) {
+func (c *Context) SetWriter(w *http.ResponseWriter) IContext {
 	c.w = w
+	return c
+}
+
+// SetVars implement IContext
+func (c *Context) SetVars(v map[string]string) IContext {
+	c.vars = v
+	return c
+}
+
+// GetVar implement IContext
+func (c Context) GetVar(key string) string {
+	return c.vars[key]
+}
+
+// SetQuery implement IContext
+func (c *Context) SetQuery(q map[string][]string) IContext {
+	c.query = q
+	return c
+}
+
+// GetQueries implement IContext
+func (c *Context) GetQueries() map[string][]string {
+	return c.query
+}
+
+// GetQuery implement IContext
+func (c *Context) GetQuery(key string) (string, bool) {
+	if len(c.query[key]) > 0 {
+		return c.query[key][0], true
+	}
+
+	return "", false
+}
+
+func (c *Context) SetLogger(logger log.ILog) IContext {
+	c.log = logger
+	return c
 }
 
 // FetchContent implement IContext
@@ -102,42 +140,9 @@ func (c Context) DecodeQP(dest interface{}) {
 	}
 }
 
-// SetVars implement IContext
-func (c *Context) SetVars(v map[string]string) {
-	c.vars = v
-}
-
-// GetVar implement IContext
-func (c Context) GetVar(key string) string {
-	return c.vars[key]
-}
-
-// SetQuery implement IContext
-func (c *Context) SetQuery(q map[string][]string) {
-	c.query = q
-}
-
-// GetQueries implement IContext
-func (c *Context) GetQueries() map[string][]string {
-	return c.query
-}
-
-// GetQuery implement IContext
-func (c *Context) GetQuery(key string) (string, bool) {
-	if len(c.query[key]) > 0 {
-		return c.query[key][0], true
-	}
-
-	return "", false
-}
-
 // IsPretty implement IContext
 func (c Context) IsPretty() bool {
 	return len(c.query["pretty"]) > 0
-}
-
-func (c *Context) SetLogger(logger log.ILog) {
-	c.log = logger
 }
 
 // CheckHeader implement IContext
@@ -152,12 +157,12 @@ func (c Context) CheckHeader() {
 // OwnRecover implement IContext
 func (c Context) OwnRecover() {
 	if r := recover(); r != nil {
-		switch err := r.(type) {
+		switch e := r.(type) {
 		case IErrorHandled:
-			c.JSON(err.GetOPCode(), err.GetContent())
+			c.JSON(e.GetOPCode(), e.GetContent())
 		default:
-			log.Errorf("catched %T %#v", err, err)
-			panic(err)
+			c.log.Errorf("catched %T %#v", e, e)
+			panic(e)
 		}
 	}
 }

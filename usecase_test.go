@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	// "gitlab.frafos.net/gommon/golib/log"
 	z "github.com/burgesQ/webfmwk/v2/testing"
 )
 
@@ -20,10 +21,16 @@ type testSerial struct {
 func TestUseCase(t *testing.T) {
 	s := InitServer(false)
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	// log.Init(log.LOGFORMAT_LONG | log.LOGGER_STDOUT)
+	// log.SetLogLevel(log.LOG_DEBUG)
+	// s.SetLogger(log.GetLogger())
+
+	// set custom context
+	if s.SetCustomContext(func(c *Context) IContext {
+		return &customContext{*c, "turlu"}
+	}) == false {
+		t.Errorf("cannot set the custom context")
+	}
 
 	// add middleware TODO: check headers
 	// s.AddMiddleware(m.Security)
@@ -31,30 +38,29 @@ func TestUseCase(t *testing.T) {
 	// set url prefix
 	s.SetPrefix("/api")
 
-	// set custom context
-	s.SetCustomContext(func(c *Context) IContext {
-		cctx := &customContext{*c, "turlu"}
-		return cctx
-	})
-
 	// declare routes
 	s.GET("/hello", func(c IContext) {
 		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
+
 	s.GET("/routes", func(c IContext) {
 		c.JSON(http.StatusOK, &testSerial{"hello"})
 	})
+
 	s.GET("/hello/{who}", func(c IContext) {
 		var content = `{ "message": "hello ` + c.GetVar("who") + `" }`
 		c.JSONBlob(http.StatusOK, []byte(content))
 	})
+
 	s.GET("/testquery", func(c IContext) {
 		c.JSONOk(c.GetQueries())
 	})
+
 	s.GET("/testContext", func(c IContext) {
-		cc := c.(*customContext)
-		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello `+cc.Value+`" }`))
+		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello `+
+			c.(*customContext).Value+`" }`))
 	})
+
 	s.POST("/world", func(c IContext) {
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
@@ -65,41 +71,75 @@ func TestUseCase(t *testing.T) {
 		c.JSONCreated(anonymous)
 	})
 
+	defer func(s Server) {
+		s.Shutdown(*s.GetContext())
+		s.WaitAndStop()
+	}(s)
 	go s.Start(":4242")
 	time.Sleep(50 * time.Millisecond)
 
-	// request each routes
-	z.RequestAndTestAPI(t, "/api/hello",
-		func(t *testing.T, resp *http.Response) {
-			for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
-				z.AssertHeader(t, resp, testVal, jsonEncode)
+	const (
+		_reqNTest = iota
+		_pushNTest
+	)
+
+	tests := map[string]struct {
+		testType     int
+		header       bool
+		bodyDiffer   bool
+		url          string
+		expectedBody string
+		expectedSC   int
+	}{
+		"hello world": {
+			_reqNTest, true, false, "/api/hello", `{"message":"hello world"}`, http.StatusOK,
+		},
+		"simple fetch": {
+			_reqNTest, false, false, "/api/routes", `{"test":"hello"}`, http.StatusOK,
+		},
+		"url params": {
+			_reqNTest, false, false, "/api/hello/you", `{"message":"hello you"}`, http.StatusOK,
+		},
+		"query params": {
+			_reqNTest, false, true, "/api/testquery?pretty=1", `{"pretty":["1"]}`, http.StatusOK,
+		},
+		"context": {
+			_reqNTest, false, true, "/api/testContext", `{"message":"hello tutu"}`, http.StatusOK,
+		},
+		"push": {
+			_pushNTest, false, false, "/api/world", `{"first_name":"jean"}`, http.StatusCreated,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			switch test.testType {
+			case _reqNTest:
+
+				z.RequestAndTestAPI(t, test.url, func(t *testing.T, resp *http.Response) {
+					if test.header {
+						for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
+							z.AssertHeader(t, resp, testVal, jsonEncode)
+						}
+					}
+					if test.bodyDiffer {
+						z.AssertBodyDiffere(t, resp, test.expectedBody)
+					} else {
+						z.AssertBody(t, resp, test.expectedBody)
+					}
+					z.AssertStatusCode(t, resp, test.expectedSC)
+				})
+
+			case _pushNTest:
+				z.PushAndTestAPI(t, test.url, []byte(string(`{"first_name":"jean"}`)),
+					func(t *testing.T, resp *http.Response) {
+						z.AssertBody(t, resp, test.expectedBody)
+						z.AssertStatusCode(t, resp, test.expectedSC)
+					})
 			}
-			z.AssertBody(t, resp, `{"message":"hello world"}`)
-			z.AssertStatusCode(t, resp, http.StatusOK)
+
 		})
-	z.RequestAndTestAPI(t, "/api/routes",
-		func(t *testing.T, resp *http.Response) {
-			z.AssertBody(t, resp, `{"test":"hello"}`)
-			z.AssertStatusCode(t, resp, http.StatusOK)
-		})
-	z.RequestAndTestAPI(t, "/api/hello/you",
-		func(t *testing.T, resp *http.Response) {
-			z.AssertBody(t, resp, `{"message":"hello you"}`)
-			z.AssertStatusCode(t, resp, http.StatusOK)
-		})
-	z.RequestAndTestAPI(t, "/api/testquery?pretty=1",
-		func(t *testing.T, resp *http.Response) {
-			z.AssertBodyDiffere(t, resp, `{"pretty":["1"]}`)
-			z.AssertStatusCode(t, resp, http.StatusOK)
-		})
-	z.RequestAndTestAPI(t, "/api/testContext",
-		func(t *testing.T, resp *http.Response) {
-			z.AssertBodyDiffere(t, resp, `{"message":"hello tutu"}`)
-			z.AssertStatusCode(t, resp, http.StatusOK)
-		})
-	z.PushAndTestAPI(t, "/api/world", []byte(string(`{"first_name":"jean"}`)),
-		func(t *testing.T, resp *http.Response) {
-			z.AssertBody(t, resp, `{"first_name":"jean"}`)
-			z.AssertStatusCode(t, resp, http.StatusCreated)
-		})
+	}
+
 }
