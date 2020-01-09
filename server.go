@@ -146,20 +146,16 @@ func (s *Server) hasBody(r *http.Request) bool {
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := s.context
-		body := s.hasBody(r)
+		var ctx = s.context
 
 		// run handler
-		ctx.SetRequest(r)
-		ctx.SetWriter(&w)
-		ctx.SetVars(mux.Vars(r))
-		ctx.SetQuery(r.URL.Query())
-		ctx.IsPretty()
-		ctx.SetLogger(s.log)
+		ctx.SetRequest(r).SetWriter(&w).
+			SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
+			SetLogger(s.log)
 
 		defer ctx.OwnRecover()
 
-		if body {
+		if s.hasBody(r) {
 			ctx.CheckHeader()
 		}
 		handler(ctx)

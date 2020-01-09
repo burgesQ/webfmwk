@@ -10,11 +10,29 @@ import (
 type IContext interface {
 
 	// SetRequest is used to save the request object
-	SetRequest(rq *http.Request)
+	SetRequest(rq *http.Request) IContext
 
 	// SetWriter is used to save the ResponseWriter obj
 	// TODO: use io.Writer ?
-	SetWriter(rw *http.ResponseWriter)
+	SetWriter(rw *http.ResponseWriter) IContext
+
+	// SetVars is used to save the url vars
+	SetVars(vars map[string]string) IContext
+
+	// GetVar return the url var parameters. Empty string for none
+	GetVar(key string) (val string)
+
+	// SetQuery save the query param object
+	SetQuery(query map[string][]string) IContext
+
+	// GetQueries return the queries object
+	GetQueries() map[string][]string
+
+	// GetQuery fetch the query object key
+	GetQuery(key string) (val string, ok bool)
+
+	// SetLogger set the logger of the ctx
+	SetLogger(logger log.ILog) IContext
 
 	// FetchContent extract the content from the body
 	FetchContent(content interface{})
@@ -25,26 +43,8 @@ type IContext interface {
 	// Decode load the query param in the content object
 	DecodeQP(content interface{})
 
-	// SetVars is used to save the url vars
-	SetVars(vars map[string]string)
-
-	// GetVar return the url var parameters. Empty string for none
-	GetVar(key string) (val string)
-
-	// SetQuery save the query param object
-	SetQuery(query map[string][]string)
-
-	// GetQueries return the queries object
-	GetQueries() map[string][]string
-
-	// GetQuery fetch the query object key
-	GetQuery(key string) (val string, ok bool)
-
 	// IsPretty toggle the compact outptu mode
 	IsPretty() bool
-
-	// SetLogger set the logger of the ctx
-	SetLogger(logger log.ILog)
 
 	// CheckHeader ensure the Content-Type of the request
 	CheckHeader()
