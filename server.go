@@ -151,7 +151,7 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 		// run handler
 		ctx.SetRequest(r).SetWriter(&w).
 			SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
-			SetLogger(s.log)
+			SetLogger(s.log).SetContext(s.ctx)
 
 		defer ctx.OwnRecover()
 

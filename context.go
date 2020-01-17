@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -26,6 +27,7 @@ type (
 		vars  map[string]string
 		query map[string][]string
 		log   log.ILog
+		ctx   *context.Context
 	}
 
 	// AnonymousError struct is used to answer error
@@ -105,9 +107,20 @@ func (c *Context) GetQuery(key string) (string, bool) {
 	return "", false
 }
 
+// SetLogger implement IContext
 func (c *Context) SetLogger(logger log.ILog) IContext {
 	c.log = logger
 	return c
+}
+
+// SetContext implement IContext
+func (c *Context) SetContext(ctx *context.Context) IContext {
+	c.ctx = ctx
+	return c
+}
+
+func (c *Context) GetContext() *context.Context {
+	return c.ctx
 }
 
 // FetchContent implement IContext

@@ -1,6 +1,7 @@
 package webfmwk
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/burgesQ/webfmwk/v2/log"
@@ -33,6 +34,12 @@ type IContext interface {
 
 	// SetLogger set the logger of the ctx
 	SetLogger(logger log.ILog) IContext
+
+	// Save the given context object into the fmwk context
+	SetContext(ctx *context.Context) IContext
+
+	// Fetch the previously saved context object
+	GetContext() *context.Context
 
 	// FetchContent extract the content from the body
 	FetchContent(content interface{})
