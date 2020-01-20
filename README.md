@@ -53,7 +53,7 @@ package main
 import (
     "net/http"
 
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
 )
 
 func main() {
@@ -91,8 +91,8 @@ package main
 import (
     "net/http"
 
-    w "github.com/burgesQ/webfmwk/v2"
-    "github.com/burgesQ/webfmwk/v2/log"
+    w "github.com/burgesQ/webfmwk/v3"
+    "github.com/burgesQ/webfmwk/v3/log"
 )
 
 func main() {
@@ -136,7 +136,7 @@ package main
 import (
     "net/http"
 
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
 )
 
 func main() {
@@ -179,7 +179,7 @@ package main
 import (
     "net/http"
 
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
 )
 
 type (
@@ -243,7 +243,7 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/api/v1/test` and `cu
 package main
 
 import (
-    "github.com/burgesQ/webfmwk/v2"
+    "github.com/burgesQ/webfmwk/v3"
 )
 
 var (
@@ -303,7 +303,7 @@ Use the method `Server.StartTLS(addr, certPath, keyPath string)`.
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
 )
 
 func main() {
@@ -342,8 +342,8 @@ The logger must implement the `webfmwk/log.ILog` interface.
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v2"
-    "github.com/burgesQ/webfmwk/v2/log"
+    w "github.com/burgesQ/webfmwk/v3"
+    "github.com/burgesQ/webfmwk/v3/log"
 )
 
 // GetLogger return a log.ILog interface
@@ -389,7 +389,7 @@ Then, add a middleware to extend the context using the `Server.SetCustomContext(
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
 )
 
 type customContext struct {
@@ -426,7 +426,7 @@ func main() {
 
 ### Register middlewares
 
-Import `github.com/burgesQ/webfmwk/v2/middleware`
+Import `github.com/burgesQ/webfmwk/v3/middleware`
 
 <details><summary>extend middleware</summary>
 <p>
@@ -435,8 +435,8 @@ Import `github.com/burgesQ/webfmwk/v2/middleware`
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v2"
-    m "github.com/burgesQ/webfmwk/v2/middleware"
+    w "github.com/burgesQ/webfmwk/v3"
+    m "github.com/burgesQ/webfmwk/v3/middleware"
 )
 
 func main() {
@@ -479,7 +479,7 @@ Or, run `curl -X GET 'http://localhost:4242/api/doc/swagger.json'`.
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
     httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -545,8 +545,8 @@ package main
 import (
     "time"
 
-    w "github.com/burgesQ/webfmwk/v2"
-    "github.com/burgesQ/webfmwk/v2/log"
+    w "github.com/burgesQ/webfmwk/v3"
+    "github.com/burgesQ/webfmwk/v3/log"
 )
 
 func main() {

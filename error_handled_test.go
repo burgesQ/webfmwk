@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	z "github.com/burgesQ/webfmwk/v2/testing"
+	z "github.com/burgesQ/webfmwk/v3/testing"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	// "gitlab.frafos.net/gommon/golib/log"
-	z "github.com/burgesQ/webfmwk/v2/testing"
+	z "github.com/burgesQ/webfmwk/v3/testing"
 )
 
 type customContext struct {

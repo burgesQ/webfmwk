@@ -5,7 +5,7 @@ Example:
   package main
 
   import (
-    w "github.com/burgesQ/webfmwk/v2"
+    w "github.com/burgesQ/webfmwk/v3"
   )
   // Handler
   func hello(c w.IContext) error {

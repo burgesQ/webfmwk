@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v2/log"
+	"github.com/burgesQ/webfmwk/v3/log"
 )
 
 // IContext Interface implement the context used in this project

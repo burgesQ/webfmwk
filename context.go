@@ -8,8 +8,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/burgesQ/webfmwk/v2/log"
-	"github.com/burgesQ/webfmwk/v2/pretty"
+	"github.com/burgesQ/webfmwk/v3/log"
+	"github.com/burgesQ/webfmwk/v3/pretty"
 	"github.com/gorilla/schema"
 
 	en_translator "github.com/go-playground/locales/en"
