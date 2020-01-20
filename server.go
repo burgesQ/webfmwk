@@ -105,7 +105,7 @@ func InitServer(withCtrl bool) Server {
 }
 
 // GetLogger return an instance of the ILog interface used
-func (s Server) GetLogger() log.ILog {
+func (s *Server) GetLogger() log.ILog {
 	return s.log
 }
 
@@ -278,7 +278,7 @@ func (s *Server) WaitAndStop() {
 
 // ExitHandler handle ctrl+c in intern
 func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, sig...)
 
 	defer s.Shutdown(ctx)
