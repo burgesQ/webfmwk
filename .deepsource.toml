@@ -1,15 +1,12 @@
-{
-  "version": 1,
-  "analyzers": [
-      {
-          "meta": {
-              "import_path": "gtihub.com/burgesQ/webfmwk/v3"
-          },
-          "name": "go",
-          "enabled": true
-      }
-  ],
-  "test_patterns": [
-      "*test.*.*"
-  ]
-}
+version = 1
+
+test_patterns = [
+  "*test.*.*"
+]
+
+[[analyzers]]
+name = "go"
+enabled = true
+
+  [analyzers.meta]
+  import_path = "gtihub.com/burgesQ/webfmwk/v3"
