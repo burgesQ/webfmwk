@@ -26,11 +26,9 @@ func TestUseCase(t *testing.T) {
 	// s.SetLogger(log.GetLogger())
 
 	// set custom context
-	if s.SetCustomContext(func(c *Context) IContext {
+	s.SetCustomContext(func(c *Context) IContext {
 		return &customContext{*c, "turlu"}
-	}) == false {
-		t.Errorf("cannot set the custom context")
-	}
+	})
 
 	// add middleware TODO: check headers
 	// s.AddMiddleware(m.Security)
