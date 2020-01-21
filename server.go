@@ -33,10 +33,10 @@ type (
 		launcher    WorkerLauncher
 		middlewares []mux.MiddlewareFunc
 		prefix      string
-		context     IContext
 		docHandler  http.Handler
 		CORS        bool
 		log         log.ILog
+		setter      func(c *Context) IContext
 	}
 
 	// WorkerConfig hold the worker config per server instance
@@ -59,16 +59,15 @@ var (
 	poolOfServers []*http.Server
 	logger        = log.GetLogger()
 	workerConfig  = WorkerConfig{
-		ReadTimeout:       10 * time.Second,
-		ReadHeaderTimeout: 10 * time.Second,
-		WriteTimeout:      10 * time.Second,
+		ReadTimeout:       20 * time.Second,
+		ReadHeaderTimeout: 20 * time.Second,
+		WriteTimeout:      20 * time.Second,
 		MaxHeaderBytes:    1 << 20,
 	}
+	nakedSetter = func(c *Context) IContext {
+		return c
+	}
 )
-
-//
-// Setter - Getter
-//
 
 // GetLogger return an instance of the ILog interface used
 func GetLogger() log.ILog {
@@ -87,9 +86,9 @@ func InitServer(withCtrl bool) Server {
 			launcher: CreateWorkerLauncher(&wg, cancel),
 			ctx:      &ctx,
 			wg:       &wg,
-			context:  &Context{},
 			log:      logger,
 			routes:   make(RoutesPerPrefix),
+			setter:   nakedSetter,
 		}
 	)
 
@@ -104,6 +103,10 @@ func InitServer(withCtrl bool) Server {
 	return s
 }
 
+//
+// Setter - Getter
+//
+
 // GetLogger return an instance of the ILog interface used
 func (s *Server) GetLogger() log.ILog {
 	return s.log
@@ -112,16 +115,6 @@ func (s *Server) GetLogger() log.ILog {
 // RegisterDocHandler is used to save an swagger doc handler
 func (s *Server) RegisterDocHandler(handler http.Handler) {
 	s.docHandler = handler
-}
-
-// SetCustomContext save a custom context so it can be fetched in the controller handler
-func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
-	ctx, ok := s.context.(*Context)
-	if ok {
-		s.context = setter(ctx)
-	}
-
-	return ok
 }
 
 // GetLauncher return a pointer on the util.workerLauncher used
@@ -143,13 +136,17 @@ func (s *Server) hasBody(r *http.Request) bool {
 	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
 }
 
+// SetCustomContext save a custom context so it can be fetched in the controller handler
+func (s *Server) SetCustomContext(setter func(c *Context) IContext) {
+	s.setter = setter
+}
+
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var ctx = s.context
+		ctx := s.setter(&Context{})
 
-		// run handler
-		ctx.SetRequest(r).SetWriter(&w).
+		ctx.SetRequest(r).SetWriter(w).
 			SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
 			SetLogger(s.log).SetContext(s.ctx)
 
@@ -158,6 +155,7 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 		if s.hasBody(r) {
 			ctx.CheckHeader()
 		}
+
 		handler(ctx)
 	}
 }
@@ -213,19 +211,21 @@ func toWorker(addr string) http.Server {
 // Initialize a http.Server struct. Save the server in the pool of workers.
 func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 	worker := toWorker(addr)
+
+	h := http.TimeoutHandler(s.SetRouter(),
+		worker.WriteTimeout-(50*time.Millisecond),
+		`{"error": "timeout reached"}`)
+
 	// ! handlers.CORS() must be the first handler
 	if s.CORS {
-		worker.Handler = handlers.CORS(
+		h = handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"}),
 			handlers.AllowedOrigins([]string{"*"}),
 			handlers.AllowedMethods([]string{"POST", "PUT", "PATCH", "OPTIONS"}))(
-			s.SetRouter())
-	} else {
-		worker.Handler = http.TimeoutHandler(
-			s.SetRouter(),
-			worker.WriteTimeout-(50*time.Millisecond),
-			`{"error": "timeout reached"}`)
+			h)
 	}
+
+	worker.Handler = h
 
 	// load tls for https
 	if len(tlsStuffs) == 1 {

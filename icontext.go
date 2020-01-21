@@ -14,8 +14,7 @@ type IContext interface {
 	SetRequest(rq *http.Request) IContext
 
 	// SetWriter is used to save the ResponseWriter obj
-	// TODO: use io.Writer ?
-	SetWriter(rw *http.ResponseWriter) IContext
+	SetWriter(rw http.ResponseWriter) IContext
 
 	// SetVars is used to save the url vars
 	SetVars(vars map[string]string) IContext
@@ -95,6 +94,6 @@ type IContext interface {
 	//
 	JSONConflict(interface{})
 
-	//
+	// 500
 	JSONInternalError(interface{})
 }

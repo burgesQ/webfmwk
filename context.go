@@ -23,7 +23,7 @@ import (
 type (
 	Context struct {
 		r     *http.Request
-		w     *http.ResponseWriter
+		w     http.ResponseWriter
 		vars  map[string]string
 		query map[string][]string
 		log   log.ILog
@@ -71,7 +71,7 @@ func (c *Context) SetRequest(r *http.Request) IContext {
 }
 
 // SetWriter implement IContext
-func (c *Context) SetWriter(w *http.ResponseWriter) IContext {
+func (c *Context) SetWriter(w http.ResponseWriter) IContext {
 	c.w = w
 	return c
 }
@@ -119,6 +119,7 @@ func (c *Context) SetContext(ctx *context.Context) IContext {
 	return c
 }
 
+// GetContent implement IContext
 func (c *Context) GetContext() *context.Context {
 	return c.ctx
 }
@@ -181,7 +182,7 @@ func (c Context) OwnRecover() {
 }
 
 func (c *Context) setHeader(key, val string) {
-	(*c.w).Header().Set(key, val)
+	c.w.Header().Set(key, val)
 }
 
 func (c *Context) setHeaders(headers ...[2]string) {
@@ -201,9 +202,9 @@ func (c *Context) response(statusCode int, content []byte) {
 		c.log.Infof("[%d](%d)", statusCode, len(content))
 	}
 
-	(*c.w).WriteHeader(statusCode)
+	c.w.WriteHeader(statusCode)
 
-	l, e := (*c.w).Write(content)
+	l, e := c.w.Write(content)
 	if e != nil {
 		c.log.Errorf("while sending response (%d) : %s", l, e.Error())
 	}

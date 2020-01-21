@@ -135,14 +135,13 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 // register the user defined routes per prefix,
 // and return the routes handler
 func (s *Server) SetRouter() *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+	var router = mux.NewRouter().StrictSlash(true)
 
 	for _, mw := range s.middlewares {
 		router.Use(mw)
 	}
 
 	for prefix, routes := range s.routes {
-
 		subRouter := router.PathPrefix(prefix).Subrouter()
 		// register routes
 		for _, route := range routes {
