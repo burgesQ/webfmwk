@@ -87,4 +87,7 @@ type IContext interface {
 
 	//
 	JSONInternalError(interface{})
+
+	//
+	JSONAccepted(interface{})
 }

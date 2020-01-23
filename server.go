@@ -27,16 +27,16 @@ type (
 
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
-		routes      RoutesPerPrefix
-		ctx         *context.Context
-		wg          *sync.WaitGroup
-		launcher    WorkerLauncher
-		middlewares []mux.MiddlewareFunc
-		prefix      string
-		context     IContext
-		docHandler  http.Handler
-		CORS        bool
-		log         log.ILog
+		routes          RoutesPerPrefix
+		ctx             *context.Context
+		wg              *sync.WaitGroup
+		launcher        WorkerLauncher
+		middlewares     []mux.MiddlewareFunc
+		prefix          string
+		docHandler      http.Handler
+		CORS            bool
+		log             log.ILog
+		generateContext func(c *Context) IContext
 	}
 
 	// WorkerConfig hold the worker config per server instance
@@ -64,6 +64,9 @@ var (
 		WriteTimeout:      10 * time.Second,
 		MaxHeaderBytes:    1 << 20,
 	}
+	defaultGenerator = func(c *Context) IContext {
+		return c
+	}
 )
 
 //
@@ -84,12 +87,12 @@ func InitServer(withCtrl bool) Server {
 		wg          sync.WaitGroup
 		ctx, cancel = context.WithCancel(context.Background())
 		s           = Server{
-			launcher: CreateWorkerLauncher(&wg, cancel),
-			ctx:      &ctx,
-			wg:       &wg,
-			context:  &Context{},
-			log:      logger,
-			routes:   make(RoutesPerPrefix),
+			launcher:        CreateWorkerLauncher(&wg, cancel),
+			ctx:             &ctx,
+			wg:              &wg,
+			log:             logger,
+			routes:          make(RoutesPerPrefix),
+			generateContext: defaultGenerator,
 		}
 	)
 
@@ -116,12 +119,9 @@ func (s *Server) RegisterDocHandler(handler http.Handler) {
 
 // SetCustomContext save a custom context so it can be fetched in the controller handler
 func (s *Server) SetCustomContext(setter func(c *Context) IContext) bool {
-	ctx, ok := s.context.(*Context)
-	if ok {
-		s.context = setter(ctx)
-	}
+	s.generateContext = setter
 
-	return ok
+	return true
 }
 
 // GetLauncher return a pointer on the util.workerLauncher used
@@ -146,8 +146,10 @@ func (s *Server) hasBody(r *http.Request) bool {
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := s.context
-		body := s.hasBody(r)
+		var (
+			ctx  = s.generateContext(&Context{})
+			body = s.hasBody(r)
+		)
 
 		// run handler
 		ctx.SetRequest(r)

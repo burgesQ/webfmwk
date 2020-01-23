@@ -269,3 +269,8 @@ func (c *Context) JSONNotImplemented(content interface{}) {
 func (c *Context) JSONInternalError(content interface{}) {
 	c.JSON(http.StatusInternalServerError, content)
 }
+
+// JSONAccepted implement IContext
+func (c *Context) JSONAccepted(content interface{}) {
+	c.JSON(http.StatusAccepted, content)
+}
