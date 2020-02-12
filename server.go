@@ -283,12 +283,14 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 
 	defer s.Shutdown(ctx)
 
-	select {
-	case si := <-c:
-		s.log.Infof("captured %v, exiting...", si)
-		return
-	case <-ctx.Done():
-		return
+	for ctx.Err() == nil {
+		select {
+		case si := <-c:
+			logger.Infof("captured %v, exiting...", si)
+			return
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
