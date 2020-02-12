@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
@@ -206,6 +207,19 @@ func toWorker(addr string) http.Server {
 		WriteTimeout:   workerConfig.WriteTimeout,
 		MaxHeaderBytes: workerConfig.MaxHeaderBytes,
 	}
+}
+
+// DumpRoutes dump the API endpoints using the server logger
+func (s *Server) DumpRoutes() {
+	var router = s.SetRouter()
+	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		var (
+			pathTemplate, _ = route.GetPathTemplate()
+			methods, _      = route.GetMethods()
+		)
+		s.log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
+		return nil
+	})
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.

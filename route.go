@@ -155,14 +155,5 @@ func (s *Server) SetRouter() *mux.Router {
 		}
 	}
 
-	// router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-	// 	var (
-	// 		pathTemplate, _ = route.GetPathTemplate()
-	// 		methods, _      = route.GetMethods()
-	// 	)
-	// 	// s.log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
-	// 	return nil
-	// })
-
 	return router
 }
