@@ -100,6 +100,11 @@ func NewUnprocessable(content interface{}) ErrorHandled {
 	return factory(http.StatusUnprocessableEntity, content)
 }
 
+// NewServiceUnavailable produce an ErrorHandled with the status code 422
+func NewServiceUnavailable(content interface{}) ErrorHandled {
+	return factory(http.StatusServiceUnavailable, content)
+}
+
 // NewUnprocessable produce an ErrorHandled with the status code 500
 func NewInternal(content interface{}) ErrorHandled {
 	return factory(http.StatusInternalServerError, content)
