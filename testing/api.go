@@ -7,18 +7,14 @@ import (
 	"testing"
 )
 
-const baseAPI = "http://127.0.0.1:4242"
-
 type (
 	// HandlerForTest implement the function signature used to check the req/resp
 	HandlerForTest = func(t *testing.T, resp *http.Response)
 )
 
 // PushAPI is used to push a request to a local API
-func PushAPI(t *testing.T, path string, content []byte) *http.Response {
+func PushAPI(t *testing.T, url string, content []byte) *http.Response {
 	t.Helper()
-
-	var url = baseAPI + path
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(content))
 	if err != nil {
@@ -38,8 +34,10 @@ func PushAPI(t *testing.T, path string, content []byte) *http.Response {
 }
 
 // RequestAPI is used to request the local API
-func RequestAPI(t *testing.T, path string) (resp *http.Response) {
-	resp, err := http.Get(baseAPI + path)
+func RequestAPI(t *testing.T, url string) (resp *http.Response) {
+	t.Helper()
+
+	resp, err := http.Get(url)
 	if err != nil {
 		t.Fatalf("error requesting the api : %s", err.Error())
 	}
@@ -54,6 +52,8 @@ func PushAndTestAPI(t *testing.T, path string, content []byte, handler HandlerFo
 }
 
 func RequestAndTestAPI(t *testing.T, path string, handler HandlerForTest) {
+	t.Helper()
+
 	resp := RequestAPI(t, path)
 	defer resp.Body.Close()
 	handler(t, resp)

@@ -7,4 +7,5 @@ type ILog interface {
 	Infof(format string, v ...interface{})
 	Debugf(format string, v ...interface{})
 	Fatalf(format string, v ...interface{})
+	SetLogLevel(level int) bool
 }

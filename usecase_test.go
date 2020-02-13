@@ -3,7 +3,6 @@ package webfmwk
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	// "gitlab.frafos.net/gommon/golib/log"
 	z "github.com/burgesQ/webfmwk/v3/testing"
@@ -73,8 +72,8 @@ func TestUseCase(t *testing.T) {
 		s.Shutdown(*s.GetContext())
 		s.WaitAndStop()
 	}(s)
-	go s.Start(":4242")
-	time.Sleep(50 * time.Millisecond)
+	go s.Start(_testPort)
+	<-s.isReady
 
 	const (
 		_reqNTest = iota
@@ -115,7 +114,7 @@ func TestUseCase(t *testing.T) {
 			switch test.testType {
 			case _reqNTest:
 
-				z.RequestAndTestAPI(t, test.url, func(t *testing.T, resp *http.Response) {
+				z.RequestAndTestAPI(t, _testAddr+test.url, func(t *testing.T, resp *http.Response) {
 					if test.header {
 						for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
 							z.AssertHeader(t, resp, testVal, jsonEncode)
@@ -130,7 +129,7 @@ func TestUseCase(t *testing.T) {
 				})
 
 			case _pushNTest:
-				z.PushAndTestAPI(t, test.url, []byte(string(`{"first_name":"jean"}`)),
+				z.PushAndTestAPI(t, _testAddr+test.url, []byte(string(`{"first_name":"jean"}`)),
 					func(t *testing.T, resp *http.Response) {
 						z.AssertBody(t, resp, test.expectedBody)
 						z.AssertStatusCode(t, resp, test.expectedSC)

@@ -1,6 +1,9 @@
 package webfmwk
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gorilla/mux"
 )
 
@@ -128,6 +131,8 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 	}
 }
 
+const _pingEndpoint = "/ping"
+
 // SetRouter create a mux.Handler router and then :
 // register the middlewares,
 // register the user defined routes per prefix,
@@ -138,6 +143,11 @@ func (s *Server) SetRouter() *mux.Router {
 	for _, mw := range s.middlewares {
 		router.Use(mw)
 	}
+
+	// test handler
+	router.HandleFunc(_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "pong")
+	}).Methods("GET").Name("ping endpoit")
 
 	for prefix, routes := range s.routes {
 		subRouter := router.PathPrefix(prefix).Subrouter()

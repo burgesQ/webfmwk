@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"net/http"
 	"testing"
-	"time"
 
 	z "github.com/burgesQ/webfmwk/v3/testing"
 )
@@ -12,40 +11,54 @@ import (
 var (
 	hBody      = `{"message":"nul"}`
 	jsonEncode = "application/json; charset=UTF-8"
+	_testPort  = ":6666"
+	_testAddr  = "http://127.0.0.1" + _testPort
 )
 
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
 	var s = InitServer(false)
 
+	t.Log("init server...")
+
 	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
+		ctx := *s.GetContext()
+		ctx.Done()
+		s.Shutdown(ctx)
+		t.Log("server closed")
 	}(s)
 
 	s.POST(route, handlerRoute)
 
-	go s.Start(":4242")
+	go s.Start(_testPort)
 
-	time.Sleep(50 * time.Millisecond)
+	<-s.isReady
+	t.Log("server inited")
 
-	z.PushAndTestAPI(t, routeReq, content, handlerTest)
+	z.PushAndTestAPI(t, _testAddr+routeReq, content, handlerTest)
 }
 
 func wrapperGet(t *testing.T, route, routeReq string,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
 	var s = InitServer(false)
 
+	t.Log("init server...")
+
 	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
+		ctx := *s.GetContext()
+		ctx.Done()
+		s.Shutdown(ctx)
+		t.Log("server closed")
 	}(s)
 
 	s.GET(route, handlerRoute)
 
-	go s.Start(":4242")
-	time.Sleep(50 * time.Millisecond)
-	z.RequestAndTestAPI(t, routeReq, handlerTest)
+	go s.Start(_testPort)
+
+	<-s.isReady
+	t.Log("server inited")
+
+	z.RequestAndTestAPI(t, _testAddr+routeReq, handlerTest)
 }
 
 func TestParam(t *testing.T) {
@@ -102,10 +115,10 @@ func TestCheckHeaderNoHeader(t *testing.T) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 
-	go s.Start(":4242")
-	time.Sleep(50 * time.Millisecond)
+	go s.Start(_testPort)
+	<-s.isReady
 
-	url := "http://127.0.0.1:4242" + "/test"
+	url := "http://127.0.0.1" + _testPort + "/test"
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(hBody)))
 	client := &http.Client{}
 
@@ -129,10 +142,10 @@ func TestCheckHeaderWrongHeader(t *testing.T) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 
-	go s.Start(":4242")
-	time.Sleep(50 * time.Millisecond)
+	go s.Start(_testPort)
+	<-s.isReady
 
-	url := "http://127.0.0.1:4242" + "/test"
+	url := "http://127.0.0.1" + _testPort + "/test"
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(hBody)))
 	req.Header.Set("Content-Type", "")
 

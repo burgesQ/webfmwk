@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 
 	z "github.com/burgesQ/webfmwk/v3/testing"
 	"github.com/gorilla/mux"
@@ -39,7 +38,7 @@ func TestSetPrefix(t *testing.T) {
 	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, _ := route.GetPathTemplate()
 
-		if !(pathTemplate == _testURI || pathTemplate == _testPrefix) {
+		if !(pathTemplate == _testURI || pathTemplate == _testPrefix) && pathTemplate != _pingEndpoint {
 			t.Errorf("route wrongly created : [%s]", pathTemplate)
 		}
 
@@ -163,7 +162,7 @@ func TestSetRouter(t *testing.T) {
 			verbe     = strings.Join(verbes, ",")
 		)
 
-		if !(path == _testURI || path == _testPrefix) {
+		if !(path == _testURI || path == _testPrefix) && path != _pingEndpoint {
 			t.Errorf("route wrongly created : [%s]", path)
 		}
 		if verbe != "" {
@@ -189,8 +188,8 @@ func TestHandleParam(t *testing.T) {
 		c.JSONNoContent()
 	})
 
-	go s.Start(":4242")
-	time.Sleep(50 * time.Millisecond)
+	go s.Start(_testPort)
+	<-s.isReady
 
-	z.RequestAndTestAPI(t, "/test/toto?pretty=1", func(t *testing.T, resp *http.Response) {})
+	z.RequestAndTestAPI(t, _testAddr+"/test/toto?pretty=1", func(t *testing.T, resp *http.Response) {})
 }

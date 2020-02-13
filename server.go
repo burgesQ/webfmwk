@@ -38,6 +38,7 @@ type (
 		CORS        bool
 		log         log.ILog
 		setter      func(c *Context) IContext
+		isReady     chan bool
 	}
 
 	// WorkerConfig hold the worker config per server instance
@@ -90,6 +91,7 @@ func InitServer(withCtrl bool) Server {
 			log:      logger,
 			routes:   make(RoutesPerPrefix),
 			setter:   nakedSetter,
+			isReady:  make(chan bool),
 		}
 	)
 
@@ -253,9 +255,44 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 	return &worker
 }
 
+func (s *Server) IsReady() chan bool {
+	return s.isReady
+}
+
+// checkIsUp poll the server until it is up
+func (s *Server) checkIsUp(addr string) {
+	// poll w/ GET
+
+	if len(addr) > 1 && addr[0] == ':' {
+		addr = "http://127.0.0.1" + addr
+	}
+
+	addr = addr + _pingEndpoint
+
+	for {
+		time.Sleep(time.Millisecond * 10)
+		resp, e := http.Get(addr)
+		if e != nil {
+			s.log.Infof("server not up ... %s", e.Error())
+			continue
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			s.log.Infof("unexpected status code : %d", resp.StatusCode)
+			continue
+		}
+
+		s.log.Infof("server is up")
+		s.isReady <- true
+		break
+	}
+}
+
 // StartTLS expose an server to an HTTPS endpoint
 func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
 	s.launcher.Start("https server "+addr, func() error {
+		go s.checkIsUp(addr)
 		return s.setServer(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.Cert, tlsStuffs.Key)
 	})
 }
@@ -263,8 +300,9 @@ func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
 // Start expose an server to an HTTP endpoint
 func (s *Server) Start(addr string) {
 	s.launcher.Start("http server "+addr, func() error {
-		worker := s.setServer(addr)
-		return worker.ListenAndServe()
+		go s.checkIsUp(addr)
+
+		return s.setServer(addr).ListenAndServe()
 	})
 }
 
