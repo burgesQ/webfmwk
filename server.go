@@ -147,11 +147,11 @@ func (s *Server) SetCustomContext(setter func(c *Context) IContext) {
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := s.setter(&Context{})
+		var ctx = s.setter(&Context{})
 
 		ctx.SetRequest(r).SetWriter(w).
 			SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
-			SetLogger(s.log).SetContext(s.ctx)
+			SetLogger(s.log).SetContext(s.ctx).SetRequestID(GetRequestID(r.Context()))
 
 		defer ctx.OwnRecover()
 
@@ -226,12 +226,12 @@ func (s *Server) DumpRoutes() {
 
 // Initialize a http.Server struct. Save the server in the pool of workers.
 func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
-	worker := toWorker(addr)
-
-	h := http.TimeoutHandler(s.SetRouter(),
-		worker.WriteTimeout-(50*time.Millisecond),
-		`{"error": "timeout reached"}`)
-
+	var (
+		worker = toWorker(addr)
+		h      = http.TimeoutHandler(s.SetRouter(),
+			worker.WriteTimeout-(50*time.Millisecond),
+			`{"error": "timeout reached"}`)
+	)
 	// ! handlers.CORS() must be the first handler
 	if s.CORS {
 		h = handlers.CORS(
@@ -260,9 +260,8 @@ func (s *Server) IsReady() chan bool {
 }
 
 // checkIsUp poll the server until it is up
+// poll /ping with a GET
 func (s *Server) checkIsUp(addr string) {
-	// poll w/ GET
-
 	if len(addr) > 1 && addr[0] == ':' {
 		addr = "http://127.0.0.1" + addr
 	}
@@ -310,7 +309,10 @@ func (s *Server) Start(addr string) {
 // Call shutdown with a context.context on each http(s) server.
 func Shutdown(ctx context.Context) {
 	for _, server := range poolOfServers {
-		server.Shutdown(ctx)
+		if e := server.Shutdown(ctx); e != nil {
+			logger.Errorf("shutdowning server : %v", e)
+		}
+		logger.Infof("server %s down", server.Addr)
 	}
 
 	poolOfServers = []*http.Server{}
@@ -318,7 +320,6 @@ func Shutdown(ctx context.Context) {
 
 // Shutdown call the framework shutdown to stop all running server
 func (s *Server) Shutdown(ctx context.Context) {
-	s.log.Debugf("-1")
 	Shutdown(ctx)
 }
 
@@ -330,10 +331,10 @@ func (s *Server) WaitAndStop() {
 
 // ExitHandler handle ctrl+c in intern
 func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
-	c := make(chan os.Signal, 1)
+	var c = make(chan os.Signal, 1)
 	signal.Notify(c, sig...)
 
-	defer s.Shutdown(ctx)
+	defer Shutdown(ctx)
 
 	for ctx.Err() == nil {
 		select {
@@ -349,5 +350,5 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 // SetLogger set the logger of the server
 func (s *Server) SetLogger(lg log.ILog) {
 	logger = lg
-	s.log = logger
+	s.log = lg
 }

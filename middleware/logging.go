@@ -13,8 +13,12 @@ import (
 // Logging log information about the newly receive request
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := webfmwk.GetLogger()
-		log.Infof("[+] (%s): [%s]%s", r.RemoteAddr, r.Method, r.RequestURI)
+		var (
+			log = webfmwk.GetLogger()
+			id  = "" //GetRequestID(r.Context())
+		)
+
+		log.Infof("[+]-%s-(%s): [%s]%s", id, r.RemoteAddr, r.Method, r.RequestURI)
 		next.ServeHTTP(w, r)
 	})
 }

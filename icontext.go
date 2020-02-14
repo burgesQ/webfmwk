@@ -10,8 +10,8 @@ import (
 // IContext Interface implement the context used in this project
 type IContext interface {
 
-	GetRequestID() int
-	SetRequestID(id int) IContext
+	GetRequestID() string
+	SetRequestID(id string) IContext
 
 	// SetRequest is used to save the request object
 	SetRequest(rq *http.Request) IContext

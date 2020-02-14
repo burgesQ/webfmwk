@@ -19,6 +19,8 @@ type (
 	// HandlerSign hold the signature of the controller
 	HandlerSign func(c IContext)
 
+	NewHandler func(c IContext) IContext
+
 	// Handler Sign func(c IContext) error
 
 	// Route hold the data for one route
@@ -35,6 +37,56 @@ type (
 	// RoutesPerPrefix hold the routes and there respectiv prefix
 	RoutesPerPrefix map[string]Routes
 )
+
+// func (h HandlerSign) Next() {
+
+// }
+
+///var (
+// test_1 = func(next NewHandler) NewHandler {
+// 	return HandlerFunc(func(c IContext) IContext {
+
+// 		// do smth w/ c
+
+// 		return c
+// 	})
+// }
+
+// test_2 = func(next NewHandler) NewHandler {
+// 	return HandlerFunc(func(c IContext) IContext {
+
+// 		// do smth else  w/ c
+
+// 		return c
+// 	})
+// }
+
+// mdlw = []NewHandler{
+// 	test_2, test_1,
+// }
+// )
+
+// func HandlerFunc(f NewHandler) NewHandler {
+// 	// define c here ?
+// 	// then run
+// 	return f(c)
+// }
+
+// func RunHandler() {
+
+// 	if f == nil {
+// 		return c
+// 	} else {
+// 		return
+// 	}
+// 	for _, f := range mdlw {
+// 		f()
+// 	}
+// 	test_1(test_2(h))
+// 	handler
+
+// 	return f()
+// }
 
 func (rpp *RoutesPerPrefix) addRoute(p string, r Route) {
 	(*rpp)[p] = append((*rpp)[p], r)
@@ -134,11 +186,13 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 const _pingEndpoint = "/ping"
 
 // SetRouter create a mux.Handler router and then :
-// register the middlewares,
+// register the middle wares,
 // register the user defined routes per prefix,
 // and return the routes handler
 func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
+
+	router.Use(addRequestID)
 
 	for _, mw := range s.middlewares {
 		router.Use(mw)

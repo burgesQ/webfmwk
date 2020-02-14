@@ -17,7 +17,7 @@ type logger struct {
 
 var (
 	_lg = logger{
-		level: LogERR,
+		level: LogDEBUG,
 	}
 
 	_out = map[int]string{

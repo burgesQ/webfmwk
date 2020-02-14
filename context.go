@@ -28,7 +28,7 @@ type (
 		query map[string][]string
 		log   log.ILog
 		ctx   *context.Context
-		uid   int
+		uid   string
 	}
 
 	// AnonymousError struct is used to answer error
@@ -81,12 +81,12 @@ func (c *Context) initOnce() {
 }
 
 // SetRequest implement IContext
-func (c *Context) GetRequestID() int {
+func (c *Context) GetRequestID() string {
 	return c.uid
 }
 
 // SetRequest implement IContext
-func (c *Context) SetRequestID(id int) IContext {
+func (c *Context) SetRequestID(id string) IContext {
 	c.uid = id
 	return c
 }
