@@ -28,6 +28,7 @@ type (
 		query map[string][]string
 		log   log.ILog
 		ctx   *context.Context
+		uid   int
 	}
 
 	// AnonymousError struct is used to answer error
@@ -45,23 +46,49 @@ var (
 	validate = validator.New()
 	// decoder annotation : `schema` : gorilla
 	decoder = schema.NewDecoder()
-	// tranlator
-	en = en_translator.New()
-
-	// universal translator
-	uni *ut.UniversalTranslator
 	// this is usually know or extracted from http 'Accept-Language' header
 	// also see uni.FindTranslator(...)
+	// TODO: extract from Accept-Language ?
 	trans ut.Translator
+
+	inited = false
 )
 
-func init() {
+func (c *Context) initOnce() {
+	if inited {
+		return
+	}
+
+	var (
+		// tranlator
+		en = en_translator.New()
+
+		// universal translator
+		uni *ut.UniversalTranslator
+	)
+
 	// universal translator
 	uni = ut.New(en, en)
 	// this is usually know or extracted from http 'Accept-Language' header
 	// also see uni.FindTranslator(...)
 	trans, _ = uni.GetTranslator("en")
-	en_translations.RegisterDefaultTranslations(validate, trans)
+	// TODO: check ret val
+	if e := en_translations.RegisterDefaultTranslations(validate, trans); e != nil {
+		c.log.Fatalf("cannot init translations : %v", e)
+	}
+
+	inited = true
+}
+
+// SetRequest implement IContext
+func (c *Context) GetRequestID() int {
+	return c.uid
+}
+
+// SetRequest implement IContext
+func (c *Context) SetRequestID(id int) IContext {
+	c.uid = id
+	return c
 }
 
 // SetRequest implement IContext
@@ -138,6 +165,7 @@ func (c *Context) FetchContent(dest interface{}) {
 // Validate implement IContext
 // this implemt use validator to anotate & check struct
 func (c Context) Validate(dest interface{}) {
+	c.initOnce()
 	if e := validate.Struct(dest); e != nil {
 		out := e.(validator.ValidationErrors).Translate(trans)
 		c.log.Errorf("error while validating the payload :\n%s", out)

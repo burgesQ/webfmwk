@@ -4,6 +4,9 @@
 
 * WIP v3 [0/2] [0%]
 
+** ctx id's
+** logger overload ?
+** IContext middlewares
 ** TODO better option handling (optional options)
    - https://sagikazarmark.hu/blog/functional-options-on-steroids/
 ** TODO cleaner doc [0/3] [0%]
@@ -16,6 +19,9 @@
       - [ ] pretty
 
 ** IDEA API generator ?
+   - cobra cmd
+   - json ready
+   - db interface ?
 
 * DONE v2 [4/4] [100%]
   CLOSED: [2020-02-04 Tue 16:21]
