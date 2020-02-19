@@ -214,14 +214,16 @@ func toWorker(addr string) http.Server {
 // DumpRoutes dump the API endpoints using the server logger
 func (s *Server) DumpRoutes() {
 	var router = s.SetRouter()
-	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	if e := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		var (
 			pathTemplate, _ = route.GetPathTemplate()
 			methods, _      = route.GetMethods()
 		)
 		s.log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
 		return nil
-	})
+	}); e != nil {
+		log.Errorf("can't walk trough routing : %v", e)
+	}
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.
@@ -266,7 +268,7 @@ func (s *Server) checkIsUp(addr string) {
 		addr = "http://127.0.0.1" + addr
 	}
 
-	addr = addr + _pingEndpoint
+	addr += _pingEndpoint
 
 	for {
 		time.Sleep(time.Millisecond * 10)
