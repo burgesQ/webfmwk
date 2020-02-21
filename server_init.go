@@ -67,7 +67,7 @@ func InitServer(opts ...Option) *Server {
 	return s
 }
 
-func (m ServerMeta) toServer(addr string) http.Server {
+func (m *ServerMeta) toServer(addr string) http.Server {
 	return http.Server{
 		Addr:           addr,
 		ReadTimeout:    m.baseServer.ReadTimeout,
