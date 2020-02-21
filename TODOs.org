@@ -23,6 +23,8 @@
    - json ready
    - db interface ?
 
+** PING endrpojnt should be optional
+
 * DONE v2 [4/4] [100%]
   CLOSED: [2020-02-04 Tue 16:21]
 ** DONE stuffs [9/12] [75%]

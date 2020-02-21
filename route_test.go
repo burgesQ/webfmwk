@@ -23,12 +23,8 @@ var _emptyController = func(c IContext) {}
 // TODO: func TestAddRoutes(t *testing.T) {}
 
 func TestSetPrefix(t *testing.T) {
-	s := InitServer(false)
-
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	var s = InitServer().ToogleCheckIsUp()
+	defer stopServer(t, s)
 
 	s.SetPrefix(_testPrefix)
 	s.GET(_testURL, _emptyController)
@@ -47,12 +43,8 @@ func TestSetPrefix(t *testing.T) {
 }
 
 func TestAddRoute(t *testing.T) {
-	s := InitServer(false)
-
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	var s = InitServer().ToogleCheckIsUp()
+	defer stopServer(t, s)
 
 	s.AddRoute(Route{
 		Path:    _testURI,
@@ -65,12 +57,9 @@ func TestAddRoute(t *testing.T) {
 }
 
 func TestAddRoutes(t *testing.T) {
-	s := InitServer(false)
+	s := InitServer().ToogleCheckIsUp()
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	defer stopServer(t, s)
 
 	s.AddRoutes(Routes{
 		{
@@ -112,12 +101,9 @@ func TestRouteMethod(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			var s = InitServer(false)
+			var s = InitServer().ToogleCheckIsUp()
 
-			defer func(s Server) {
-				s.Shutdown(*s.GetContext())
-				s.WaitAndStop()
-			}(s)
+			defer stopServer(t, s)
 
 			testVerb := ""
 			switch test.reqType {
@@ -146,9 +132,8 @@ func TestRouteMethod(t *testing.T) {
 }
 
 func TestSetRouter(t *testing.T) {
-	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	s := InitServer().ToogleCheckIsUp()
+	defer stopServer(t, s)
 
 	s.SetPrefix(_testPrefix)
 	s.GET(_testURL, func(c IContext) { c.JSONNoContent() })
@@ -175,9 +160,8 @@ func TestSetRouter(t *testing.T) {
 // TODO: func TestRouteApplier(t *testing.T) {}
 
 func TestHandleParam(t *testing.T) {
-	s := InitServer(false)
-	defer s.WaitAndStop()
-	defer s.Shutdown(*s.GetContext())
+	s := InitServer().ToogleCheckIsUp()
+	defer stopServer(t, s)
 
 	s.GET("/test/{id}", func(c IContext) {
 		if val, ok := c.GetQuery("pretty"); !ok || val != "1" {

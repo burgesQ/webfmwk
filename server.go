@@ -28,17 +28,20 @@ type (
 
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
-		routes      RoutesPerPrefix
-		ctx         *context.Context
-		wg          *sync.WaitGroup
-		launcher    WorkerLauncher
-		middlewares []mux.MiddlewareFunc
-		prefix      string
-		docHandler  http.Handler
-		CORS        bool
-		log         log.ILog
-		setter      func(c *Context) IContext
-		isReady     chan bool
+		routes            RoutesPerPrefix
+		ctx               context.Context
+		wg                *sync.WaitGroup
+		launcher          WorkerLauncher
+		middlewares       []mux.MiddlewareFunc
+		prefix            string
+		docHandler        http.Handler
+		CORS              bool
+		log               log.ILog
+		setter            func(c *Context) IContext
+		isReady           chan bool
+		checkIsUp         bool
+		internalHandle    bool
+		isInternalHandled bool
 	}
 
 	// WorkerConfig hold the worker config per server instance
@@ -80,30 +83,21 @@ func GetLogger() log.ILog {
 // Init the worker internal launcher.
 // If withCtrl is set to true, the server will handle ctrl+C internall.y
 // Please add worker to the package's WorkerLauncher to sync them.
-func InitServer(withCtrl bool) Server {
+func InitServer() *Server {
 	var (
 		wg          sync.WaitGroup
 		ctx, cancel = context.WithCancel(context.Background())
-		s           = Server{
-			launcher: CreateWorkerLauncher(&wg, cancel),
-			ctx:      &ctx,
-			wg:       &wg,
-			log:      logger,
-			routes:   make(RoutesPerPrefix),
-			setter:   nakedSetter,
-			isReady:  make(chan bool),
-		}
 	)
 
-	// launch the ctrl+c job
-	if withCtrl {
-		s.launcher.Start("exit handler", func() error {
-			s.ExitHandler(ctx, os.Interrupt)
-			return nil
-		})
+	return &Server{
+		launcher: CreateWorkerLauncher(&wg, cancel),
+		ctx:      ctx,
+		wg:       &wg,
+		log:      logger,
+		routes:   make(RoutesPerPrefix),
+		setter:   nakedSetter,
+		isReady:  make(chan bool),
 	}
-
-	return s
 }
 
 //
@@ -126,7 +120,7 @@ func (s *Server) GetLauncher() *WorkerLauncher {
 }
 
 // GetContext return a pointer on the context.Context used
-func (s *Server) GetContext() *context.Context {
+func (s *Server) GetContext() context.Context {
 	return s.ctx
 }
 
@@ -135,13 +129,32 @@ func (s *Server) AddMiddleware(mw mux.MiddlewareFunc) {
 	s.middlewares = append(s.middlewares, mw)
 }
 
-func (s *Server) hasBody(r *http.Request) bool {
-	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
+func (s *Server) IsReady() chan bool {
+	return s.isReady
+}
+
+// ToogleCheckIsUp enable the ability to internaly check if the
+// server is up by exposing a new endpoint (`ping`) and trying to reach it.
+// Then please us the `IsReady` method.
+func (s *Server) ToogleCheckIsUp() *Server {
+	s.checkIsUp = true
+
+	return s
+}
+
+func (s *Server) ToogleInternalHandle() *Server {
+	s.internalHandle = true
+
+	return s
 }
 
 // SetCustomContext save a custom context so it can be fetched in the controller handler
 func (s *Server) SetCustomContext(setter func(c *Context) IContext) {
 	s.setter = setter
+}
+
+func (s *Server) hasBody(r *http.Request) bool {
+	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
 }
 
 // webfmwk main logic, return a http handler wrapped by webfmwk
@@ -257,13 +270,13 @@ func (s *Server) setServer(addr string, tlsStuffs ...TLSConfig) *http.Server {
 	return &worker
 }
 
-func (s *Server) IsReady() chan bool {
-	return s.isReady
-}
-
 // checkIsUp poll the server until it is up
 // poll /ping with a GET
-func (s *Server) checkIsUp(addr string) {
+func (s *Server) pollPingEndpoint(addr string) {
+	if !s.checkIsUp {
+		return
+	}
+
 	if len(addr) > 1 && addr[0] == ':' {
 		addr = "http://127.0.0.1" + addr
 	}
@@ -290,34 +303,40 @@ func (s *Server) checkIsUp(addr string) {
 	}
 }
 
+func (s *Server) internalHandler() {
+	if s.internalHandle && !s.isInternalHandled {
+		// launch the ctrl+c job
+		s.launcher.Start("exit handler", func() error {
+			s.ExitHandler(s.ctx, os.Interrupt)
+			return nil
+		})
+		s.isInternalHandled = true
+	}
+}
+
 // StartTLS expose an server to an HTTPS endpoint
 func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
+	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
-		go s.checkIsUp(addr)
+		go s.pollPingEndpoint(addr)
 		return s.setServer(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.Cert, tlsStuffs.Key)
 	})
 }
 
 // Start expose an server to an HTTP endpoint
 func (s *Server) Start(addr string) {
+	s.internalHandler()
 	s.launcher.Start("http server "+addr, func() error {
-		go s.checkIsUp(addr)
+		go s.pollPingEndpoint(addr)
 
 		return s.setServer(addr).ListenAndServe()
 	})
 }
 
-// Shutdown terminate all running servers.
-// Call shutdown with a context.context on each http(s) server.
-func Shutdown(ctx context.Context) {
-	for _, server := range poolOfServers {
-		if e := server.Shutdown(ctx); e != nil {
-			logger.Errorf("shutdowning server : %v", e)
-		}
-		logger.Infof("server %s down", server.Addr)
-	}
-
-	poolOfServers = []*http.Server{}
+// SetLogger set the logger of the server
+func (s *Server) SetLogger(lg log.ILog) {
+	logger = lg
+	s.log = lg
 }
 
 // Shutdown call the framework shutdown to stop all running server
@@ -349,8 +368,15 @@ func (s *Server) ExitHandler(ctx context.Context, sig ...os.Signal) {
 	}
 }
 
-// SetLogger set the logger of the server
-func (s *Server) SetLogger(lg log.ILog) {
-	logger = lg
-	s.log = lg
+// Shutdown terminate all running servers.
+// Call shutdown with a context.context on each http(s) server.
+func Shutdown(ctx context.Context) {
+	for _, server := range poolOfServers {
+		if e := server.Shutdown(ctx); e != nil {
+			logger.Errorf("shutdowning server : %v", e)
+		}
+		logger.Infof("server %s down", server.Addr)
+	}
+
+	poolOfServers = []*http.Server{}
 }

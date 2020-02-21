@@ -199,9 +199,11 @@ func (s *Server) SetRouter() *mux.Router {
 	}
 
 	// test handler
-	router.HandleFunc(_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "pong")
-	}).Methods("GET").Name("ping endpoit")
+	if s.checkIsUp {
+		router.HandleFunc(_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "pong")
+		}).Methods("GET").Name("ping endpoint")
+	}
 
 	for prefix, routes := range s.routes {
 		subRouter := router.PathPrefix(prefix).Subrouter()

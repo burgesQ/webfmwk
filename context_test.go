@@ -15,18 +15,22 @@ var (
 	_testAddr  = "http://127.0.0.1" + _testPort
 )
 
+func stopServer(t *testing.T, s *Server) {
+	var ctx = s.GetContext()
+
+	ctx.Done()
+	s.Shutdown(ctx)
+	s.WaitAndStop()
+	t.Log("server closed")
+}
+
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
-	var s = InitServer(false)
+	var s = InitServer().ToogleCheckIsUp()
 
 	t.Log("init server...")
 
-	defer func(s Server) {
-		ctx := *s.GetContext()
-		ctx.Done()
-		s.Shutdown(ctx)
-		t.Log("server closed")
-	}(s)
+	defer stopServer(t, s)
 
 	s.POST(route, handlerRoute)
 
@@ -40,16 +44,11 @@ func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 
 func wrapperGet(t *testing.T, route, routeReq string,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
-	var s = InitServer(false)
+	var s = InitServer().ToogleCheckIsUp()
 
 	t.Log("init server...")
 
-	defer func(s Server) {
-		ctx := *s.GetContext()
-		ctx.Done()
-		s.Shutdown(ctx)
-		t.Log("server closed")
-	}(s)
+	defer stopServer(t, s)
 
 	s.GET(route, handlerRoute)
 
@@ -104,12 +103,9 @@ func TestFetchContent(t *testing.T) {
 }
 
 func TestCheckHeaderNoHeader(t *testing.T) {
-	var s = InitServer(false)
+	var s = InitServer().ToogleCheckIsUp()
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	defer stopServer(t, s)
 
 	s.POST("/test", func(c IContext) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))
@@ -131,12 +127,9 @@ func TestCheckHeaderNoHeader(t *testing.T) {
 }
 
 func TestCheckHeaderWrongHeader(t *testing.T) {
-	var s = InitServer(false)
+	var s = InitServer().ToogleCheckIsUp()
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	defer stopServer(t, s)
 
 	s.POST("/test", func(c IContext) {
 		c.JSONBlob(http.StatusOK, []byte(hBody))

@@ -6,25 +6,18 @@ import (
 )
 
 func TestGetLauncher(t *testing.T) {
-	s := InitServer(false)
+	s := InitServer().ToogleCheckIsUp()
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
-
+	defer stopServer(t, s)
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
 	}
 }
 
 func TestGetContext(t *testing.T) {
-	s := InitServer(false)
+	s := InitServer().ToogleCheckIsUp()
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	defer stopServer(t, s)
 
 	if s.GetContext() == nil {
 		t.Errorf("Context wrongly created : %v.", s.ctx)
@@ -32,12 +25,9 @@ func TestGetContext(t *testing.T) {
 }
 
 func TestAddMiddleware(t *testing.T) {
-	s := InitServer(false)
+	s := InitServer().ToogleCheckIsUp()
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	defer stopServer(t, s)
 
 	s.AddMiddleware(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,12 +47,9 @@ func TestAddMiddleware(t *testing.T) {
 
 func TestInitServer(t *testing.T) {
 	t.Run("simple init server", func(t *testing.T) {
-		s := InitServer(false)
+		s := InitServer().ToogleCheckIsUp()
 
-		defer func(s Server) {
-			s.Shutdown(*s.GetContext())
-			s.WaitAndStop()
-		}(s)
+		defer stopServer(t, s)
 
 		if s.GetLauncher() == nil || s.GetContext() == nil {
 			t.Errorf("Error while creating the server entity")

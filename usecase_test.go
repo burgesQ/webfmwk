@@ -18,7 +18,7 @@ type testSerial struct {
 }
 
 func TestUseCase(t *testing.T) {
-	s := InitServer(false)
+	s := InitServer().ToogleCheckIsUp()
 
 	// log.Init(log.LOGFORMAT_LONG | log.LOGGER_STDOUT)
 	// log.SetLogLevel(log.LOG_DEBUG)
@@ -68,10 +68,7 @@ func TestUseCase(t *testing.T) {
 		c.JSONCreated(anonymous)
 	})
 
-	defer func(s Server) {
-		s.Shutdown(*s.GetContext())
-		s.WaitAndStop()
-	}(s)
+	defer stopServer(t, s)
 	go s.Start(_testPort)
 	<-s.isReady
 

@@ -9,7 +9,6 @@ import (
 
 // IContext Interface implement the context used in this project
 type IContext interface {
-
 	GetRequestID() string
 	SetRequestID(id string) IContext
 
@@ -38,10 +37,10 @@ type IContext interface {
 	SetLogger(logger log.ILog) IContext
 
 	// Save the given context object into the fmwk context
-	SetContext(ctx *context.Context) IContext
+	SetContext(ctx context.Context) IContext
 
 	// Fetch the previously saved context object
-	GetContext() *context.Context
+	GetContext() context.Context
 
 	// FetchContent extract the content from the body
 	FetchContent(content interface{})

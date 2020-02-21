@@ -27,7 +27,7 @@ type (
 		vars  map[string]string
 		query map[string][]string
 		log   log.ILog
-		ctx   *context.Context
+		ctx   context.Context
 		uid   string
 	}
 
@@ -141,13 +141,13 @@ func (c *Context) SetLogger(logger log.ILog) IContext {
 }
 
 // SetContext implement IContext
-func (c *Context) SetContext(ctx *context.Context) IContext {
+func (c *Context) SetContext(ctx context.Context) IContext {
 	c.ctx = ctx
 	return c
 }
 
 // GetContent implement IContext
-func (c *Context) GetContext() *context.Context {
+func (c *Context) GetContext() context.Context {
 	return c.ctx
 }
 
