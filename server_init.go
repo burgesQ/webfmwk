@@ -148,7 +148,7 @@ func SetWriteTimeout(val time.Duration) Option {
 	}
 }
 
-func WithPrefix(prefix string) Option {
+func SetPrefix(prefix string) Option {
 	return func(s *Server) {
 		s.meta.prefix = prefix
 	}

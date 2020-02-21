@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	// create server
-	s := w.InitServer(true)
+	s := w.InitServer()
 
 	s.GET("/hello", func(c w.IContext) {
 		var (

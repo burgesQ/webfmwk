@@ -27,16 +27,13 @@ type (
 )
 
 func main() {
-	// create server
-	s := w.InitServer(true)
+	var s = w.InitServer()
 
 	s.POST("/hello", func(c w.IContext) {
-
-		out := Payload{}
+		var out = Payload{}
 
 		c.FetchContent(&out.content)
 		c.Validate(out.content)
-
 		c.DecodeQP(&out.qp)
 		c.Validate(out.qp)
 

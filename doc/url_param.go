@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// create server
-	s := w.InitServer(true)
+	s := w.InitServer()
 
 	s.GET("/hello/{id}", func(c w.IContext) {
 		c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))

@@ -8,12 +8,13 @@ import (
 )
 
 func main() {
-
 	log.SetLogLevel(log.LogDEBUG)
 
 	// init server w/ ctrl+c support
-	s := w.InitServer(true)
-	wl := s.GetLauncher()
+	var (
+		s  = w.InitServer()
+		wl = s.GetLauncher()
+	)
 
 	s.GET("/test", func(c w.IContext) {
 		c.JSONOk("ok")

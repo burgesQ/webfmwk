@@ -30,8 +30,7 @@ var (
 )
 
 func main() {
-
-	s := webfmwk.InitServer(true)
+	var s = webfmwk.InitServer()
 
 	s.RouteApplier(routes)
 

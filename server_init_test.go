@@ -15,6 +15,7 @@ func TestServerNewInit(t *testing.T) {
 			WithCtrlC(), CheckIsUp(), WithCORS(),
 			SetMaxHeaderBytes(42), SetReadTimeout(testT),
 			SetWriteTimeout(testT), SetReadHeaderTimeout(testT),
+			SetPrefix("/api"),
 			WithMiddlewars(func(next http.Handler) http.Handler {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				})
@@ -30,4 +31,5 @@ func TestServerNewInit(t *testing.T) {
 	z.AssertEqual(t, s.meta.baseServer.WriteTimeout, testT)
 	z.AssertEqual(t, s.meta.baseServer.ReadHeaderTimeout, testT)
 	z.AssertEqual(t, s.meta.baseServer.MaxHeaderBytes, 42)
+	z.AssertEqual(t, s.meta.prefix, "/api")
 }

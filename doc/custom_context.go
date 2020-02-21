@@ -11,12 +11,10 @@ type customContext struct {
 
 func main() {
 	// init server w/ ctrl+c support
-	s := w.InitServer(true)
-
-	s.SetCustomContext(func(c *w.Context) w.IContext {
+	s := w.InitServer(w.WithCustomContext(func(c *w.Context) w.IContext {
 		ctx := &customContext{*c, "42"}
 		return ctx
-	})
+	}))
 
 	s.GET("/test", func(c w.IContext) {
 		ctx := c.(*customContext)

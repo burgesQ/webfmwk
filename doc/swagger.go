@@ -30,11 +30,8 @@ func hello(c w.IContext) error {
 // @host localhost:4242
 func main() {
 	// init server w/ ctrl+c support
-	s := w.InitServer(true)
-
-	s.SetPrefix("/api")
-
-	s.RegisterDocHandler(httpSwagger.WrapHandler)
+	s := w.InitServer(webfmwk.WithPrefix("/api"),
+		webfmwk.WithDocHandler(httpSwagger.WrapHandler))
 
 	s.GET("/test", func(c w.IContext) error {
 		return c.JSONOk("ok")

@@ -9,10 +9,7 @@ import (
 var logger = log.GetLogger()
 
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(true)
-
-	s.SetLogger(logger)
+	var s = w.InitServer(webfmwk.WithLogger(logger))
 
 	s.GET("/test", func(c w.IContext) error {
 		return c.JSONOk("ok")
