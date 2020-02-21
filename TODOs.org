@@ -5,8 +5,16 @@
 * WIP v3 [0/2] [0%]
 
 ** ctx id's
+   - [ ] generate id per request
+   - [ ] save it in go ctx
+   - [ ] pass it to ctx obj
+
 ** logger overload ?
+   - [ ] allow adding of extra payload to logger ?
+
 ** IContext middlewares
+   - [ ] what for webfmwk's middlewares
+
 ** TODO better option handling (optional options)
    - https://sagikazarmark.hu/blog/functional-options-on-steroids/
 ** TODO cleaner doc [0/3] [0%]
@@ -24,6 +32,7 @@
    - db interface ?
 
 ** PING endrpojnt should be optional
+   - done
 
 * DONE v2 [4/4] [100%]
   CLOSED: [2020-02-04 Tue 16:21]

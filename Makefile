@@ -1,28 +1,40 @@
 NAME				= webfmwk
 
-CC					= go
+GO_CC				= go
 
-COVER_FILE	= .coverage.out
-TEST_FILE		= ./...
+COVER_FILE  = .coverage.out
+COVER_VALUE = -cover -coverprofile=$(COVER_FILE) -covermode=atomic
+TEST_COVER  = $(COVER_VALUE)
+TEST_ARGS   = -v -short
+TEST_FILTER = #-run <pattern>
+app_name		= github.com/burgesQ/$(NAME)
+TEST_FILES  = ./...
 
-TEST_ARGS		= -cover -v -short -coverprofile=$(COVER_FILE) -covermode=atomic
-TEST				= $(CC) test $(TEST_ARGS) $(TEST_FILE)
+TEST        = $(GO_CC) test $(TEST_COVER) $(TEST_ARGS) $(TEST_FILES) $(TEST_FILTER)
 
 LINT				= golangci-lint run
 
-VET					= $(CC) vet .
+VET					= $(GO_CC) vet .
 
+TIDY				= $(GO_CC) mod tidy
+
+.PHONY: all
 all: $(NAME)
 
 $(NAME): test
 
+.PHONY: vet
 vet:
-	$(VET)
+	@ $(VET)
 
+.PHONY: lint
 lint:
-	$(LINT)
+	@ $(LINT)
 
+.PHONY: test
 test:
-	$(TEST)
+	@ $(TEST)
 
-.PHONY: vet lint test
+.PHONY: tidy
+tidy:
+	@	$(TIDY)

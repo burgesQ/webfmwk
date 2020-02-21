@@ -18,17 +18,24 @@ var (
 )
 
 func TestGetOPCode(t *testing.T) {
-	z.AssertEqual(t, _testOP, _testingErrorHandled.GetOPCode())
+	z.AssertEqual(t, _testingErrorHandled.GetOPCode(), _testOP)
 }
 
 func TestGetContent(t *testing.T) {
-	z.AssertEqual(t, _testContent, _testingErrorHandled.GetContent())
+	z.AssertEqual(t, _testingErrorHandled.GetContent(), _testContent)
 }
 
 func TestFactory(t *testing.T) {
 	test := factory(_testOP, _testContent)
-	z.AssertEqual(t, _testOP, test.GetOPCode())
-	z.AssertEqual(t, _testContent, test.GetContent())
+	z.AssertEqual(t, test.GetOPCode(), _testOP)
+	z.AssertEqual(t, test.GetContent(), _testContent)
+}
+
+func TestNewErrorHandled(t *testing.T) {
+	e := NewErrorHandled(_testOP, _testContent)
+	z.AssertEqual(t, e.GetOPCode(), _testOP)
+	z.AssertEqual(t, e.GetContent(), _testContent)
+	z.AssertEqual(t, e.Error(), `[200]: "ok"`)
 }
 
 func TestWrapping(t *testing.T) {
@@ -98,6 +105,9 @@ func TestMethod(t *testing.T) {
 		},
 		"new implemented": {
 			NewNotImplemented(_testContent).GetOPCode(), http.StatusNotImplemented,
+		},
+		"service unavailable": {
+			NewServiceUnavailable(_testContent).GetOPCode(), http.StatusServiceUnavailable,
 		},
 	}
 

@@ -110,7 +110,7 @@ func (c *Context) SetVars(v map[string]string) IContext {
 }
 
 // GetVar implement IContext
-func (c Context) GetVar(key string) string {
+func (c *Context) GetVar(key string) string {
 	return c.vars[key]
 }
 
@@ -164,7 +164,7 @@ func (c *Context) FetchContent(dest interface{}) {
 
 // Validate implement IContext
 // this implemt use validator to anotate & check struct
-func (c Context) Validate(dest interface{}) {
+func (c *Context) Validate(dest interface{}) {
 	c.initOnce()
 	if e := validate.Struct(dest); e != nil {
 		out := e.(validator.ValidationErrors).Translate(trans)
@@ -174,7 +174,7 @@ func (c Context) Validate(dest interface{}) {
 }
 
 // DecodeQP implement IContext
-func (c Context) DecodeQP(dest interface{}) {
+func (c *Context) DecodeQP(dest interface{}) {
 	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
 		c.log.Errorf("error while validating the query params :\n%s", e.Error())
 		c.log.Debugf("[%#v]", dest)
@@ -183,12 +183,12 @@ func (c Context) DecodeQP(dest interface{}) {
 }
 
 // IsPretty implement IContext
-func (c Context) IsPretty() bool {
+func (c *Context) IsPretty() bool {
 	return len(c.query["pretty"]) > 0
 }
 
 // CheckHeader implement IContext
-func (c Context) CheckHeader() {
+func (c *Context) CheckHeader() {
 	if ctype := c.r.Header.Get("Content-Type"); len(ctype) == 0 {
 		panic(NewNotAcceptable(AnonymousError{"Missing Content-Type header"}))
 	} else if !strings.HasPrefix(ctype, "application/json") {
@@ -197,7 +197,7 @@ func (c Context) CheckHeader() {
 }
 
 // OwnRecover implement IContext
-func (c Context) OwnRecover() {
+func (c *Context) OwnRecover() {
 	if r := recover(); r != nil {
 		switch e := r.(type) {
 		case IErrorHandled:

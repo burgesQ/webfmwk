@@ -11,13 +11,11 @@
 
 # What
 
-`webfmwk` is an internal framework build and own by Frafos GmbH.
+`webfmwk` is a go web API framework. Proprietary of Frafos GmbH.
 
 It was designed to be a minimalist go web framework supporting JSON API.
 
 The purpose of the framework is to use as few external library than possible.
-
-The server handle ctrl+c on it's own.
 
 **TODO: explain that perf is not the purpose. that's why panic are used - more user friendly.**
 
@@ -33,7 +31,7 @@ The server handle ctrl+c on it's own.
 
 # Test
 
-Simply run `go test .`
+Simply run `make`
 
 # How to use it
 
@@ -59,7 +57,7 @@ import (
 
 func main() {
     // create server
-    s := w.InitServer(true)
+    s := w.InitServer()
 
     s.GET("/hello", func(c w.IContext) {
         c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
@@ -98,7 +96,7 @@ import (
 
 func main() {
     // create server
-    s := w.InitServer(true)
+    s := w.InitServer()
 
     s.GET("/hello", func(c w.IContext) {
         var (
@@ -106,7 +104,7 @@ func main() {
             pjson, ok = c.GetQuery("pjson")
         )
         if ok {
-            log.Errorf("%#v", pjson)
+            c.log.Errorf("%#v", pjson)
         }
         c.JSON(http.StatusOK, queries)
     })
@@ -142,7 +140,7 @@ import (
 
 func main() {
     // create server
-    s := w.InitServer(true)
+    s := w.InitServer()
 
     s.GET("/hello/{id}", func(c w.IContext) {
         c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))
@@ -205,15 +203,13 @@ type (
 
 func main() {
     // create server
-    s := w.InitServer(true)
+    s := w.InitServer()
 
     s.POST("/hello", func(c w.IContext) {
-
-        out := Payload{}
+        var out = Payload{}
 
         c.FetchContent(&out.content)
         c.Validate(out.content)
-
         c.DecodeQP(&out.qp)
         c.Validate(out.qp)
 
@@ -274,7 +270,7 @@ var (
 
 func main() {
 
-    s := webfmwk.InitServer(true)
+    s := webfmwk.InitServer()
 
     s.RouteApplier(routes)
 
@@ -309,7 +305,7 @@ import (
 
 func main() {
     // init server w/ ctrl+c support
-    s := w.InitServer(true)
+    s := w.InitServer(WithCtrlC())
 
     s.GET("/test", func(c w.IContext) error {
         return c.JSONOk("ok")
@@ -351,10 +347,7 @@ import (
 var logger = log.GetLogger()
 
 func main() {
-    // init server w/ ctrl+c support
-    s := w.InitServer(true)
-
-    s.SetLogger(logger)
+    s := w.InitServer(WithLogger(logger))
 
     s.GET("/test", func(c w.IContext) error {
         return c.JSONOk("ok")
@@ -400,9 +393,7 @@ type customContext struct {
 
 func main() {
     // init server w/ ctrl+c support
-    s := w.InitServer(true)
-
-    s.SetCustomContext(func(c *w.Context) w.IContext {
+    s := w.InitServer(WithCustomContext(func(c *w.Context) w.IContext {
         ctx := &customContext{*c, "42"}
         return ctx
     })
@@ -443,10 +434,7 @@ import (
 func main() {
 
     // init server w/ ctrl+c support
-    s := w.InitServer(true)
-
-    s.AddMiddleware(m.Logging)
-    s.AddMiddleware(m.Security)
+    s := w.InitServer(WithMiddlewars(m.Logging, m.Security)
 
     s.GET("/test", func(c w.IContext) error {
         return c.JSONOk("ok")
@@ -509,11 +497,9 @@ func hello(c w.IContext) error {
 // @host localhost:4242
 func main() {
     // init server w/ ctrl+c support
-    s := w.InitServer(true)
+    s := w.InitServer(WithDocHandler(httpSwagger.WrapHandler))
 
     s.SetPrefix("/api")
-
-    s.RegisterDocHandler(httpSwagger.WrapHandler)
 
     s.GET("/test", func(c w.IContext) error {
         return c.JSONOk("ok")
@@ -551,12 +537,12 @@ import (
 )
 
 func main() {
-
     log.SetLogLevel(log.LogDEBUG)
+    var (
+      s  = w.InitServer()
+      wl = s.GetLauncher()
+   )
 
-    // init server w/ ctrl+c support
-    s := w.InitServer(true)
-    wl := s.GetLauncher()
 
     s.GET("/test", func(c w.IContext) {
         c.JSONOk("ok")

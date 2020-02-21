@@ -23,7 +23,7 @@ var _emptyController = func(c IContext) {}
 // TODO: func TestAddRoutes(t *testing.T) {}
 
 func TestSetPrefix(t *testing.T) {
-	var s = InitServer().ToogleCheckIsUp()
+	var s = InitServer().EnableCheckIsUp()
 	defer stopServer(t, s)
 
 	s.SetPrefix(_testPrefix)
@@ -43,7 +43,7 @@ func TestSetPrefix(t *testing.T) {
 }
 
 func TestAddRoute(t *testing.T) {
-	var s = InitServer().ToogleCheckIsUp()
+	var s = InitServer().EnableCheckIsUp()
 	defer stopServer(t, s)
 
 	s.AddRoute(Route{
@@ -52,12 +52,12 @@ func TestAddRoute(t *testing.T) {
 		Handler: _emptyController,
 	})
 
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURI)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, _testVerbe)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURI)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, _testVerbe)
 }
 
 func TestAddRoutes(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 
 	defer stopServer(t, s)
 
@@ -74,10 +74,10 @@ func TestAddRoutes(t *testing.T) {
 		},
 	})
 
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURI)
-	z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, _testVerbe)
-	z.AssertStringEqual(t, s.routes[s.prefix][1].Path, _testURI2)
-	z.AssertStringEqual(t, s.routes[s.prefix][1].Verbe, _testVerbe)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURI)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, _testVerbe)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Path, _testURI2)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Verbe, _testVerbe)
 }
 
 func TestRouteMethod(t *testing.T) {
@@ -101,7 +101,7 @@ func TestRouteMethod(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			var s = InitServer().ToogleCheckIsUp()
+			var s = InitServer().EnableCheckIsUp()
 
 			defer stopServer(t, s)
 
@@ -124,15 +124,15 @@ func TestRouteMethod(t *testing.T) {
 				testVerb = PATCH
 			}
 
-			z.AssertStringEqual(t, s.routes[s.prefix][0].Path, _testURL)
-			z.AssertStringEqual(t, s.routes[s.prefix][0].Verbe, testVerb)
+			z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURL)
+			z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, testVerb)
 		})
 	}
 
 }
 
 func TestSetRouter(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 	defer stopServer(t, s)
 
 	s.SetPrefix(_testPrefix)
@@ -160,7 +160,7 @@ func TestSetRouter(t *testing.T) {
 // TODO: func TestRouteApplier(t *testing.T) {}
 
 func TestHandleParam(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 	defer stopServer(t, s)
 
 	s.GET("/test/{id}", func(c IContext) {

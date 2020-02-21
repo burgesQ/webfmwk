@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetLauncher(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 
 	defer stopServer(t, s)
 	if s.GetLauncher() == nil {
@@ -15,7 +15,7 @@ func TestGetLauncher(t *testing.T) {
 }
 
 func TestGetContext(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 
 	defer stopServer(t, s)
 
@@ -25,17 +25,17 @@ func TestGetContext(t *testing.T) {
 }
 
 func TestAddMiddleware(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 
 	defer stopServer(t, s)
 
-	s.AddMiddleware(func(next http.Handler) http.Handler {
+	s.RegisterMiddlewares(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		})
 	})
 
-	if len(s.middlewares) != 1 {
-		t.Errorf("Middleware wrongly saved : %v.", s.middlewares)
+	if len(s.meta.middlewares) != 1 {
+		t.Errorf("Middleware wrongly saved : %v.", s.meta.middlewares)
 	}
 }
 
@@ -47,7 +47,7 @@ func TestAddMiddleware(t *testing.T) {
 
 func TestInitServer(t *testing.T) {
 	t.Run("simple init server", func(t *testing.T) {
-		s := InitServer().ToogleCheckIsUp()
+		s := InitServer().EnableCheckIsUp()
 
 		defer stopServer(t, s)
 

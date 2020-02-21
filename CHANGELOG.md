@@ -4,16 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - 2020.2.20
+## [3.1.0] - 2020.2.21
 
 ### Added
-- ErrorServerUnavailable
-- Dump route method
-- isReady channel + /ping endpoint
+- Option type to init server
+- Error Service Unavailable
+- Dump method, which dump exposed routes 
+- isReady channel pattern
+- More unit test
 
 ### Changed
+- InitServer method signature
 - Log routes groups name instead of full routes
-- Validation trnaslator init once
+- Validation translator init once
 
 ### Fixed
 - golangci linter

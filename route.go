@@ -13,15 +13,13 @@ const (
 	PATCH  = "PATCH"
 	PUT    = "PUT"
 	DELETE = "DELETE"
+
+	_pingEndpoint = "/ping"
 )
 
 type (
 	// HandlerSign hold the signature of the controller
 	HandlerSign func(c IContext)
-
-	NewHandler func(c IContext) IContext
-
-	// Handler Sign func(c IContext) error
 
 	// Route hold the data for one route
 	Route struct {
@@ -38,56 +36,6 @@ type (
 	RoutesPerPrefix map[string]Routes
 )
 
-// func (h HandlerSign) Next() {
-
-// }
-
-///var (
-// test_1 = func(next NewHandler) NewHandler {
-// 	return HandlerFunc(func(c IContext) IContext {
-
-// 		// do smth w/ c
-
-// 		return c
-// 	})
-// }
-
-// test_2 = func(next NewHandler) NewHandler {
-// 	return HandlerFunc(func(c IContext) IContext {
-
-// 		// do smth else  w/ c
-
-// 		return c
-// 	})
-// }
-
-// mdlw = []NewHandler{
-// 	test_2, test_1,
-// }
-// )
-
-// func HandlerFunc(f NewHandler) NewHandler {
-// 	// define c here ?
-// 	// then run
-// 	return f(c)
-// }
-
-// func RunHandler() {
-
-// 	if f == nil {
-// 		return c
-// 	} else {
-// 		return
-// 	}
-// 	for _, f := range mdlw {
-// 		f()
-// 	}
-// 	test_1(test_2(h))
-// 	handler
-
-// 	return f()
-// }
-
 func (rpp *RoutesPerPrefix) addRoute(p string, r Route) {
 	(*rpp)[p] = append((*rpp)[p], r)
 }
@@ -102,17 +50,17 @@ func (rpp *RoutesPerPrefix) addRoutes(p string, r Routes) {
 
 // SetPrefix set the url path to prefix
 func (s *Server) SetPrefix(prefix string) {
-	s.prefix = prefix
+	s.meta.prefix = prefix
 }
 
 // AddRoute add a new route to expose
 func (s *Server) AddRoute(r Route) {
-	s.routes.addRoute(s.prefix, r)
+	s.meta.routes.addRoute(s.meta.prefix, r)
 }
 
 // AddRoutes save all the routes to expose
 func (s *Server) AddRoutes(r Routes) {
-	s.routes.addRoutes(s.prefix, r)
+	s.meta.routes.addRoutes(s.meta.prefix, r)
 }
 
 // GET expose a route to the http verb GET
@@ -183,8 +131,6 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 	}
 }
 
-const _pingEndpoint = "/ping"
-
 // SetRouter create a mux.Handler router and then :
 // register the middle wares,
 // register the user defined routes per prefix,
@@ -194,18 +140,18 @@ func (s *Server) SetRouter() *mux.Router {
 
 	router.Use(addRequestID)
 
-	for _, mw := range s.middlewares {
+	for _, mw := range s.meta.middlewares {
 		router.Use(mw)
 	}
 
 	// test handler
-	if s.checkIsUp {
+	if s.meta.checkIsUp {
 		router.HandleFunc(_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "pong")
 		}).Methods("GET").Name("ping endpoint")
 	}
 
-	for prefix, routes := range s.routes {
+	for prefix, routes := range s.meta.routes {
 		subRouter := router.PathPrefix(prefix).Subrouter()
 		// register routes
 		for _, route := range routes {
@@ -215,9 +161,9 @@ func (s *Server) SetRouter() *mux.Router {
 		}
 
 		// register doc handler
-		if s.docHandler != nil {
+		if s.meta.docHandler != nil {
 			s.log.Infof("load swagger doc")
-			subRouter.PathPrefix("/doc/").Handler(s.docHandler)
+			subRouter.PathPrefix("/doc/").Handler(s.meta.docHandler)
 		}
 	}
 

@@ -26,7 +26,7 @@ func stopServer(t *testing.T, s *Server) {
 
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
-	var s = InitServer().ToogleCheckIsUp()
+	var s = InitServer().EnableCheckIsUp()
 
 	t.Log("init server...")
 
@@ -44,7 +44,7 @@ func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 
 func wrapperGet(t *testing.T, route, routeReq string,
 	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
-	var s = InitServer().ToogleCheckIsUp()
+	var s = InitServer().EnableCheckIsUp()
 
 	t.Log("init server...")
 
@@ -103,7 +103,7 @@ func TestFetchContent(t *testing.T) {
 }
 
 func TestCheckHeaderNoHeader(t *testing.T) {
-	var s = InitServer().ToogleCheckIsUp()
+	var s = InitServer().EnableCheckIsUp()
 
 	defer stopServer(t, s)
 
@@ -127,7 +127,7 @@ func TestCheckHeaderNoHeader(t *testing.T) {
 }
 
 func TestCheckHeaderWrongHeader(t *testing.T) {
-	var s = InitServer().ToogleCheckIsUp()
+	var s = InitServer().EnableCheckIsUp()
 
 	defer stopServer(t, s)
 

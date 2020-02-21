@@ -18,7 +18,7 @@ type testSerial struct {
 }
 
 func TestUseCase(t *testing.T) {
-	s := InitServer().ToogleCheckIsUp()
+	s := InitServer().EnableCheckIsUp()
 
 	// log.Init(log.LOGFORMAT_LONG | log.LOGGER_STDOUT)
 	// log.SetLogLevel(log.LOG_DEBUG)
