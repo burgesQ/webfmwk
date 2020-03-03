@@ -15,10 +15,10 @@ func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
 			log = webfmwk.GetLogger()
-			id  = "" //GetRequestID(r.Context())
+			id  = webfmwk.GetRequestID(r.Context())
 		)
 
-		log.Infof("[+]-%s-(%s): [%s]%s", id, r.RemoteAddr, r.Method, r.RequestURI)
+		log.Infof("[+] (%s) : [%s]%s", id, r.Method, r.RequestURI)
 		next.ServeHTTP(w, r)
 	})
 }

@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -81,6 +82,9 @@ func (m *ServerMeta) toServer(addr string) http.Server {
 		ReadTimeout:    m.baseServer.ReadTimeout,
 		WriteTimeout:   m.baseServer.WriteTimeout,
 		MaxHeaderBytes: m.baseServer.MaxHeaderBytes,
+		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
+			return AssignRequestID(ctx)
+		},
 	}
 }
 

@@ -138,8 +138,6 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
 
-	router.Use(addRequestID)
-
 	for _, mw := range s.meta.middlewares {
 		router.Use(mw)
 	}
