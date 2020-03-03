@@ -1,5 +1,7 @@
 package log
 
+import "log"
+
 // ILog interface implement the logging system inside the API
 type ILog interface {
 	Errorf(format string, v ...interface{})
@@ -8,4 +10,5 @@ type ILog interface {
 	Debugf(format string, v ...interface{})
 	Fatalf(format string, v ...interface{})
 	SetLogLevel(level int) bool
+	GetErrorLogger() *log.Logger
 }

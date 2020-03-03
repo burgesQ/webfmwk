@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"log"
 )
 
 const (
@@ -46,6 +47,12 @@ func (l *logger) logContent(level int, format string, v ...interface{}) {
 
 func GetLogger() ILog {
 	return _lg
+}
+
+var eLogger *log.Logger
+
+func (l logger) GetErrorLogger() *log.Logger {
+	return eLogger
 }
 
 func (l logger) SetLogLevel(level int) bool {

@@ -206,6 +206,7 @@ func (s *Server) internalInit(addr string, tlsStuffs ...TLSConfig) *http.Server 
 	}
 
 	worker.Handler = h
+	worker.ErrorLog = s.log.GetErrorLogger()
 
 	// load tls for https
 	if len(tlsStuffs) == 1 {
