@@ -105,7 +105,7 @@ func WithCORS() Option {
 	}
 }
 
-func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
+func WithMiddlewars(mw ...mux.MiddlewareFunc) Option {
 	return func(s *Server) {
 		s.RegisterMiddlewares(mw...)
 		s.log.Debugf("\t-- middlewares loaded")
