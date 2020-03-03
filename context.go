@@ -72,7 +72,6 @@ func (c *Context) initOnce() {
 	// this is usually know or extracted from http 'Accept-Language' header
 	// also see uni.FindTranslator(...)
 	trans, _ = uni.GetTranslator("en")
-	// TODO: check ret val
 	if e := en_translations.RegisterDefaultTranslations(validate, trans); e != nil {
 		c.log.Fatalf("cannot init translations : %v", e)
 	}

@@ -235,6 +235,7 @@ func (s *Server) pollPingEndpoint(addr string) {
 	for {
 		time.Sleep(time.Millisecond * 10)
 
+		/* #nosec  */
 		if resp, e := http.Get(addr); e != nil {
 			s.log.Infof("server not up ... %s", e.Error())
 			continue

@@ -25,6 +25,7 @@ func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
 }
 
 func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
+	/* #nosec */
 	worker.TLSConfig = &tls.Config{
 		InsecureSkipVerify:       tlsCfg.Insecure,
 		Certificates:             make([]tls.Certificate, 1),
