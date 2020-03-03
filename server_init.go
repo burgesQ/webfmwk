@@ -87,42 +87,49 @@ func (m *ServerMeta) toServer(addr string) http.Server {
 func WithCtrlC() Option {
 	return func(s *Server) {
 		s.meta.ctrlc = true
+		s.log.Debugf("\t-- crtl-c support enabled")
 	}
 }
 
 func CheckIsUp() Option {
 	return func(s *Server) {
 		s.EnableCheckIsUp()
+		s.log.Debugf("\t-- check is up support enabled")
 	}
 }
 
 func WithCORS() Option {
 	return func(s *Server) {
 		s.EnableCORS()
+		s.log.Debugf("\t-- CORS support enabled")
 	}
 }
 
-func WithMiddlewars(mw ...mux.MiddlewareFunc) Option {
+func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
 	return func(s *Server) {
 		s.RegisterMiddlewares(mw...)
+		s.log.Debugf("\t-- middlewares loaded")
 	}
 }
 
 func WithDocHandler(handler http.Handler) Option {
 	return func(s *Server) {
 		s.RegisterDocHandler(handler)
+		s.log.Debugf("\t-- doc handler loaded")
 	}
 }
 
 func WithLogger(lg log.ILog) Option {
 	return func(s *Server) {
 		s.RegisterLogger(lg)
+		lg.Debugf("\t-- logger loaded")
 	}
 }
 
 func WithCustomContext(setter Setter) Option {
 	return func(s *Server) {
 		s.SetCustomContext(setter)
+		s.log.Debugf("\t-- custom context loaded")
 	}
 }
 
@@ -159,5 +166,6 @@ func SetWriteTimeout(val time.Duration) Option {
 func SetPrefix(prefix string) Option {
 	return func(s *Server) {
 		s.meta.prefix = prefix
+		s.log.Debugf("\t-- api prefix loaded")
 	}
 }
