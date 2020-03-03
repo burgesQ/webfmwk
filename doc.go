@@ -14,7 +14,24 @@ Example:
 
   func main() {
     // Echo instance
-    s := w.InitServer(true)
+    s := w.InitServer(
+     webfmwk.EnableCheckIsUp()
+		// webfmwk.WithCORS(),
+		webfmwk.WithLogger(log.GetLogger()),
+		webfmwk.WithMiddlewars(
+			middleware.Logging,
+			middleware.Security),
+		webfmwk.WithCustomContext(func(c *webfmwk.Context) webfmwk.IContext {
+			return &server.CustomContext{
+				Context:  *c,
+				T:        tmpl,
+				Chans:    x.chans,
+				MaxEntry: maxEntry,
+				RCList:   listRC,
+				LCList:   listLC,
+				StatAddr: stat,
+			}
+		}))
 
     // Routes
     s.GET("/hello", hello)

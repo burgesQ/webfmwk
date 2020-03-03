@@ -11,6 +11,14 @@ import (
 )
 
 type (
+	// Option is tu be used this way :
+	// s := w.InitServer(
+	//   webfmwk.EnableCheckIsUp()
+	//   webfmwk.WithCORS(),
+	//   webfmwk.WithLogger(log.GetLogger()),
+	//   webfmwk.WithMiddlewars(
+	// 	  middleware.Logging,
+	// 	  middleware.Security))
 	Option func(s *Server)
 
 	ServerMeta struct {

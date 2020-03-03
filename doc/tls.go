@@ -1,12 +1,17 @@
 package main
 
 import (
+	"github.com/burgesQ/webfmwk/v2/middleware"
 	w "github.com/burgesQ/webfmwk/v3"
 )
 
 func main() {
 	// init server w/ ctrl+c support
-	s := w.InitServer()
+	s := w.InitServer(
+		webfmwk.WithMiddlewars(
+			middleware.Logging,
+			middleware.Security),
+	)
 
 	s.GET("/test", func(c w.IContext) error {
 		return c.JSONOk("ok")
@@ -17,7 +22,7 @@ func main() {
 		s.StartTLS(":4242", TLSConfig{
 			Cert:     "/path/to/cert",
 			Key:      "/path/to/key",
-			Insecure: true,
+			Insecure: false,
 		})
 	}()
 
