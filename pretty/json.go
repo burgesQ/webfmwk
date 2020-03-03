@@ -22,15 +22,33 @@ const (
 	_next         = `":`
 )
 
-// JSON implement blablabla
-type JSON struct {
-	input  io.Reader
-	output *bufio.Writer
-	iter   *jsoniter.Iterator
-	wg     sync.WaitGroup
-	err    error
-	comp   bool
-}
+type (
+
+	// JSON implement blablabla
+	JSON struct {
+		input  io.Reader
+		output *bufio.Writer
+		iter   *jsoniter.Iterator
+		wg     sync.WaitGroup
+		err    error
+		comp   bool
+	}
+
+	// JsonError struct {
+	// 	e       error
+	// 	context string
+	// }
+)
+
+// func (e JsonError) Error() string {
+// 	return e.context + ": " + e.e.Error()
+// }
+
+// func NewJSONErr(e error) {
+// 	if e != nil {
+// 		panic(JsonError{e, "cannot write to output"})
+// 	}
+// }
 
 // Use the pretty json utilitary to create well, pretty json ? :nerd_face:
 func SimplePrettyJSON(r io.Reader, pretty bool) (string, error) {
@@ -87,19 +105,19 @@ func (pj *JSON) start() {
 
 	closer, ok := pj.input.(io.Closer)
 	if ok {
-		closer.Close()
+		pj.err = closer.Close()
 	}
 }
 
 func (pj *JSON) printSimpleValue() {
 	bts := pj.iter.SkipAndReturnBytes()
-	pj.output.Write(bts)
+	_, pj.err = pj.output.Write(bts)
 }
 
 func (pj *JSON) newArray(prefix string) {
 	var count int
 
-	pj.output.WriteByte(_bracketOpen)
+	pj.err = pj.output.WriteByte(_bracketOpen)
 	pj.iter.ReadArrayCB(func(*jsoniter.Iterator) bool {
 		elem := ""
 
@@ -111,23 +129,23 @@ func (pj *JSON) newArray(prefix string) {
 			elem += _jump + prefix + _doubleSpace
 		}
 
-		pj.output.WriteString(elem)
+		_, pj.err = pj.output.WriteString(elem)
 		count++
 
 		return pj.parseElmt(prefix + _doubleSpace)
 	})
 
 	if !pj.comp && count > 0 {
-		pj.output.WriteString(_jump + prefix)
+		_, pj.err = pj.output.WriteString(_jump + prefix)
 	}
 
-	pj.output.WriteByte(_bracketClose)
+	pj.err = pj.output.WriteByte(_bracketClose)
 }
 
 func (pj *JSON) newObject(prefix string) {
 	var count int
 
-	pj.output.WriteByte(_bodyOpen)
+	pj.err = pj.output.WriteByte(_bodyOpen)
 	pj.iter.ReadMapCB(func(Iter *jsoniter.Iterator, field string) bool {
 		elem := _amp + field + _next
 
@@ -139,17 +157,17 @@ func (pj *JSON) newObject(prefix string) {
 			elem = _coma + elem
 		}
 
-		pj.output.WriteString(elem)
+		_, pj.err = pj.output.WriteString(elem)
 		count++
 
 		return pj.parseElmt(prefix + _doubleSpace)
 	})
 
 	if !pj.comp && count > 0 {
-		pj.output.WriteString(_jump + prefix)
+		_, pj.err = pj.output.WriteString(_jump + prefix)
 	}
 
-	pj.output.WriteByte(_bodyClose)
+	pj.err = pj.output.WriteByte(_bodyClose)
 }
 
 func (pj *JSON) parseElmt(prefix string) bool {

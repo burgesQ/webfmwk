@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"github.com/burgesQ/webfmwk/v3/log"
@@ -50,15 +51,10 @@ var (
 	// also see uni.FindTranslator(...)
 	// TODO: extract from Accept-Language ?
 	trans ut.Translator
-
-	inited = false
+	once  sync.Once
 )
 
-func (c *Context) initOnce() {
-	if inited {
-		return
-	}
-
+func initOnce() {
 	var (
 		// tranlator
 		en = en_translator.New()
@@ -72,12 +68,9 @@ func (c *Context) initOnce() {
 	// this is usually know or extracted from http 'Accept-Language' header
 	// also see uni.FindTranslator(...)
 	trans, _ = uni.GetTranslator("en")
-	// TODO: check ret val
 	if e := en_translations.RegisterDefaultTranslations(validate, trans); e != nil {
-		c.log.Fatalf("cannot init translations : %v", e)
+		logger.Fatalf("cannot init translations : %v", e)
 	}
-
-	inited = true
 }
 
 // SetRequest implement IContext
@@ -165,7 +158,7 @@ func (c *Context) FetchContent(dest interface{}) {
 // Validate implement IContext
 // this implemt use validator to anotate & check struct
 func (c *Context) Validate(dest interface{}) {
-	c.initOnce()
+	once.Do(initOnce)
 	if e := validate.Struct(dest); e != nil {
 		out := e.(validator.ValidationErrors).Translate(trans)
 		c.log.Errorf("error while validating the payload :\n%s", out)
