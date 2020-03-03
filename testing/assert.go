@@ -122,6 +122,12 @@ func AssertIntEqual(t *testing.T, have, want int) {
 	assertSimpleEqual(t, have, want)
 }
 
+// AssertUInt16Equal run an assertion that the two string arguments are equal
+func AssertUInt16Equal(t *testing.T, have, want uint16) {
+	t.Helper()
+	assertSimpleEqual(t, have, want)
+}
+
 // AssertIntNotEqual run an assertion that the two string arguments are not equal
 func AssertIntNotEqual(t *testing.T, have, want int) {
 	t.Helper()
@@ -138,14 +144,6 @@ func AssertMapOfInterfaceEqual(t *testing.T, have, want map[string]interface{}) 
 
 // AssertMapOfStringEqual
 func AssertMapOfStringEqual(t *testing.T, have, want map[string]string) {
-	t.Helper()
-	AssertTrueContext(t, func() bool {
-		return reflect.DeepEqual(have, want)
-	}(), _notEqual, have, want)
-}
-
-// AssertSliceByteEqual
-func AssertSliceByteEqual(t *testing.T, have, want []byte) {
 	t.Helper()
 	AssertTrueContext(t, func() bool {
 		return reflect.DeepEqual(have, want)
@@ -198,4 +196,20 @@ func AssertLower(t *testing.T, have, want int) {
 func AssertEqualOrGreater(t *testing.T, have, want int) {
 	t.Helper()
 	assert(t, func() bool { return have >= want }, "%d is strictly lower than %d ", have, want)
+}
+
+// AssertSliceByteEqual
+func AssertSliceByteEqual(t *testing.T, have, want []byte) {
+	t.Helper()
+	AssertTrueContext(t, func() bool {
+		return reflect.DeepEqual(have, want)
+	}(), _notEqual, have, want)
+}
+
+// AssertSliceEqual
+func AssertSliceEqual(t *testing.T, have, want interface{}) {
+	t.Helper()
+	AssertTrueContext(t, func() bool {
+		return reflect.DeepEqual(have, want)
+	}(), _notEqual, have, want)
 }
