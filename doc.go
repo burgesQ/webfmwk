@@ -7,6 +7,12 @@ Example:
   import (
     w "github.com/burgesQ/webfmwk/v3"
   )
+
+  type Context struct {
+    webfmwk.IContext
+    content string
+  }
+
   // Handler
   func hello(c w.IContext) error {
     return c.JSONOk("Hello, World!")
@@ -16,20 +22,15 @@ Example:
     // Echo instance
     s := w.InitServer(
      webfmwk.EnableCheckIsUp()
-		// webfmwk.WithCORS(),
+		webfmwk.WithCORS(),
 		webfmwk.WithLogger(log.GetLogger()),
 		webfmwk.WithMiddlewars(
 			middleware.Logging,
 			middleware.Security),
 		webfmwk.WithCustomContext(func(c *webfmwk.Context) webfmwk.IContext {
-			return &server.CustomContext{
+			return &Context{
 				Context:  *c,
-				T:        tmpl,
-				Chans:    x.chans,
-				MaxEntry: maxEntry,
-				RCList:   listRC,
-				LCList:   listLC,
-				StatAddr: stat,
+				content: "testing",
 			}
 		}))
 

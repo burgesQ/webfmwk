@@ -13,13 +13,13 @@ import (
 
 type (
 	// Option is tu be used this way :
-	// s := w.InitServer(
-	//   webfmwk.EnableCheckIsUp()
-	//   webfmwk.WithCORS(),
-	//   webfmwk.WithLogger(log.GetLogger()),
-	//   webfmwk.WithMiddlewars(
-	// 	  middleware.Logging,
-	// 	  middleware.Security))
+	//   s := w.InitServer(
+	//     webfmwk.EnableCheckIsUp()
+	//     webfmwk.WithCORS(),
+	//     webfmwk.WithLogger(log.GetLogger()),
+	//     webfmwk.WithMiddlewars(
+	// 	    middleware.Logging,
+	// 	    middleware.Security))
 	Option func(s *Server)
 
 	ServerMeta struct {
@@ -145,6 +145,7 @@ func SetMaxHeaderBytes(val int) Option {
 
 // ReadTimeout is a timing constraint on the client http request imposed by the server from the moment
 // of initial connection up to the time the entire request body has been read.
+//
 // [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
 func SetReadTimeout(val time.Duration) Option {
 	return func(s *Server) {
@@ -160,6 +161,7 @@ func SetReadHeaderTimeout(val time.Duration) Option {
 
 // WriteTimeout is a time limit imposed on client connecting to the server via http from the
 // time the server has completed reading the request header up to the time it has finished writing the response.
+//
 // [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
 func SetWriteTimeout(val time.Duration) Option {
 	return func(s *Server) {
