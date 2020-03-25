@@ -258,6 +258,7 @@ func (s *Server) internalHandler() {
 			s.exitHandler(s.ctx, os.Interrupt)
 			return nil
 		})
+		time.Sleep(5 * time.Millisecond)
 		s.meta.ctrlcStarted = true
 	}
 }
