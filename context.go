@@ -73,6 +73,11 @@ func initOnce() {
 	}
 }
 
+// GetRequest implement IContext
+func (c *Context) GetRequest() *http.Request {
+	return c.r
+}
+
 // SetRequest implement IContext
 func (c *Context) GetRequestID() string {
 	return c.uid

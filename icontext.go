@@ -12,6 +12,9 @@ type IContext interface {
 	GetRequestID() string
 	SetRequestID(id string) IContext
 
+	// GetRequest return the holded http.Request object
+	GetRequest() *http.Request
+
 	// SetRequest is used to save the request object
 	SetRequest(rq *http.Request) IContext
 
