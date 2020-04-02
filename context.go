@@ -32,11 +32,6 @@ type (
 		uid   string
 	}
 
-	// AnonymousError struct is used to answer error
-	AnonymousError struct {
-		Error string `json:"error"`
-	}
-
 	ValidationError struct {
 		Error validator.ValidationErrorsTranslations `json:"error"`
 	}
@@ -156,7 +151,7 @@ func (c *Context) FetchContent(dest interface{}) {
 
 	if e := json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
 		c.log.Errorf("while decoding the payload : %s", e.Error())
-		panic(NewUnprocessable(AnonymousError{"Unprocessable payload, wrong json ?"}))
+		panic(NewUnprocessable(NewAnonymousError("Unprocessable payload, wrong json ?")))
 	}
 }
 
@@ -176,7 +171,7 @@ func (c *Context) DecodeQP(dest interface{}) {
 	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
 		c.log.Errorf("error while validating the query params :\n%s", e.Error())
 		c.log.Debugf("[%#v]", dest)
-		panic(NewUnprocessable(AnonymousError{e.Error()}))
+		panic(NewUnprocessable(NewAnonymousErrorFromError(e)))
 	}
 }
 
@@ -188,9 +183,9 @@ func (c *Context) IsPretty() bool {
 // CheckHeader implement IContext
 func (c *Context) CheckHeader() {
 	if ctype := c.r.Header.Get("Content-Type"); len(ctype) == 0 {
-		panic(NewNotAcceptable(AnonymousError{"Missing Content-Type header"}))
+		panic(NewNotAcceptable(NewAnonymousError("Missing Content-Type header")))
 	} else if !strings.HasPrefix(ctype, "application/json") {
-		panic(NewNotAcceptable(AnonymousError{"Content-Type is not application/json"}))
+		panic(NewNotAcceptable(NewAnonymousError("Content-Type is not application/json")))
 	}
 }
 
@@ -264,7 +259,7 @@ func (c *Context) JSON(statusCode int, content interface{}) {
 	data, err := json.Marshal(content)
 	if err != nil {
 		c.log.Errorf("%s", err.Error())
-		panic(NewInternal(AnonymousError{"Error creating the JSON response."}))
+		panic(NewInternal(NewAnonymousError("Error creating the JSON response.")))
 	}
 
 	c.JSONBlob(statusCode, data)

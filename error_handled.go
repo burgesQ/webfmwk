@@ -22,7 +22,37 @@ type (
 		content interface{}
 		err     error
 	}
+
+	// AnonymousError struct is used to answer error
+	AnonymousError struct {
+		Err string `json:"error"`
+		e   error
+	}
 )
+
+func (a AnonymousError) Error() string {
+	return a.Err
+}
+
+func NewAnonymousError(err string) AnonymousError {
+	return AnonymousError{
+		Err: err,
+	}
+}
+
+func NewAnonymousWrappedError(err error, msg string) AnonymousError {
+	return AnonymousError{
+		Err: msg,
+		e:   err,
+	}
+}
+
+func NewAnonymousErrorFromError(err error) AnonymousError {
+	return AnonymousError{
+		Err: err.Error(),
+		e:   err,
+	}
+}
 
 // Error implement the error interface
 func (e ErrorHandled) Error() string {
