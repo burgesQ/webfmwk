@@ -6,6 +6,12 @@ import (
 )
 
 type (
+	ITLSConfig interface {
+		GetCert() string
+		GetKey() string
+		GetInsecure() bool
+	}
+
 	// TLSConfig contain the tls config passed by the config file
 	TLSConfig struct {
 		Cert     string `json:"cert"`
@@ -35,19 +41,31 @@ var (
 	}
 )
 
+func (config TLSConfig) GetCert() string {
+	return config.Cert
+}
+
+func (config TLSConfig) GetKey() string {
+	return config.Key
+}
+
+func (config TLSConfig) GetInsecure() bool {
+	return config.Insecure
+}
+
 // StartTLS expose an server to an HTTPS endpoint
-func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
+func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
 		go s.pollPingEndpoint(addr)
-		return s.internalInit(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.Cert, tlsStuffs.Key)
+		return s.internalInit(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.GetCert(), tlsStuffs.GetKey())
 	})
 }
 
-func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
+func (s *Server) loadTLS(worker *http.Server, tlsCfg ITLSConfig) {
 	/* #nosec */
 	worker.TLSConfig = &tls.Config{
-		InsecureSkipVerify:       tlsCfg.Insecure,
+		InsecureSkipVerify:       tlsCfg.GetInsecure(),
 		Certificates:             make([]tls.Certificate, 1),
 		PreferServerCipherSuites: true,
 		CurvePreferences:         DefaultCurve,
@@ -56,9 +74,9 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg TLSConfig) {
 		CipherSuites:             DefaultCipher,
 	}
 
-	cert, err := tls.LoadX509KeyPair(tlsCfg.Cert, tlsCfg.Key)
+	cert, err := tls.LoadX509KeyPair(tlsCfg.GetCert(), tlsCfg.GetKey())
 	if err != nil {
-		s.log.Fatalf("cannot load cert [%s] and key [%s]: %v", tlsCfg.Cert, tlsCfg.Key, err)
+		s.log.Fatalf("cannot load cert [%s] and key [%s]: %v", tlsCfg.GetCert(), tlsCfg.GetKey(), err)
 	}
 
 	worker.TLSConfig.Certificates[0] = cert

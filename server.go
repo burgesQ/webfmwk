@@ -188,7 +188,7 @@ func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *h
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.
-func (s *Server) internalInit(addr string, tlsStuffs ...TLSConfig) *http.Server {
+func (s *Server) internalInit(addr string, tlsStuffs ...ITLSConfig) *http.Server {
 	var (
 		worker = s.meta.toServer(addr)
 		h      = http.TimeoutHandler(s.SetRouter(),
