@@ -28,7 +28,15 @@ type (
 		Err string `json:"error"`
 		e   error
 	}
+
+	Response struct {
+		Content string `json:"response"`
+	}
 )
+
+func NewResponse(str string) Response {
+	return Response{Content: str}
+}
 
 func (a AnonymousError) Error() string {
 	return a.Err
