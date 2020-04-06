@@ -7,10 +7,10 @@ import (
 	"github.com/burgesQ/webfmwk/v3/log"
 )
 
+type Header [2]string
+
 // IContext Interface implement the context used in this project
 type IContext interface {
-	GetRequestID() string
-	SetRequestID(id string) IContext
 
 	// GetRequest return the holded http.Request object
 	GetRequest() *http.Request
@@ -39,11 +39,20 @@ type IContext interface {
 	// SetLogger set the logger of the ctx
 	SetLogger(logger log.ILog) IContext
 
+	// GetLogger return the logger of the ctx
+	GetLogger() log.ILog
+
 	// Save the given context object into the fmwk context
 	SetContext(ctx context.Context) IContext
 
 	// Fetch the previously saved context object
 	GetContext() context.Context
+
+	// GetRequest return the current request ID
+	GetRequestID() string
+
+	// SetRequest set the id of the current request
+	SetRequestID(id string) IContext
 
 	// FetchContent extract the content from the body
 	FetchContent(content interface{})
@@ -60,11 +69,14 @@ type IContext interface {
 	// CheckHeader ensure the Content-Type of the request
 	CheckHeader()
 
+	// SetHeader set the header of the http response
+	SetHeaders(headers ...Header)
+
 	// OwnRecover is used to encapsulate the wanted panic
 	OwnRecover()
 
 	// SendResponse create & send a response according to the parameters
-	SendResponse(op int, content []byte, headers ...[2]string)
+	SendResponse(op int, content []byte, headers ...Header)
 
 	// JSONBlob answer the JSON content with the status code op
 	JSONBlob(op int, content []byte)
@@ -72,33 +84,39 @@ type IContext interface {
 	// JSON answer the JSON content with the status code op
 	JSON(op int, content interface{})
 
-	// 200
-	JSONOk(interface{})
+	// JSONOk return the interface with an http.StatusOK (200)
+	JSONOk(content interface{})
 
-	// 201
-	JSONCreated(interface{})
+	// JSONCreated return the interface with an http.StatusCreated (201)
+	JSONCreated(content interface{})
 
-	// 202
-	JSONAccepted(interface{})
+	// JSONAccepted return the interface with an http.StatusAccepted (202)
+	JSONAccepted(content interface{})
 
-	//
-	JSONNotImplemented(interface{})
-
-	//
+	// JSONNoContent return an empty payload an http.StatusNoContent (204)
 	JSONNoContent()
 
-	//
-	JSONBadRequest(interface{})
+	// JSONBadRequest return the interface with an http.StatusBadRequest (400)
+	JSONBadRequest(content interface{})
 
-	//
-	JSONUnprocessable(interface{})
+	// JSONUnauthorized return the interface with an http.StatusUnauthorized (401)
+	JSONUnauthorized(content interface{})
 
-	// 404
-	JSONNotFound(interface{})
+	// JSONForbiden return the interface with an http.StatusForbidden (403)
+	JSONForbiden(content interface{})
 
-	//
-	JSONConflict(interface{})
+	// JSONNoContent return the interface with an http.StatusNotFound (404)
+	JSONNotFound(content interface{})
 
-	// 500
-	JSONInternalError(interface{})
+	// JSONConflict return the interface with an http.StatusConflict (409)
+	JSONConflict(content interface{})
+
+	// JSONUnauthorized return the interface with an http.StatusUnprocessableEntity (422)
+	JSONUnprocessable(content interface{})
+
+	// JSONInternalError return the interface with an http.StatusInternalServerError (500)
+	JSONInternalError(content interface{})
+
+	// JSONNotImplemented return the interface with an http.StatusNotImplemented (501)
+	JSONNotImplemented(content interface{})
 }

@@ -3,21 +3,22 @@ package main
 import (
 	"net/http"
 
-	w "github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v3"
 )
 
+// curl -X GET 127.0.0.1:4242/hello/world
+// {"content":"hello world"}
 func main() {
-	// create server
-	s := w.InitServer()
+	// init server
+	var s = webfmwk.InitServer()
 
-	s.GET("/hello/{id}", func(c w.IContext) {
-		c.JSONBlob(http.StatusOK, []byte(`{ "id": "`+c.GetVar("id")+`" }`))
+	// expose /hello/name
+	s.GET("/hello/{name}", func(c webfmwk.IContext) {
+		c.JSONBlob(http.StatusOK, []byte(`{ "content": "hello `+c.GetVar("name")+`" }`))
 	})
 
 	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+	s.Start(":4242")
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()

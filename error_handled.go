@@ -30,24 +30,28 @@ type (
 	}
 
 	Response struct {
-		Content string `json:"response"`
+		Content string `json:"content"`
 	}
 )
 
+// NewResponse generate a new json response payload
 func NewResponse(str string) Response {
 	return Response{Content: str}
 }
 
+// Error implement the Error interface
 func (a AnonymousError) Error() string {
 	return a.Err
 }
 
+// NewAnonymousError generate a new json error response payload
 func NewAnonymousError(err string) AnonymousError {
 	return AnonymousError{
 		Err: err,
 	}
 }
 
+// NewAnonymousWrappedError generate a AnonymousError which wrap the err params
 func NewAnonymousWrappedError(err error, msg string) AnonymousError {
 	return AnonymousError{
 		Err: msg,
@@ -55,6 +59,7 @@ func NewAnonymousWrappedError(err error, msg string) AnonymousError {
 	}
 }
 
+// NewAnonymousWrappedError generate a AnonymousError which wrap the err params
 func NewAnonymousErrorFromError(err error) AnonymousError {
 	return AnonymousError{
 		Err: err.Error(),
@@ -62,11 +67,12 @@ func NewAnonymousErrorFromError(err error) AnonymousError {
 	}
 }
 
-// Error implement the error interface
+// Error implement the Error interface
 func (e ErrorHandled) Error() string {
 	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
 }
 
+// Unwrap implemtation the Error interface
 func (e ErrorHandled) Unwrap() error {
 	return e.err
 }

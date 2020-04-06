@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	w "github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v3"
 )
 
 type (
@@ -27,23 +27,24 @@ type (
 )
 
 func main() {
-	var s = w.InitServer()
+	var s = webfmwk.InitServer()
 
-	s.POST("/hello", func(c w.IContext) {
+	s.POST("/hello", func(c webfmwk.IContext) {
 		var out = Payload{}
 
-		c.FetchContent(&out.content)
-		c.Validate(out.content)
+		// process query params
 		c.DecodeQP(&out.qp)
 		c.Validate(out.qp)
+
+		// process payload
+		c.FetchContent(&out.content)
+		c.Validate(out.content)
 
 		c.JSON(http.StatusOK, out)
 	})
 
 	// start asynchronously on :4242
-	go func() {
-		s.Start(":4244")
-	}()
+	s.Start(":4244")
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()

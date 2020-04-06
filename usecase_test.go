@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	// "gitlab.frafos.net/gommon/golib/log"
 	z "github.com/burgesQ/webfmwk/v3/testing"
 )
 
@@ -18,22 +17,11 @@ type testSerial struct {
 }
 
 func TestUseCase(t *testing.T) {
-	s := InitServer().EnableCheckIsUp()
-
-	// log.Init(log.LOGFORMAT_LONG | log.LOGGER_STDOUT)
-	// log.SetLogLevel(log.LOG_DEBUG)
-	// s.SetLogger(log.GetLogger())
-
-	// set custom context
-	s.SetCustomContext(func(c *Context) IContext {
-		return &customContext{*c, "turlu"}
-	})
-
-	// add middleware TODO: check headers
-	// s.AddMiddleware(m.Security)
-
-	// set url prefix
-	s.SetPrefix("/api")
+	var s = InitServer(
+		CheckIsUp(), SetPrefix("/api"),
+		WithCustomContext(func(c *Context) IContext {
+			return &customContext{*c, "turlu"}
+		}))
 
 	// declare routes
 	s.GET("/hello", func(c IContext) {
@@ -137,3 +125,14 @@ func TestUseCase(t *testing.T) {
 	}
 
 }
+
+// func TestBasic(t *testing.T) {
+// 	testHandler := func(c IContext) {
+// 		c.JSONOk("ok")
+// 	}
+
+// 	webfmwktest.GetAndTest(t, testHandler, z.Expected{
+// 		Method: "GET",
+// 		URI:    "/",
+// 	})
+// }

@@ -74,17 +74,6 @@ func (c *Context) GetRequest() *http.Request {
 }
 
 // SetRequest implement IContext
-func (c *Context) GetRequestID() string {
-	return c.uid
-}
-
-// SetRequest implement IContext
-func (c *Context) SetRequestID(id string) IContext {
-	c.uid = id
-	return c
-}
-
-// SetRequest implement IContext
 func (c *Context) SetRequest(r *http.Request) IContext {
 	c.r = r
 	return c
@@ -133,6 +122,11 @@ func (c *Context) SetLogger(logger log.ILog) IContext {
 	return c
 }
 
+// GetLogger implement IContext
+func (c *Context) GetLogger() log.ILog {
+	return c.log
+}
+
 // SetContext implement IContext
 func (c *Context) SetContext(ctx context.Context) IContext {
 	c.ctx = ctx
@@ -142,6 +136,17 @@ func (c *Context) SetContext(ctx context.Context) IContext {
 // GetContent implement IContext
 func (c *Context) GetContext() context.Context {
 	return c.ctx
+}
+
+// GetRequestID implement IContext
+func (c *Context) GetRequestID() string {
+	return c.uid
+}
+
+// SetRequestID implement IContext
+func (c *Context) SetRequestID(id string) IContext {
+	c.uid = id
+	return c
 }
 
 // FetchContent implement IContext
@@ -189,6 +194,23 @@ func (c *Context) CheckHeader() {
 	}
 }
 
+// SetHeader implement IContext
+func (c *Context) SetHeaders(headers ...Header) {
+	c.setHeaders(headers...)
+}
+
+// setHeader set the header of the holded http.ResponseWriter
+func (c *Context) setHeaders(headers ...Header) {
+	for _, h := range headers {
+		key, val := h[0], h[1]
+		if key != "" && val != "" {
+			c.w.Header().Set(key, val)
+		} else {
+			c.log.Warnf("can't set header [%s] to [%s] (empty value)", key, val)
+		}
+	}
+}
+
 // OwnRecover implement IContext
 func (c *Context) OwnRecover() {
 	if r := recover(); r != nil {
@@ -202,20 +224,7 @@ func (c *Context) OwnRecover() {
 	}
 }
 
-func (c *Context) setHeader(key, val string) {
-	c.w.Header().Set(key, val)
-}
-
-func (c *Context) setHeaders(headers ...[2]string) {
-	for _, h := range headers {
-		if h[0] != "" && h[1] != "" {
-			c.setHeader(h[0], h[1])
-		} else {
-			c.log.Warnf("can't set header [%s] to [%s] (empty value)", h[0], h[1])
-		}
-	}
-}
-
+// response generate the http.Response with the holded http.ResponseWriter
 func (c *Context) response(statusCode int, content []byte) {
 	if utf8.Valid(content) {
 		c.log.Infof("[%d](%d): >%s<", statusCode, len(content), content)
@@ -232,18 +241,18 @@ func (c *Context) response(statusCode int, content []byte) {
 }
 
 // Send Response implement IContext
-func (c *Context) SendResponse(statusCode int, content []byte, headers ...[2]string) {
+func (c *Context) SendResponse(statusCode int, content []byte, headers ...Header) {
 	c.setHeaders(headers...)
 	c.response(statusCode, content)
 }
 
 // JSONBlob sent a JSON response already encoded
 func (c *Context) JSONBlob(statusCode int, content []byte) {
-	c.setHeader("Accept", "application/json; charset=UTF-8")
+	c.setHeaders(Header{"Accept", "application/json; charset=UTF-8"})
 
 	if statusCode != http.StatusNoContent {
-		c.setHeader("Content-Type", "application/json; charset=UTF-8")
-		c.setHeader("Produce", "application/json; charset=UTF-8")
+		c.setHeaders(Header{"Content-Type", "application/json; charset=UTF-8"},
+			Header{"Produce", "application/json; charset=UTF-8"})
 	}
 
 	pcontent, err := pretty.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
@@ -270,7 +279,12 @@ func (c *Context) JSONOk(content interface{}) {
 	c.JSON(http.StatusOK, content)
 }
 
-// JSONOk implement IContext
+// JSONCreated implement IContext
+func (c *Context) JSONCreated(content interface{}) {
+	c.JSON(http.StatusCreated, content)
+}
+
+// JSONAccepted implement IContext
 func (c *Context) JSONAccepted(content interface{}) {
 	c.JSON(http.StatusAccepted, content)
 }
@@ -285,14 +299,14 @@ func (c *Context) JSONBadRequest(content interface{}) {
 	c.JSON(http.StatusBadRequest, content)
 }
 
-// JSONCreated implement IContext
-func (c *Context) JSONCreated(content interface{}) {
-	c.JSON(http.StatusCreated, content)
+// JSONUnauthorized implement IContext
+func (c *Context) JSONUnauthorized(content interface{}) {
+	c.JSON(http.StatusUnauthorized, content)
 }
 
-// JSONUnprocessable implement IContext
-func (c *Context) JSONUnprocessable(content interface{}) {
-	c.JSON(http.StatusUnprocessableEntity, content)
+// JSONForbiden implement IContext
+func (c *Context) JSONForbiden(content interface{}) {
+	c.JSON(http.StatusForbidden, content)
 }
 
 // JSONNotFound implement IContext
@@ -305,12 +319,17 @@ func (c *Context) JSONConflict(content interface{}) {
 	c.JSON(http.StatusConflict, content)
 }
 
-// JSONNotImplemented implement IContext
-func (c *Context) JSONNotImplemented(content interface{}) {
-	c.JSON(http.StatusNotImplemented, content)
+// JSONUnprocessable implement IContext
+func (c *Context) JSONUnprocessable(content interface{}) {
+	c.JSON(http.StatusUnprocessableEntity, content)
 }
 
 // JSONInternalError implement IContext
 func (c *Context) JSONInternalError(content interface{}) {
 	c.JSON(http.StatusInternalServerError, content)
+}
+
+// JSONNotImplemented implement IContext
+func (c *Context) JSONNotImplemented(content interface{}) {
+	c.JSON(http.StatusNotImplemented, content)
 }

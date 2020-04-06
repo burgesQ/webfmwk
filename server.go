@@ -24,7 +24,7 @@ type (
 		launcher WorkerLauncher
 		log      log.ILog
 		isReady  chan bool
-		meta     ServerMeta
+		meta     serverMeta
 	}
 )
 
@@ -33,6 +33,10 @@ var (
 	poolOfServers []*http.Server
 	logger        = log.GetLogger()
 )
+
+//
+// Global methods
+//
 
 // GetLogger return an instance of the ILog interface used
 func GetLogger() log.ILog {
@@ -53,77 +57,11 @@ func Shutdown(ctx context.Context) {
 }
 
 //
-// Getter - Setter
+// Server implemtation
 //
 
-// GetLogger return the used ILog instance
-func (s *Server) GetLogger() log.ILog {
-	return s.log
-}
-
-// GetLauncher return a pointer to the internal workerLauncher
-func (s *Server) GetLauncher() *WorkerLauncher {
-	return &s.launcher
-}
-
-// GetContext return the context.Context used
-func (s *Server) GetContext() context.Context {
-	return s.ctx
-}
-
-// IsReady return the channel on which `true` is send once the server is up
-func (s *Server) IsReady() chan bool {
-	return s.isReady
-}
-
-// RegisterDocHandler is used to register an swagger doc handler
-func (s *Server) RegisterDocHandler(handler http.Handler) *Server {
-	s.meta.docHandler = handler
-	return s
-}
-
-// RegisterMiddlewares register the middlewares arguments
-func (s *Server) RegisterMiddlewares(mw ...mux.MiddlewareFunc) *Server {
-	s.meta.middlewares = append(s.meta.middlewares, mw...)
-	return s
-}
-
-// SetCustomContext save a custom context so it can be fetched in the controllers
-func (s *Server) SetCustomContext(setter Setter) *Server {
-	s.meta.setter = setter
-	return s
-}
-
-// RegisterLogger register the ILog used
-func (s *Server) RegisterLogger(lg log.ILog) *Server {
-	logger = lg
-	s.log = lg
-	return s
-}
-
-// EnableCORS enable CORS verification
-func (s *Server) EnableCORS() *Server {
-	s.meta.cors = true
-	return s
-}
-
-// EnableCheckIsUp add an /ping endpoint. Is used, cnce a server is started,
-// the user can check weather the server is up or not by reading the isReady channel
-// vie the IsReady() method
-func (s *Server) EnableCheckIsUp() *Server {
-	s.meta.checkIsUp = true
-	return s
-}
-
-// EnableCtrlC let the server handle the SIGINT interuption. To add
-// worker to the interuption pool, please use the `GetLauncher` method
-func (s *Server) EnableCtrlC() *Server {
-	s.meta.ctrlc = true
-	return s
-}
-
 //
-// Process method
+// Process methods
 //
 
 // Start expose an server to an HTTP endpoint
@@ -131,7 +69,6 @@ func (s *Server) Start(addr string) {
 	s.internalHandler()
 	s.launcher.Start("http server "+addr, func() error {
 		go s.pollPingEndpoint(addr)
-
 		return s.internalInit(addr).ListenAndServe()
 	})
 }
@@ -155,35 +92,10 @@ func (s *Server) DumpRoutes() {
 			pathTemplate, _ = route.GetPathTemplate()
 			methods, _      = route.GetMethods()
 		)
-		s.log.Debugf("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
+		s.log.Infof("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
 		return nil
 	}); e != nil {
-		log.Errorf("can't walk trough routing : %v", e)
-	}
-}
-
-// private method
-
-func hasBody(r *http.Request) bool {
-	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
-}
-
-// webfmwk main logic, return a http handler wrapped by webfmwk
-func (s *Server) customHandler(handler HandlerSign) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var ctx = s.meta.setter(&Context{})
-
-		ctx.SetRequest(r).SetWriter(w).
-			SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
-			SetLogger(s.log).SetContext(s.ctx).SetRequestID(GetRequestID(r.Context()))
-
-		defer ctx.OwnRecover()
-
-		if hasBody(r) {
-			ctx.CheckHeader()
-		}
-
-		handler(ctx)
+		log.Errorf("can't walk trough routing : %s", e.Error())
 	}
 }
 
@@ -196,7 +108,7 @@ func (s *Server) internalInit(addr string, tlsStuffs ...ITLSConfig) *http.Server
 			`{"error": "timeout reached"}`)
 	)
 
-	// CORS should be one of the first handler
+	// register mox.CORS handler - note that it should be the first one
 	if s.meta.cors {
 		h = handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"}),
@@ -231,10 +143,10 @@ func (s *Server) pollPingEndpoint(addr string) {
 		addr = "http://127.0.0.1" + addr
 	}
 
-	addr += _pingEndpoint
+	addr += s.meta.prefix + _pingEndpoint
 
 	for {
-		time.Sleep(time.Millisecond * 10)
+		time.Sleep(time.Second * 1)
 
 		/* #nosec  */
 		if resp, e := http.Get(addr); e != nil {
@@ -279,4 +191,91 @@ func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
 			return
 		}
 	}
+}
+
+//
+// Setter/Getter
+//
+
+// GetLogger return the used ILog instance
+func (s *Server) GetLogger() log.ILog {
+	return s.log
+}
+
+// GetLauncher return a pointer to the internal workerLauncher
+func (s *Server) GetLauncher() *WorkerLauncher {
+	return &s.launcher
+}
+
+// GetContext return the context.Context used
+func (s *Server) GetContext() context.Context {
+	return s.ctx
+}
+
+// IsReady return the channel on which `true` is send once the server is up
+func (s *Server) IsReady() chan bool {
+	return s.isReady
+}
+
+// RegisterDocHandler is used to register an swagger doc handler
+func (s *Server) registerDocHandler(handler http.Handler) *Server {
+	s.meta.docHandler = handler
+	return s
+}
+
+// AddMiddlewares register the mux.MiddlewaresFunc middlewares
+func (s *Server) addMiddlewares(mw ...mux.MiddlewareFunc) *Server {
+	s.meta.middlewares = append(s.meta.middlewares, mw...)
+	return s
+}
+
+// AddHandlers register the Handler handlers. Handler are executed from the top most.
+// The followig examle run the RequestID handler BEFORE the Logging one, to produce a
+// log which look like :
+// + INFO : [+] (bc339ac1-a62a-48df-8e97-adf9dec32c42) : [GET]/test
+//
+//   s.AddHandlers(handler.Logging, handler.RequestID)
+func (s *Server) addHandlers(h ...Handler) *Server {
+	s.meta.handlers = append(s.meta.handlers, h...)
+	return s
+}
+
+// SetCustomContext save a custom context so it can be fetched in the controllers
+func (s *Server) setCustomContext(setter Setter) *Server {
+	s.meta.setter = setter
+	return s
+}
+
+// SetCustomContext save a custom context so it can be fetched in the controllers
+func (s *Server) setPrefix(prefix string) *Server {
+	s.meta.prefix = prefix
+	return s
+}
+
+// RegisterLogger register the ILog used
+func (s *Server) registerLogger(lg log.ILog) *Server {
+	logger = lg
+	s.log = lg
+	return s
+}
+
+// EnableCORS enable CORS verification
+func (s *Server) enableCORS() *Server {
+	s.meta.cors = true
+	return s
+}
+
+// EnableCheckIsUp add an /ping endpoint. Is used, cnce a server is started,
+// the user can check weather the server is up or not by reading the isReady channel
+// vie the IsReady() method
+func (s *Server) enableCheckIsUp() *Server {
+	s.meta.checkIsUp = true
+	return s
+}
+
+// EnableCtrlC let the server handle the SIGINT interuption. To add
+// worker to the interuption pool, please use the `GetLauncher` method
+func (s *Server) enableCtrlC() *Server {
+	s.meta.ctrlc = true
+	return s
 }

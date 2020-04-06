@@ -2,37 +2,52 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* WIP v3 [0/2] [0%]
+* WIP v4 [2/8] [25%]
 
-** ctx id's
-   - [ ] generate id per request
-   - [ ] save it in go ctx
-   - [ ] pass it to ctx obj
-
-** logger overload ?
+** IDEA logger overload
    - [ ] allow adding of extra payload to logger ?
-
-** IContext middlewares
-   - [ ] what for webfmwk's middlewares
-
-** TODO better option handling (optional options)
-   - https://sagikazarmark.hu/blog/functional-options-on-steroids/
-** TODO cleaner doc [0/3] [0%]
-    - [ ] up to date example
-    - [ ] in code comment and example when needed
-    - [-] full readme [1/4] [25%]
-      - [ ] miss http error handling
-      - [X] schema / validate
-      - [ ] workerConfig
-      - [ ] pretty
-
-** IDEA API generator ?
+** IDEA API generator
    - cobra cmd
    - json ready
    - db interface ?
+** IDEA test via httptest
+** TODO perf profiling
+** WIP proper jwt [/] [%]
+   - [X] handler and middlewares
+   - [ ] fully compilent integrations
 
-** PING endrpojnt should be optional
+** WIP cleaner doc [2/3] [66%]
+    - [X] up to date example
+    - [X] in code comment and example when needed
+    - [-] full readme [3/4] [75%]
+      - [X] miss http error handling
+      - [X] schema / validate
+      - [ ] workerConfig
+      - [X] pretty
+
+** DONE fix test
+   CLOSED: [2020-04-06 Mon 20:40]
+** DONE IContext middlewares
+   CLOSED: [2020-04-06 Mon 17:25]
+   - [X] what for webfmwk's middlewares
+
+
+* DONE v3 [3/3] [100%]
+  CLOSED: [2020-04-06 Mon 17:26]
+
+** DONE ctx id's
+   CLOSED: [2020-04-06 Mon 17:24]
+   - [X] generate id per request
+   - [X] save it in go ctx
+   - [X] pass it to ctx obj
+
+** DONE better option handling (optional options)
+   CLOSED: [2020-04-06 Mon 17:25]
+   - https://sagikazarmark.hu/blog/functional-options-on-steroids/
+** DONE PING endrpojnt should be optional
+   CLOSED: [2020-04-06 Mon 17:25]
    - done
+
 
 * DONE v2 [4/4] [100%]
   CLOSED: [2020-02-04 Tue 16:21]

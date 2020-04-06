@@ -69,6 +69,25 @@ func TestWrapping(t *testing.T) {
 
 }
 
+func TestResponse(t *testing.T) {
+	z.AssertStringEqual(t, NewResponse("test").Content, "test")
+}
+
+func TestAnonymousError(t *testing.T) {
+	var err = errors.New("test")
+
+	e := NewAnonymousError("testing")
+	z.AssertTrue(t, e.Err == "testing")
+	e = NewAnonymousWrappedError(err, "testing")
+	z.AssertTrue(t, e.e == err)
+	z.AssertStringEqual(t, e.Err, "testing")
+	e = NewAnonymousErrorFromError(err)
+	z.AssertStringEqual(t, e.Err, "test")
+	z.AssertTrue(t, e.e == err)
+	z.AssertStringEqual(t, e.Err, "test")
+	z.AssertStringEqual(t, e.Error(), "test")
+}
+
 func TestMethod(t *testing.T) {
 	var tests = map[string]struct {
 		actual, expected int

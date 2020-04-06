@@ -3,28 +3,27 @@ package main
 import (
 	"net/http"
 
-	w "github.com/burgesQ/webfmwk/v3"
-	"github.com/burgesQ/webfmwk/v3/log"
+	"github.com/burgesQ/webfmwk/v3"
 )
 
+// curl -i -X GET "127.0.0.1:4242/hello?pretty"
+// {
+//   "pretty": [
+//     ""
+// 		]
+// }
+// curl -i -X GET "127.0.0.1:4242/hello?prete"
+// {"prete":[""]}%
 func main() {
-	s := w.InitServer()
+	var s = webfmwk.InitServer()
 
-	s.GET("/hello", func(c w.IContext) {
-		var (
-			queries   = c.GetQueries()
-			pjson, ok = c.GetQuery("pjson")
-		)
-		if ok {
-			log.Errorf("%#v", pjson)
-		}
-		c.JSON(http.StatusOK, queries)
+	// expose /hello
+	s.GET("/hello", func(c webfmwk.IContext) {
+		c.JSON(http.StatusOK, c.GetQueries())
 	})
 
 	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+	s.Start(":4242")
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()

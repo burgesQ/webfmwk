@@ -23,10 +23,9 @@ var _emptyController = func(c IContext) {}
 // TODO: func TestAddRoutes(t *testing.T) {}
 
 func TestSetPrefix(t *testing.T) {
-	var s = InitServer().EnableCheckIsUp()
+	var s = InitServer(CheckIsUp(), SetPrefix(_testPrefix))
 	defer stopServer(t, s)
 
-	s.SetPrefix(_testPrefix)
 	s.GET(_testURL, _emptyController)
 
 	r := s.SetRouter()
@@ -34,7 +33,7 @@ func TestSetPrefix(t *testing.T) {
 	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, _ := route.GetPathTemplate()
 
-		if !(pathTemplate == _testURI || pathTemplate == _testPrefix) && pathTemplate != _pingEndpoint {
+		if !(pathTemplate == _testURI || pathTemplate == _testPrefix) && pathTemplate != _testPrefix+_pingEndpoint {
 			t.Errorf("route wrongly created : [%s]", pathTemplate)
 		}
 
@@ -42,11 +41,11 @@ func TestSetPrefix(t *testing.T) {
 	})
 }
 
-func TestAddRoute(t *testing.T) {
-	var s = InitServer().EnableCheckIsUp()
+func TestAddRoutes(t *testing.T) {
+	var s = InitServer(CheckIsUp())
 	defer stopServer(t, s)
 
-	s.AddRoute(Route{
+	s.AddRoutes(Route{
 		Path:    _testURI,
 		Verbe:   _testVerbe,
 		Handler: _emptyController,
@@ -54,12 +53,6 @@ func TestAddRoute(t *testing.T) {
 
 	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURI)
 	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, _testVerbe)
-}
-
-func TestAddRoutes(t *testing.T) {
-	s := InitServer().EnableCheckIsUp()
-
-	defer stopServer(t, s)
 
 	s.AddRoutes(Routes{
 		{
@@ -72,12 +65,13 @@ func TestAddRoutes(t *testing.T) {
 			Verbe:   _testVerbe,
 			Handler: _emptyController,
 		},
-	})
+	}...)
 
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURI)
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, _testVerbe)
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Path, _testURI2)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Path, _testURI)
 	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Verbe, _testVerbe)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][2].Path, _testURI2)
+	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][2].Verbe, _testVerbe)
+
 }
 
 func TestRouteMethod(t *testing.T) {
@@ -101,7 +95,7 @@ func TestRouteMethod(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			var s = InitServer().EnableCheckIsUp()
+			var s = InitServer(CheckIsUp())
 
 			defer stopServer(t, s)
 
@@ -132,10 +126,9 @@ func TestRouteMethod(t *testing.T) {
 }
 
 func TestSetRouter(t *testing.T) {
-	s := InitServer().EnableCheckIsUp()
+	s := InitServer(CheckIsUp(), SetPrefix(_testPrefix))
 	defer stopServer(t, s)
 
-	s.SetPrefix(_testPrefix)
 	s.GET(_testURL, func(c IContext) { c.JSONNoContent() })
 
 	r := s.SetRouter()
@@ -147,8 +140,9 @@ func TestSetRouter(t *testing.T) {
 			verbe     = strings.Join(verbes, ",")
 		)
 
-		if !(path == _testURI || path == _testPrefix) && path != _pingEndpoint {
+		if path != _testURI && path != _testPrefix && path != _testPrefix+_pingEndpoint {
 			t.Errorf("route wrongly created : [%s]", path)
+			t.Errorf("[%s][%s][%s]", _testURI, _testPrefix, _pingEndpoint)
 		}
 		if verbe != "" {
 			z.AssertStringEqual(t, verbe, GET)
@@ -160,7 +154,7 @@ func TestSetRouter(t *testing.T) {
 // TODO: func TestRouteApplier(t *testing.T) {}
 
 func TestHandleParam(t *testing.T) {
-	s := InitServer().EnableCheckIsUp()
+	s := InitServer(CheckIsUp())
 	defer stopServer(t, s)
 
 	s.GET("/test/{id}", func(c IContext) {
@@ -172,7 +166,7 @@ func TestHandleParam(t *testing.T) {
 		c.JSONNoContent()
 	})
 
-	go s.Start(_testPort)
+	s.Start(_testPort)
 	<-s.isReady
 
 	z.RequestAndTestAPI(t, _testAddr+"/test/toto?pretty=1", func(t *testing.T, resp *http.Response) {})

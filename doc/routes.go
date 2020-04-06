@@ -29,17 +29,19 @@ var (
 	}
 )
 
+// curl -X GET 127.0.0.1:4242/api/v1/test
+// "v1 ok"
+// curl -X GET 127.0.0.1:4242/api/v2/test
+// "v2 ok"
 func main() {
 	var s = webfmwk.InitServer()
 
+	// register routes object
 	s.RouteApplier(routes)
 
 	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+	s.Start(":4242")
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()
-
 }

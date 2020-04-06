@@ -14,20 +14,23 @@ import (
 type (
 	// Option is tu be used this way :
 	//   s := w.InitServer(
+	//     webfmwk.WithLogger(log.GetLogger()),
 	//     webfmwk.EnableCheckIsUp()
 	//     webfmwk.WithCORS(),
-	//     webfmwk.WithLogger(log.GetLogger()),
+	//     webfmwk.WithPrefix("/api"),
 	//     webfmwk.WithMiddlewars(
 	// 	    middleware.Logging,
 	// 	    middleware.Security))
 	Option func(s *Server)
 
-	ServerMeta struct {
+	// ServerMeta hold the server meta information
+	serverMeta struct {
 		ctrlc        bool
 		checkIsUp    bool
 		ctrlcStarted bool
 		cors         bool
 		middlewares  []mux.MiddlewareFunc
+		handlers     []Handler
 		setter       Setter
 		docHandler   http.Handler
 		baseServer   *http.Server
@@ -36,25 +39,49 @@ type (
 	}
 )
 
-var (
-	nakedSetter = func(c *Context) IContext {
-		return c
+func getDefaultMeta() serverMeta {
+	return serverMeta{
+		baseServer: &http.Server{
+			ReadTimeout:       20 * time.Second,
+			ReadHeaderTimeout: 20 * time.Second,
+			WriteTimeout:      20 * time.Second,
+			MaxHeaderBytes:    1 << 20,
+		},
+		setter: func(c *Context) IContext {
+			return c
+		},
+		routes:     make(RoutesPerPrefix),
+		prefix:     "",
+		docHandler: nil,
+		handlers:   nil,
 	}
+}
 
-	defaultMeta = func() ServerMeta {
-		return ServerMeta{
-			baseServer: &http.Server{
-				ReadTimeout:       20 * time.Second,
-				ReadHeaderTimeout: 20 * time.Second,
-				WriteTimeout:      20 * time.Second,
-				MaxHeaderBytes:    1 << 20,
-			},
-			setter: nakedSetter,
-			routes: make(RoutesPerPrefix),
-		}
+func (m *serverMeta) toServer(addr string) http.Server {
+	return http.Server{
+		Addr:           addr,
+		ReadTimeout:    m.baseServer.ReadTimeout,
+		WriteTimeout:   m.baseServer.WriteTimeout,
+		MaxHeaderBytes: m.baseServer.MaxHeaderBytes,
+		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
+			log.Debugf("[+] new connection")
+
+			return ctx
+		},
 	}
-)
+}
 
+func applyOptions(s *Server, opts ...Option) {
+	for _, opt := range opts {
+		opt(s)
+	}
+}
+
+// InitServer initialize a webfmwk.Server instance
+// It take the server options as parameters.
+// List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
+// WithDocHandler, WithCustomContext, WithMiddlewares, WithHandlers,
+// SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
 func InitServer(opts ...Option) *Server {
 	var (
 		wg          sync.WaitGroup
@@ -65,81 +92,127 @@ func InitServer(opts ...Option) *Server {
 			wg:       &wg,
 			log:      logger,
 			isReady:  make(chan bool),
-			meta:     defaultMeta(),
+			meta:     getDefaultMeta(),
 		}
 	)
 
-	for _, opt := range opts {
-		opt(s)
-	}
+	applyOptions(s, opts...)
 
 	return s
 }
 
-func (m *ServerMeta) toServer(addr string) http.Server {
-	return http.Server{
-		Addr:           addr,
-		ReadTimeout:    m.baseServer.ReadTimeout,
-		WriteTimeout:   m.baseServer.WriteTimeout,
-		MaxHeaderBytes: m.baseServer.MaxHeaderBytes,
-		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
-			return AssignRequestID(ctx)
-		},
-	}
-}
-
-func WithCtrlC() Option {
-	return func(s *Server) {
-		s.meta.ctrlc = true
-		s.log.Debugf("\t-- crtl-c support enabled")
-	}
-}
-
-func CheckIsUp() Option {
-	return func(s *Server) {
-		s.EnableCheckIsUp()
-		s.log.Debugf("\t-- check is up support enabled")
-	}
-}
-
-func WithCORS() Option {
-	return func(s *Server) {
-		s.EnableCORS()
-		s.log.Debugf("\t-- CORS support enabled")
-	}
-}
-
-func WithMiddlewars(mw ...mux.MiddlewareFunc) Option {
-	return func(s *Server) {
-		s.RegisterMiddlewares(mw...)
-		s.log.Debugf("\t-- middlewares loaded")
-	}
-}
-
-func WithDocHandler(handler http.Handler) Option {
-	return func(s *Server) {
-		s.RegisterDocHandler(handler)
-		s.log.Debugf("\t-- doc handler loaded")
-	}
-}
-
+// WithLogger set the server logger which implement the log.ILog interface
+// Try to set it the earliest posible.
 func WithLogger(lg log.ILog) Option {
 	return func(s *Server) {
-		s.RegisterLogger(lg)
+		s.registerLogger(lg)
 		lg.Debugf("\t-- logger loaded")
 	}
 }
 
+// WithCtrlC enable the internal ctrl+c support from the server
+func WithCtrlC() Option {
+	return func(s *Server) {
+		s.enableCtrlC()
+		s.log.Debugf("\t-- crtl-c support enabled")
+	}
+}
+
+// CheckIsUp expose a `/ping` endpoint and try to poll to check the server healt
+// when it's started
+func CheckIsUp() Option {
+	return func(s *Server) {
+		s.enableCheckIsUp()
+		s.log.Debugf("\t-- check is up support enabled")
+	}
+}
+
+// WithCORS enable the CORS (Cross-Origin Resource Sharing) support
+func WithCORS() Option {
+	return func(s *Server) {
+		s.enableCORS()
+		s.log.Debugf("\t-- CORS support enabled")
+	}
+}
+
+// SetPrefix set the API root prefix
+func SetPrefix(prefix string) Option {
+	return func(s *Server) {
+		s.setPrefix(prefix)
+		s.log.Debugf("\t-- api prefix loaded")
+	}
+}
+
+// WithDocHandler allow to register a http.Handler doc handler (ex: swaggo).
+// If use with SetPrefix, register WithDocHandler after the SetPrefix one
+func WithDocHandler(handler http.Handler) Option {
+	return func(s *Server) {
+		s.registerDocHandler(handler)
+		s.log.Debugf("\t-- doc handler loaded")
+	}
+}
+
+// WithCustomContext allow to register a custom context
+//   package main
+//
+//   import "github.com/burgesQ/webfmwk/v3"
+//
+//   type CustomContext struct {
+//     webfmwk.IContext
+//     val string
+//   }
+//
+//   func main() {
+//     var s = webfmwk.InitServer(
+//       webfmwk.WithCustomContext(func(c *webfmwk.Context) webfmwk.IContext {
+//         return &CustomContext{*c, "custom"}
+//       }))
+//   }
+//
 func WithCustomContext(setter Setter) Option {
 	return func(s *Server) {
-		s.SetCustomContext(setter)
+		s.setCustomContext(setter)
 		s.log.Debugf("\t-- custom context loaded")
 	}
 }
 
-func SetMaxHeaderBytes(val int) Option {
+// WithMiddlewares allow to register a list of gorilla/mux.MiddlewareFunc.
+// Middlwares signature is the http.Handler one (func(w http.ResponseWriterm r *http.Request))
+//
+//   package main
+//
+//   import (
+//     "github.com/burgesQ/webfmwk/v3"
+//     "github.com/burgesQ/webfmwk/v3/middleware"
+//   )
+//
+//   func main() {
+//     var s = webfmwk.InitServer(webfmwk.WithMiddlewares(middleware.Security))
+//   }
+func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
 	return func(s *Server) {
-		s.meta.baseServer.MaxHeaderBytes = val
+		s.addMiddlewares(mw...)
+		s.log.Debugf("\t-- middlewares loaded")
+	}
+}
+
+// WithHandlers allow to register a list of webfmwk.Handler
+// Handler signature is the webfmwk.HandlerFunc one (func(c IContext))
+//
+//   package main
+//
+//   import (
+//     "github.com/burgesQ/webfmwk/v3"
+//     "github.com/burgesQ/webfmwk/v3/handler"
+//   )
+//
+//   func main() {
+//     var s = webfmwk.InitServer(webfmwk.WithHandlers(handler.Logging, handler.RequestID))
+//   }
+func WithHandlers(h ...Handler) Option {
+	return func(s *Server) {
+		s.addHandlers(h...)
+		s.log.Debugf("\t-- handlers loaded")
 	}
 }
 
@@ -153,12 +226,6 @@ func SetReadTimeout(val time.Duration) Option {
 	}
 }
 
-func SetReadHeaderTimeout(val time.Duration) Option {
-	return func(s *Server) {
-		s.meta.baseServer.ReadHeaderTimeout = val
-	}
-}
-
 // WriteTimeout is a time limit imposed on client connecting to the server via http from the
 // time the server has completed reading the request header up to the time it has finished writing the response.
 //
@@ -169,9 +236,16 @@ func SetWriteTimeout(val time.Duration) Option {
 	}
 }
 
-func SetPrefix(prefix string) Option {
+// SetMaxHeaderBytes set the max header bytes of both request and response
+func SetMaxHeaderBytes(val int) Option {
 	return func(s *Server) {
-		s.meta.prefix = prefix
-		s.log.Debugf("\t-- api prefix loaded")
+		s.meta.baseServer.MaxHeaderBytes = val
+	}
+}
+
+// SetReadHeaderTimeout set the value of the timeout on the read header process
+func SetReadHeaderTimeout(val time.Duration) Option {
+	return func(s *Server) {
+		s.meta.baseServer.ReadHeaderTimeout = val
 	}
 }

@@ -18,15 +18,18 @@ const (
 )
 
 type (
-	// HandlerSign hold the signature of the controller
-	HandlerSign func(c IContext)
+	// HandlerSign hold the signature of a webfmwk handler (chain of middlware)
+	HandlerFunc func(c IContext)
+
+	// Handler hold the function signature of a webfmwk handler chaning (middlware)
+	Handler func(HandlerFunc) HandlerFunc
 
 	// Route hold the data for one route
 	Route struct {
 		Verbe   string      `json:"verbe"`
 		Path    string      `json:"path"`
 		Name    string      `json:"name"`
-		Handler HandlerSign `json:"-"`
+		Handler HandlerFunc `json:"-"`
 	}
 
 	// Routes hold an array of route
@@ -36,36 +39,22 @@ type (
 	RoutesPerPrefix map[string]Routes
 )
 
-func (rpp *RoutesPerPrefix) addRoute(p string, r Route) {
-	(*rpp)[p] = append((*rpp)[p], r)
-}
-
-func (rpp *RoutesPerPrefix) addRoutes(p string, r Routes) {
-	(*rpp)[p] = append((*rpp)[p], r...)
-}
-
 //
 // Routes method
 //
 
-// SetPrefix set the url path to prefix
-func (s *Server) SetPrefix(prefix string) {
-	s.meta.prefix = prefix
+func (rpp *RoutesPerPrefix) addRoutes(p string, r ...Route) {
+	(*rpp)[p] = append((*rpp)[p], r...)
 }
 
-// AddRoute add a new route to expose
-func (s *Server) AddRoute(r Route) {
-	s.meta.routes.addRoute(s.meta.prefix, r)
-}
-
-// AddRoutes save all the routes to expose
-func (s *Server) AddRoutes(r Routes) {
-	s.meta.routes.addRoutes(s.meta.prefix, r)
+// AddRoute add the endpoint to the server
+func (s *Server) AddRoutes(r ...Route) {
+	s.meta.routes.addRoutes(s.meta.prefix, r...)
 }
 
 // GET expose a route to the http verb GET
-func (s *Server) GET(path string, handler HandlerSign) {
-	s.AddRoute(Route{
+func (s *Server) GET(path string, handler HandlerFunc) {
+	s.AddRoutes(Route{
 		Path:    path,
 		Verbe:   GET,
 		Handler: handler,
@@ -73,8 +62,8 @@ func (s *Server) GET(path string, handler HandlerSign) {
 }
 
 // DELETE expose a route to the http verb DELETE
-func (s *Server) DELETE(path string, handler HandlerSign) {
-	s.AddRoute(Route{
+func (s *Server) DELETE(path string, handler HandlerFunc) {
+	s.AddRoutes(Route{
 		Path:    path,
 		Verbe:   DELETE,
 		Handler: handler,
@@ -82,8 +71,8 @@ func (s *Server) DELETE(path string, handler HandlerSign) {
 }
 
 // POST expose a route to the http verb POST
-func (s *Server) POST(path string, handler HandlerSign) {
-	s.AddRoute(Route{
+func (s *Server) POST(path string, handler HandlerFunc) {
+	s.AddRoutes(Route{
 		Path:    path,
 		Verbe:   POST,
 		Handler: handler,
@@ -91,8 +80,8 @@ func (s *Server) POST(path string, handler HandlerSign) {
 }
 
 // PUT expose a route to the http verb PUT
-func (s *Server) PUT(path string, handler HandlerSign) {
-	s.AddRoute(Route{
+func (s *Server) PUT(path string, handler HandlerFunc) {
+	s.AddRoutes(Route{
 		Path:    path,
 		Verbe:   PUT,
 		Handler: handler,
@@ -100,8 +89,8 @@ func (s *Server) PUT(path string, handler HandlerSign) {
 }
 
 // PATCH expose a route to the http verb PATCH
-func (s *Server) PATCH(path string, handler HandlerSign) {
-	s.AddRoute(Route{
+func (s *Server) PATCH(path string, handler HandlerFunc) {
+	s.AddRoutes(Route{
 		Path:    path,
 		Verbe:   PATCH,
 		Handler: handler,
@@ -109,26 +98,33 @@ func (s *Server) PATCH(path string, handler HandlerSign) {
 }
 
 // RouteApplier apply the array of RoutePerPrefix
-func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
-	for prefix, routes := range rpp {
-		s.SetPrefix(prefix)
-		for _, route := range routes {
-			switch route.Verbe {
-			case GET:
-				s.GET(route.Path, route.Handler)
-			case POST:
-				s.POST(route.Path, route.Handler)
-			case PUT:
-				s.PUT(route.Path, route.Handler)
-			case PATCH:
-				s.PATCH(route.Path, route.Handler)
-			case DELETE:
-				s.DELETE(route.Path, route.Handler)
-			default:
-				s.log.Warnf("Cannot load route [%s](%s)", route.Path, route.Verbe)
+func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
+	for _, rpp := range rpps {
+		for prefix, routes := range rpp {
+			for _, route := range routes {
+				switch route.Verbe {
+				case GET:
+					s.GET(prefix+route.Path, route.Handler)
+				case POST:
+					s.POST(prefix+route.Path, route.Handler)
+				case PUT:
+					s.PUT(prefix+route.Path, route.Handler)
+				case PATCH:
+					s.PATCH(prefix+route.Path, route.Handler)
+				case DELETE:
+					s.DELETE(prefix+route.Path, route.Handler)
+				default:
+					s.log.Warnf("Cannot load route [%s](%s)", prefix+route.Path, route.Verbe)
+				}
 			}
 		}
 	}
+}
+
+func RunHandler(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c IContext) {
+		next(c)
+	})
 }
 
 // SetRouter create a mux.Handler router and then :
@@ -138,32 +134,71 @@ func (s *Server) RouteApplier(rpp RoutesPerPrefix) {
 func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
 
+	// register http handler / mux.Middleware
 	for _, mw := range s.meta.middlewares {
 		router.Use(mw)
 	}
 
-	// test handler
+	// register doc handler
+	if s.meta.docHandler != nil {
+		s.log.Infof("load swagger doc")
+		router.PathPrefix(s.meta.prefix + "/doc/").Handler(s.meta.docHandler)
+	}
+
+	// register test handler
 	if s.meta.checkIsUp {
-		router.HandleFunc(_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
+		router.HandleFunc(s.meta.prefix+_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "pong")
 		}).Methods("GET").Name("ping endpoint")
 	}
 
+	// register routes
 	for prefix, routes := range s.meta.routes {
 		subRouter := router.PathPrefix(prefix).Subrouter()
-		// register routes
-		for _, route := range routes {
-			subRouter.
-				HandleFunc(route.Path, s.customHandler(route.Handler)).
-				Methods(route.Verbe).Name(route.Name)
-		}
 
-		// register doc handler
-		if s.meta.docHandler != nil {
-			s.log.Infof("load swagger doc")
-			subRouter.PathPrefix("/doc/").Handler(s.meta.docHandler)
+		for _, route := range routes {
+			var handler = route.Handler
+
+			// register webfmwk.Handlers
+			if s.meta.handlers != nil {
+				for _, h := range s.meta.handlers {
+					handler = h(RunHandler(handler))
+				}
+			}
+
+			subRouter.HandleFunc(route.Path, s.CustomHandler(handler)).
+				Methods(route.Verbe).Name(route.Name)
 		}
 	}
 
 	return router
+}
+
+func hasBody(r *http.Request) bool {
+	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
+}
+
+// webfmwk main logic, return a http handler wrapped by webfmwk
+func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := s.genContext(w, r)
+
+		defer ctx.OwnRecover()
+
+		if hasBody(r) {
+			ctx.CheckHeader()
+		}
+
+		handler(ctx)
+	}
+}
+
+func (s *Server) genContext(w http.ResponseWriter, r *http.Request) IContext {
+	var ctx = s.meta.setter(&Context{})
+
+	ctx.SetRequest(r).SetWriter(w).
+		SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
+		SetLogger(s.log).SetContext(s.ctx)
+
+	return ctx
 }
