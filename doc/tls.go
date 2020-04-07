@@ -1,30 +1,25 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v2/middleware"
-	w "github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v3"
 )
 
+// TODO: curl with HTTPS
 func main() {
 	// init server w/ ctrl+c support
-	s := w.InitServer(
-		webfmwk.WithMiddlewars(
-			middleware.Logging,
-			middleware.Security),
-	)
+	var s = webfmwk.InitServer(webfmwk.WithCtrlC())
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
+	// expose /test
+	s.GET("/test", func(c webfmwk.IContext) error {
+		c.JSONOk("ok")
 	})
 
 	// start asynchronously on :4242
-	go func() {
-		s.StartTLS(":4242", TLSConfig{
-			Cert:     "/path/to/cert",
-			Key:      "/path/to/key",
-			Insecure: false,
-		})
-	}()
+	s.StartTLS(":4242", webfmwk.TLSConfig{
+		Cert:     "/path/to/cert",
+		Key:      "/path/to/key",
+		Insecure: false,
+	})
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()

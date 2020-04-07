@@ -1,30 +1,30 @@
 package main
 
-import (
-	w "github.com/burgesQ/webfmwk/v3"
-)
+import "github.com/burgesQ/webfmwk/v3"
 
+// customContext extend the webfmwk.Context
 type customContext struct {
-	w.Context
-	customVal string
+	webfmwk.Context
+	val string
 }
 
+// curl -X GET 127.0.0.1:4242/test
+// {"content":"42"}
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(w.WithCustomContext(func(c *w.Context) w.IContext {
-		ctx := &customContext{*c, "42"}
-		return ctx
-	}))
+	// init server w/ ctrl+c support and custom context options
+	var s = webfmwk.InitServer(
+		webfmwk.WithCtrlC(),
+		webfmwk.WithCustomContext(func(c *webfmwk.Context) webfmwk.IContext {
+			return &customContext{*c, "42"}
+		}))
 
-	s.GET("/test", func(c w.IContext) {
-		ctx := c.(*customContext)
-		c.JSONOk(ctx.customVal)
+	// expose /test
+	s.GET("/test", func(c webfmwk.IContext) {
+		c.JSONOk(webfmwk.NewResponse(c.(*customContext).val))
 	})
 
 	// start asynchronously on :4242
-	go func() {
-		s.Start(":4244")
-	}()
+	s.Start(":4242")
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()

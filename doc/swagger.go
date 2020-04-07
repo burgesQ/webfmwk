@@ -5,6 +5,10 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// TODO: form & payload schema
+// TODO: for & payload validation?
+
+// Answer implement the http response
 type Answer struct {
 	Message string `json:"message"`
 }
@@ -15,8 +19,8 @@ type Answer struct {
 // @Success 200 {object} db.Reply
 // @Produce application/json
 // @Router /hello [get]
-func hello(c w.IContext) error {
-	return c.JSONOk(Answer{"ok"})
+func hello(c w.IContext) {
+	c.JSONOk(Answer{"ok"})
 }
 
 // @title hello world API
@@ -29,18 +33,18 @@ func hello(c w.IContext) error {
 // @license.name GFO
 // @host localhost:4242
 func main() {
-	// init server w/ ctrl+c support
-	s := w.InitServer(webfmwk.WithPrefix("/api"),
-		webfmwk.WithDocHandler(httpSwagger.WrapHandler))
+	// init server w/ ctrl+c support, prefix and APIDoc.
+	// register prefix BEFORE api doc.
+	s := w.InitServer(
+		webfmwk.WithPrefix("/api"),
+		webfmwk.WithDocHandler(httpSwagger.WrapHandler),
+		webfmwk.WithCtrlC())
 
-	s.GET("/test", func(c w.IContext) error {
-		return c.JSONOk("ok")
-	})
+	// register /test
+	s.GET("/hello", hello)
 
 	// start asynchronously on :4242
-	go func() {
-		s.Start(":4242")
-	}()
+	s.Start(":4242")
 
 	// ctrl+c is handled internaly
 	defer s.WaitAndStop()
