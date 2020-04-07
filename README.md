@@ -32,8 +32,6 @@ Simply run `make`
 
 For Go 1.11, make sure the environment variable GO111MODULE is set as on when running the install command.
 
-$ go get -u github.com/gbrlsnchs/jwt/v3
-
 ### Example
 
 go >= 1.11. Simply import `github.com/burgesQ/webfmwk`. 
@@ -55,7 +53,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v4"
 )
 
 // curl -X GET 127.0.0.1:4242/hello
@@ -93,7 +91,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v4"
 )
 
 // curl -i -X GET "127.0.0.1:4242/hello?pretty"
@@ -136,7 +134,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v4"
 )
 
 // curl -X GET 127.0.0.1:4242/hello/world
@@ -180,7 +178,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v4"
 )
 
 type (
@@ -242,7 +240,7 @@ Reach the endpoint with `curl -X GET 'http://localhost:4242/api/v1/test` and `cu
 package main
 
 import (
-    "github.com/burgesQ/webfmwk/v3"
+    "github.com/burgesQ/webfmwk/v4"
 )
 
 var (
@@ -299,7 +297,7 @@ Use the method `Server.StartTLS(addr, certPath, keyPath string)`.
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v3"
+    w "github.com/burgesQ/webfmwk/v4"
 )
 
 func main() {
@@ -338,8 +336,8 @@ The logger must implement the `webfmwk/log.ILog` interface.
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v3"
-    "github.com/burgesQ/webfmwk/v3/log"
+    w "github.com/burgesQ/webfmwk/v4"
+    "github.com/burgesQ/webfmwk/v4/log"
 )
 
 // GetLogger return a log.ILog interface
@@ -379,7 +377,7 @@ Then, add a middleware to extend the context using the `Server.SetCustomContext(
 ```go
 package main
 
-import "github.com/burgesQ/webfmwk/v3"
+import "github.com/burgesQ/webfmwk/v4"
 
 // customContext extend the webfmwk.Context
 type customContext struct {
@@ -414,7 +412,7 @@ func main() {
 
 #### Register middlewares
 
-Import `github.com/burgesQ/webfmwk/v3/middleware`
+Import `github.com/burgesQ/webfmwk/v4/middleware`
 
 <details><summary>extend middleware</summary>
 <p>
@@ -423,8 +421,8 @@ Import `github.com/burgesQ/webfmwk/v3/middleware`
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v3"
-	"github.com/burgesQ/webfmwk/v3/middleware"
+	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v4/middleware"
 )
 
 // Middleware implement http.Handler methods
@@ -468,7 +466,7 @@ func main() {
 
 #### Register handlers
 
-Import `github.com/burgesQ/webfmwk/v3/handler`
+Import `github.com/burgesQ/webfmwk/v4/handler`
 
 <details><summary>extend middleware</summary>
 <p>
@@ -477,8 +475,8 @@ Import `github.com/burgesQ/webfmwk/v3/handler`
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v3"
-	"github.com/burgesQ/webfmwk/v3/handler"
+	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v4/handler"
 )
 
 // Handlers implement webfmwk.Handler methods
@@ -518,64 +516,6 @@ func main() {
 
 #### Swagger doc compatibility
 
-Import `github.com/burgesQ/webfmwk/v3/jwt`.
-
-<details><summary>jwt</summary>
-<p>
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/burgesQ/webfmwk/v3"
-	"github.com/burgesQ/webfmwk/v3/jwt"
-	"github.com/burgesQ/webfmwk/v3/log"
-)
-
-// GetLogger return a log.ILog interface
-var logger = log.GetLogger()
-
-type customContext struct {
-	webfmwk.Context
-	customVal string
-}
-
-// curl -X GET 127.0.0.1:4242/test
-// {"error":"Missing Authorization Header"}
-// curl -X GET "127.0.0.1:4242/test" -H "Authorization: Bearer invalid_value"
-// {"error":"Forbidden"}
-// curl -X GET "127.0.0.1:4242/test" -H "Authorization: Bearer `fetch token printed at server start`"
-func main() {
-	// to secure all endpoints use :
-	// webfmwk.InitServer(webfmwk.WithHandlers(jwt.Handler))
-	// or
-	// webfmwk.InitServer(webfmwk.WithMiddlewares(jwt.Middleware))
-	var (
-		s        = webfmwk.InitServer()
-		token, _ = jwt.GenToken("dev")
-	)
-
-	fmt.Printf("use %q as JWT token\n", token)
-
-	// secure only that endpoint
-	s.GET("/test", jwt.Handler(func(c webfmwk.IContext) {
-		c.JSONOk("ok")
-	}))
-
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	s.WaitAndStop()
-}
-```
-
-</p>
-</details>
-
-#### Swagger doc compatibility
-
 Import `github.com/swaggo/http-swagger`.
 
 Then, from a browser reach `:4242/api/doc/index.html`.
@@ -589,7 +529,7 @@ Or, run `curl -X GET 'http://localhost:4242/api/doc/swagger.json'`.
 package main
 
 import (
-    w "github.com/burgesQ/webfmwk/v3"
+    w "github.com/burgesQ/webfmwk/v4"
     httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -653,8 +593,8 @@ package main
 import (
     "time"
 
-    w "github.com/burgesQ/webfmwk/v3"
-    "github.com/burgesQ/webfmwk/v3/log"
+    w "github.com/burgesQ/webfmwk/v4"
+    "github.com/burgesQ/webfmwk/v4/log"
 )
 
 func main() {

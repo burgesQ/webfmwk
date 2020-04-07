@@ -9,8 +9,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/burgesQ/webfmwk/v3/log"
-	"github.com/burgesQ/webfmwk/v3/pretty"
+	"github.com/burgesQ/webfmwk/v4/log"
+	"github.com/burgesQ/webfmwk/v4/pretty"
 	"github.com/gorilla/schema"
 
 	en_translator "github.com/go-playground/locales/en"

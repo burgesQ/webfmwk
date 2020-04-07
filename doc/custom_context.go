@@ -1,6 +1,6 @@
 package main
 
-import "github.com/burgesQ/webfmwk/v3"
+import "github.com/burgesQ/webfmwk/v4"
 
 // customContext extend the webfmwk.Context
 type customContext struct {

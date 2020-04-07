@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"testing"
 
-	z "github.com/burgesQ/webfmwk/v3/testing"
+	z "github.com/burgesQ/webfmwk/v4/testing"
 )
 
 const _addr = ":4242"

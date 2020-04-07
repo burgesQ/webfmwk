@@ -1,4 +1,4 @@
-module github.com/burgesQ/webfmwk/v3
+module github.com/burgesQ/webfmwk/v4
 
 require (
 	github.com/burgesQ/webfmwk/v2 v2.5.2

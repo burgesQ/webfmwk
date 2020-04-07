@@ -4,7 +4,7 @@
 // operations and should finish by calling the next HTTP handler.
 package handler
 
-import "github.com/burgesQ/webfmwk/v3"
+import "github.com/burgesQ/webfmwk/v4"
 
 // Security append few security headers
 func Security(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {

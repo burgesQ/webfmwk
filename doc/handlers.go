@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v3"
-	"github.com/burgesQ/webfmwk/v3/handler"
+	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v4/handler"
 )
 
 // Handlers implement webfmwk.Handler methods

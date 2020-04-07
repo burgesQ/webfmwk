@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v4"
 )
 
 // curl -i -X GET "127.0.0.1:4242/hello?pretty"

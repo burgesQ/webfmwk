@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/burgesQ/webfmwk/v3/log"
+	"github.com/burgesQ/webfmwk/v4/log"
 	"github.com/gorilla/mux"
 )
 
@@ -155,7 +155,7 @@ func WithDocHandler(handler http.Handler) Option {
 // WithCustomContext allow to register a custom context
 //   package main
 //
-//   import "github.com/burgesQ/webfmwk/v3"
+//   import "github.com/burgesQ/webfmwk/v4"
 //
 //   type CustomContext struct {
 //     webfmwk.IContext
@@ -182,8 +182,8 @@ func WithCustomContext(setter Setter) Option {
 //   package main
 //
 //   import (
-//     "github.com/burgesQ/webfmwk/v3"
-//     "github.com/burgesQ/webfmwk/v3/middleware"
+//     "github.com/burgesQ/webfmwk/v4"
+//     "github.com/burgesQ/webfmwk/v4/middleware"
 //   )
 //
 //   func main() {
@@ -202,8 +202,8 @@ func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
 //   package main
 //
 //   import (
-//     "github.com/burgesQ/webfmwk/v3"
-//     "github.com/burgesQ/webfmwk/v3/handler"
+//     "github.com/burgesQ/webfmwk/v4"
+//     "github.com/burgesQ/webfmwk/v4/handler"
 //   )
 //
 //   func main() {

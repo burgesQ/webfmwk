@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3"
-	"github.com/burgesQ/webfmwk/v3/log"
+	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v4/log"
 )
 
 // Middleware implement http.Handler methods

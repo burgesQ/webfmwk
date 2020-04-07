@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/burgesQ/webfmwk/v3/log"
-	z "github.com/burgesQ/webfmwk/v3/testing"
+	"github.com/burgesQ/webfmwk/v4/log"
+	z "github.com/burgesQ/webfmwk/v4/testing"
 )
 
 var (

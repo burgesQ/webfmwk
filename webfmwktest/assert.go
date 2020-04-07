@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	z "github.com/burgesQ/webfmwk/v3/testing"
+	z "github.com/burgesQ/webfmwk/v4/testing"
 )
 
 func AssertBody(t *testing.T, rr *httptest.ResponseRecorder, expected string) {

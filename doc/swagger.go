@@ -1,7 +1,7 @@
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v3"
+	w "github.com/burgesQ/webfmwk/v4"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 

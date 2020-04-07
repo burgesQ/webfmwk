@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v3/log"
+	"github.com/burgesQ/webfmwk/v4/log"
 )
 
 type Header [2]string

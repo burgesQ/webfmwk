@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v3"
+	"github.com/burgesQ/webfmwk/v4"
 )
 
 // TODO: curl with HTTPS

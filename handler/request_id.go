@@ -1,7 +1,7 @@
 package handler
 
 import (
-	webfmwk "github.com/burgesQ/webfmwk/v3"
+	webfmwk "github.com/burgesQ/webfmwk/v4"
 	"github.com/google/uuid"
 )
 
