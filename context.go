@@ -9,8 +9,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/burgesQ/webfmwk/v4/log"
 	"github.com/burgesQ/gommon/pretty"
+	"github.com/burgesQ/webfmwk/v4/log"
 	"github.com/gorilla/schema"
 
 	en_translator "github.com/go-playground/locales/en"
@@ -243,6 +243,12 @@ func (c *Context) response(statusCode int, content []byte) {
 // Send Response implement IContext
 func (c *Context) SendResponse(statusCode int, content []byte, headers ...Header) {
 	c.setHeaders(headers...)
+	c.response(statusCode, content)
+}
+
+func (c *Context) XMLBlob(statusCode int, content []byte) {
+	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
+		Header{"Produce", "application/xml; charset=UTF-8"})
 	c.response(statusCode, content)
 }
 

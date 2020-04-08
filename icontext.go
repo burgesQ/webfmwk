@@ -79,6 +79,9 @@ type IContext interface {
 	SendResponse(op int, content []byte, headers ...Header)
 
 	// JSONBlob answer the JSON content with the status code op
+	XMLBlob(op int, content []byte)
+
+	// JSONBlob answer the JSON content with the status code op
 	JSONBlob(op int, content []byte)
 
 	// JSON answer the JSON content with the status code op
