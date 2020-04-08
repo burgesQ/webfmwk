@@ -2,7 +2,7 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* WIP v4 [2/8] [25%]
+* WIP v4 [4/11] [36%]
 
 ** IDEA logger overload
    - [ ] allow adding of extra payload to logger ?
@@ -10,11 +10,16 @@
    - cobra cmd
    - json ready
    - db interface ?
-** IDEA test via httptest
+** IDEA fuzzit testing
+   - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
+** IDEA lighter package
+   - log can became internal ..? just an interface
+   - testing could be on my own git
+   - same for pretty ?
+
+** TODO read header for translator
 ** TODO perf profiling
-** WIP proper jwt [/] [%]
-   - [X] handler and middlewares
-   - [ ] fully compilent integrations
+
 
 ** WIP cleaner doc [2/3] [66%]
     - [X] up to date example
@@ -25,6 +30,14 @@
       - [ ] workerConfig
       - [X] pretty
 
+
+** DONE test via httptest
+   CLOSED: [2020-04-07 Tue 18:16]
+** DONE proper jwt [3/3] [100%]
+   CLOSED: [2020-04-07 Tue 18:16]
+   - [X] handler and middlewares
+   - [X] fully compilent integrations
+   - [X] it's been extranlized :)
 ** DONE fix test
    CLOSED: [2020-04-06 Mon 20:40]
 ** DONE IContext middlewares

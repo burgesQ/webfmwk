@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	z "github.com/burgesQ/webfmwk/v4/testing"
+	z "github.com/burgesQ/gommon/testing"
 )
 
 var (
