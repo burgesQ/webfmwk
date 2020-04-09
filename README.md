@@ -1,14 +1,13 @@
 # webfmwk
+
 [![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoBuild/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoBuild)
 [![codecov](https://codecov.io/gh/burgesQ/webfmwk/branch/master/graph/badge.svg)](https://codecov.io/gh/burgesQ/webfmwk)
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/burgesQ/webfmwk)
-[![GolangCI](https://golangci.com/badges/github.com/burgesQ/webfmwk.svg)](https://golangci.com/r/github.com/burgesQ/webfmwk)
 [![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk?style=flat-square)](https://goreportcard.com/report/github.com/burgesQ/webfmwk)
 [![CodeFactor](https://www.codefactor.io/repository/github/burgesq/webfmwk/badge)](https://www.codefactor.io/repository/github/burgesq/webfmwk)
 [![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/burgesQ/webfmwk/?ref=repository-badge)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3372/badge)](https://bestpractices.coreinfrastructure.org/projects/3372)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE)
-[![Version compatibility with Go 1.11 onward using modules](https://img.shields.io/badge/compatible%20with-go1.11+-5272b4.svg)](https://github.com/burgesQ/webfmwk#run)
+[![Version compatibility with Go 1.13 onward using modules](https://img.shields.io/badge/compatible%20with-go1.13+-5272b4.svg)](https://github.com/burgesQ/webfmwk#run)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/burgesQ/webfmwk)
 
 ## What
 
@@ -30,7 +29,7 @@ Simply run `make`
 
 ### Important 
 
-For Go 1.11, make sure the environment variable GO111MODULE is set as on when running the install command.
+For Go 1.13, make sure the environment variable GO111MODULE is set as on when running the install command.
 
 ### Example
 

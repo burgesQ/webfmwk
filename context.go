@@ -32,6 +32,7 @@ type (
 		uid   string
 	}
 
+	// ValidationError is returned in case of form / query validation error
 	ValidationError struct {
 		Error validator.ValidationErrorsTranslations `json:"error"`
 	}
@@ -133,7 +134,7 @@ func (c *Context) SetContext(ctx context.Context) IContext {
 	return c
 }
 
-// GetContent implement IContext
+// GetContext implement IContext
 func (c *Context) GetContext() context.Context {
 	return c.ctx
 }
@@ -194,7 +195,7 @@ func (c *Context) CheckHeader() {
 	}
 }
 
-// SetHeader implement IContext
+// SetHeaders implement IContext
 func (c *Context) SetHeaders(headers ...Header) {
 	c.setHeaders(headers...)
 }
@@ -240,12 +241,13 @@ func (c *Context) response(statusCode int, content []byte) {
 	}
 }
 
-// Send Response implement IContext
+// SendResponse implement IContext
 func (c *Context) SendResponse(statusCode int, content []byte, headers ...Header) {
 	c.setHeaders(headers...)
 	c.response(statusCode, content)
 }
 
+// XMLBlob sent a XML response already encoded
 func (c *Context) XMLBlob(statusCode int, content []byte) {
 	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
 		Header{"Produce", "application/xml; charset=UTF-8"})

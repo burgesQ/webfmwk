@@ -29,6 +29,7 @@ type (
 		e   error
 	}
 
+	// Response is returned in case of success
 	Response struct {
 		Content string `json:"content"`
 	}

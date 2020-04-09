@@ -2,17 +2,18 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* WIP v4 [4/11] [36%]
+* WIP v4 [5/11] [45%]
 
 ** IDEA logger overload
-   - [ ] allow adding of extra payload to logger ?
+   - [ ] allow adding of extra prefix to logger (context ID) ?
 ** IDEA API generator
    - cobra cmd
    - json ready
    - db interface ?
 ** IDEA fuzzit testing
    - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
-** IDEA lighter package
+** DONE lighter package
+   CLOSED: [2020-04-08 Wed 13:03]
    - log can became internal ..? just an interface
    - testing could be on my own git
    - same for pretty ?

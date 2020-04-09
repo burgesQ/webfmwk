@@ -1,2 +1,2 @@
-// package log implement the ILog interface used by the webfmwk
+// Package log implement the ILog interface used by the webfmwk
 package log

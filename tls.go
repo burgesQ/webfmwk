@@ -2,26 +2,32 @@ package webfmwk
 
 import (
 	"crypto/tls"
+	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 type (
 	// ITLSConfig is used to interface the TLS implemtation.
 	ITLSConfig interface {
+		fmt.Stringer
+
 		// GetCert return the full path to the server certificate file
 		GetCert() string
 		// GetKey return the full path to the server key file
 		GetKey() string
 		// GetInsecure return true if the TLS Certificate shouldn't be checked
 		GetInsecure() bool
+		// IsEmpty return true if the config is empty
+		Empty() bool
 	}
 
 	// TLSConfig contain the tls config passed by the config file.
 	// It implement ITLSConfig
 	TLSConfig struct {
-		Cert     string `json:"cert"`
-		Key      string `json:"key"`
-		Insecure bool   `json:"insecure"`
+		Cert     string `json:"cert" mapstructur:"cert"`
+		Key      string `json:"key" mapstructur:"key"`
+		Insecure bool   `json:"insecure" mapstructur:"insecure"`
 	}
 )
 
@@ -59,6 +65,21 @@ func (config TLSConfig) GetKey() string {
 // GetInsecure implemte ITLSConfig
 func (config TLSConfig) GetInsecure() bool {
 	return config.Insecure
+}
+
+// GetInsecure implemte ITLSConfig
+func (config TLSConfig) Empty() bool {
+	return len(config.Cert) == 0 && len(config.Key) == 0 && !config.Insecure
+}
+
+// String implement Stringer interface
+func (config TLSConfig) String() string {
+	b, e := json.MarshalIndent(config, " ", "\t")
+	if e != nil {
+		return "error"
+	}
+
+	return string(b)
 }
 
 // StartTLS expose an server to an HTTPS address

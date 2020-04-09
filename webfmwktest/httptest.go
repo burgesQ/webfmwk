@@ -15,6 +15,7 @@ type Expected struct {
 	Body string
 }
 
+// GetAndTest perfome a get request on the webfmwk using the httptest package
 func GetAndTest(t *testing.T, h webfmwk.HandlerFunc, e Expected) {
 	t.Helper()
 

@@ -216,7 +216,7 @@ func WithHandlers(h ...Handler) Option {
 	}
 }
 
-// ReadTimeout is a timing constraint on the client http request imposed by the server from the moment
+// SetReadTimeout is a timing constraint on the client http request imposed by the server from the moment
 // of initial connection up to the time the entire request body has been read.
 //
 // [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
@@ -226,7 +226,7 @@ func SetReadTimeout(val time.Duration) Option {
 	}
 }
 
-// WriteTimeout is a time limit imposed on client connecting to the server via http from the
+// SetWriteTimeout is a time limit imposed on client connecting to the server via http from the
 // time the server has completed reading the request header up to the time it has finished writing the response.
 //
 // [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]

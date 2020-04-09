@@ -30,7 +30,7 @@ func TestSetPrefix(t *testing.T) {
 
 	r := s.SetRouter()
 
-	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	if e := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, _ := route.GetPathTemplate()
 
 		if !(pathTemplate == _testURI || pathTemplate == _testPrefix) && pathTemplate != _testPrefix+_pingEndpoint {
@@ -38,7 +38,9 @@ func TestSetPrefix(t *testing.T) {
 		}
 
 		return nil
-	})
+	}); e != nil {
+		t.Errorf("cannot walk routes : %s", e.Error())
+	}
 }
 
 func TestAddRoutes(t *testing.T) {
@@ -133,7 +135,7 @@ func TestSetRouter(t *testing.T) {
 
 	r := s.SetRouter()
 
-	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	if e := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		var (
 			path, _   = route.GetPathTemplate()
 			verbes, _ = route.GetMethods()
@@ -148,7 +150,9 @@ func TestSetRouter(t *testing.T) {
 			z.AssertStringEqual(t, verbe, GET)
 		}
 		return nil
-	})
+	}); e != nil {
+		t.Errorf("cannot walk routes : %s", e.Error())
+	}
 }
 
 // TODO: func TestRouteApplier(t *testing.T) {}

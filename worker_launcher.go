@@ -12,7 +12,7 @@ type WorkerLauncher struct {
 	cancel context.CancelFunc
 }
 
-// to use as a factory as the fields are unexported
+// CreateWorkerLauncher initialize and return a WorkerLauncher instance
 func CreateWorkerLauncher(wg *sync.WaitGroup, cancel context.CancelFunc) WorkerLauncher {
 	return WorkerLauncher{wg, cancel}
 }
@@ -30,7 +30,8 @@ func (l *WorkerLauncher) run(name string, fn func() error) {
 	l.wg.Done()
 }
 
-// launch a worker who will be wait & kill at the same time than the others
+// Start launch a worker task which will be waited & killed at the same time than
+// the others one in the pool
 func (l *WorkerLauncher) Start(name string, fn func() error) {
 	l.wg.Add(1)
 
