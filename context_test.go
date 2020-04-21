@@ -28,7 +28,7 @@ func stopServer(t *testing.T, s *Server) {
 }
 
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
-	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
+	handlerRoute HandlerFunc, handlerTest z.HandlerForTest) {
 	var s = InitServer(CheckIsUp())
 
 	t.Log("init server...")
@@ -43,7 +43,7 @@ func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 }
 
 func wrapperGet(t *testing.T, route, routeReq string,
-	handlerRoute func(c IContext), handlerTest z.HandlerForTest) {
+	handlerRoute HandlerFunc, handlerTest z.HandlerForTest) {
 	var s = InitServer(CheckIsUp())
 
 	t.Log("init server...")
@@ -58,12 +58,12 @@ func wrapperGet(t *testing.T, route, routeReq string,
 }
 
 func TestParam(t *testing.T) {
-	wrapperGet(t, "/test/{id}", "/test/tutu", func(c IContext) {
+	wrapperGet(t, "/test/{id}", "/test/tutu", func(c Context) error {
 		id := c.GetVar("id")
 		if id != "tutu" {
 			t.Errorf("error fetching the url param : [%s] expected [tutu]", id)
 		}
-		c.JSONOk(id)
+		return c.JSONOk(id)
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, `"tutu"`)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -72,7 +72,7 @@ func TestParam(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	var (
-		c = Context{
+		c = icontext{
 			query: map[string][]string{"test": {"ok"}},
 		}
 		v, ok = c.GetQuery("test")
@@ -88,7 +88,7 @@ func TestQuery(t *testing.T) {
 
 func TestLogger(t *testing.T) {
 	var (
-		c      = Context{}
+		c      = icontext{}
 		logger = log.GetLogger()
 	)
 
@@ -101,7 +101,7 @@ func TestLogger(t *testing.T) {
 func TestContext(t *testing.T) {
 	var (
 		ctx context.Context
-		c   = Context{
+		c   = icontext{
 			ctx: ctx,
 		}
 	)
@@ -109,7 +109,7 @@ func TestContext(t *testing.T) {
 }
 
 func TestRequestID(t *testing.T) {
-	var ctx = Context{}
+	var ctx = icontext{}
 
 	ctx.SetRequestID("testing")
 	z.AssertStringEqual(t, ctx.GetRequestID(), "testing")
@@ -131,13 +131,16 @@ func TestFetchContent(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			wrapperPost(t, "/test", "/test", test.payload, func(c IContext) {
+			wrapperPost(t, "/test", "/test", test.payload, func(c Context) error {
 				var anonymous = struct {
 					FirstName string `json:"first_name,omitempty" validate:"required"`
 				}{}
-				c.FetchContent(&anonymous)
-				c.Validate(anonymous)
-				c.JSON(http.StatusCreated, anonymous)
+				if e := c.FetchContent(&anonymous); e != nil {
+					return e
+				} else if e := c.Validate(anonymous); e != nil {
+					return e
+				}
+				return c.JSON(http.StatusCreated, anonymous)
 			}, func(t *testing.T, resp *http.Response) {
 				switch test.t {
 
@@ -154,8 +157,8 @@ func TestFetchContent(t *testing.T) {
 }
 
 func TestCheckHeader(t *testing.T) {
-	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c IContext) {
-		c.JSONBlob(200, []byte(hBody))
+	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c Context) error {
+		return c.JSONBlob(200, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBody(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -183,8 +186,8 @@ func TestCheckHeaderError(t *testing.T) {
 	)
 
 	defer stopServer(t, s)
-	s.POST("/test", func(c IContext) {
-		c.JSONBlob(http.StatusOK, []byte(hBody))
+	s.POST("/test", func(c Context) error {
+		return c.JSONBlob(http.StatusOK, []byte(hBody))
 	})
 	s.Start(_testPort)
 	<-s.isReady
@@ -225,8 +228,8 @@ func TestCheckHeaderError(t *testing.T) {
 }
 
 func TestJSONBlobPretty(t *testing.T) {
-	wrapperGet(t, "/test", "/test?pretty", func(c IContext) {
-		c.JSONBlob(http.StatusOK, []byte(hBody))
+	wrapperGet(t, "/test", "/test?pretty", func(c Context) error {
+		return c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
 		z.AssertBodyDiffere(t, resp, hBody)
 		z.AssertStatusCode(t, resp, http.StatusOK)
@@ -242,46 +245,46 @@ func TestJSONResponse(t *testing.T) {
 		}{"nul"}
 		tests = map[string]struct {
 			expectedOP int
-			fn         func(c IContext, ret interface{})
+			fn         func(c Context, ret interface{}) error
 		}{
-			"blob": {http.StatusOK, func(c IContext, ret interface{}) {
-				c.JSONBlob(http.StatusOK, []byte(hBody))
+			"blob": {http.StatusOK, func(c Context, ret interface{}) error {
+				return c.JSONBlob(http.StatusOK, []byte(hBody))
 			}},
-			"ok": {http.StatusOK, func(c IContext, ret interface{}) {
-				c.JSONOk(ret)
+			"ok": {http.StatusOK, func(c Context, ret interface{}) error {
+				return c.JSONOk(ret)
 			}},
-			"created": {http.StatusCreated, func(c IContext, ret interface{}) {
-				c.JSONCreated(ret)
+			"created": {http.StatusCreated, func(c Context, ret interface{}) error {
+				return c.JSONCreated(ret)
 			}},
-			"accepted": {http.StatusAccepted, func(c IContext, ret interface{}) {
-				c.JSONAccepted(ret)
+			"accepted": {http.StatusAccepted, func(c Context, ret interface{}) error {
+				return c.JSONAccepted(ret)
 			}},
-			"no content": {http.StatusNoContent, func(c IContext, ret interface{}) {
-				c.JSONNoContent()
+			"no content": {http.StatusNoContent, func(c Context, ret interface{}) error {
+				return c.JSONNoContent()
 			}},
-			"bad request": {http.StatusBadRequest, func(c IContext, ret interface{}) {
-				c.JSONBadRequest(ret)
+			"bad request": {http.StatusBadRequest, func(c Context, ret interface{}) error {
+				return c.JSONBadRequest(ret)
 			}},
-			"unauthorized": {http.StatusUnauthorized, func(c IContext, ret interface{}) {
-				c.JSONUnauthorized(ret)
+			"unauthorized": {http.StatusUnauthorized, func(c Context, ret interface{}) error {
+				return c.JSONUnauthorized(ret)
 			}},
-			"forbiden": {http.StatusForbidden, func(c IContext, ret interface{}) {
-				c.JSONForbiden(ret)
+			"forbiden": {http.StatusForbidden, func(c Context, ret interface{}) error {
+				return c.JSONForbiden(ret)
 			}},
-			"notFound": {http.StatusNotFound, func(c IContext, ret interface{}) {
-				c.JSONNotFound(ret)
+			"notFound": {http.StatusNotFound, func(c Context, ret interface{}) error {
+				return c.JSONNotFound(ret)
 			}},
-			"conflict": {http.StatusConflict, func(c IContext, ret interface{}) {
-				c.JSONConflict(ret)
+			"conflict": {http.StatusConflict, func(c Context, ret interface{}) error {
+				return c.JSONConflict(ret)
 			}},
-			"unprocessable": {http.StatusUnprocessableEntity, func(c IContext, ret interface{}) {
-				c.JSONUnprocessable(ret)
+			"unprocessable": {http.StatusUnprocessableEntity, func(c Context, ret interface{}) error {
+				return c.JSONUnprocessable(ret)
 			}},
-			"internalError": {http.StatusInternalServerError, func(c IContext, ret interface{}) {
-				c.JSONInternalError(ret)
+			"internalError": {http.StatusInternalServerError, func(c Context, ret interface{}) error {
+				return c.JSONInternalError(ret)
 			}},
-			"notImplemented": {http.StatusNotImplemented, func(c IContext, ret interface{}) {
-				c.JSONNotImplemented(ret)
+			"notImplemented": {http.StatusNotImplemented, func(c Context, ret interface{}) error {
+				return c.JSONNotImplemented(ret)
 			}},
 		}
 	)
@@ -291,8 +294,8 @@ func TestJSONResponse(t *testing.T) {
 	// load custom endpoints
 	for n, t := range tests {
 		var fn = t.fn
-		s.GET("/"+n, func(c IContext) {
-			fn(c, ret)
+		s.GET("/"+n, func(c Context) error {
+			return fn(c, ret)
 		})
 	}
 

@@ -1,3 +1,4 @@
+// Package log implement the Log interface used by the webfmwk
 package log
 
 import (
@@ -5,23 +6,40 @@ import (
 	"log"
 )
 
+// LogLevel
+type Level int
+
 const (
-	LogERR   = 0
-	LogWARN  = 1
-	LogINFO  = 2
-	LogDEBUG = 3
+	LogERR   Level = 0
+	LogWARN        = 1
+	LogINFO        = 2
+	LogDEBUG       = 3
 )
 
-type logger struct {
-	level int
-}
+type (
+	// Log interface implement the logging system inside the API
+	Log interface {
+		Errorf(format string, v ...interface{})
+		Warnf(format string, v ...interface{})
+		Infof(format string, v ...interface{})
+		Debugf(format string, v ...interface{})
+		Fatalf(format string, v ...interface{})
+		SetLogLevel(level Level) bool
+		GetErrorLogger() *log.Logger
+	}
+
+	logger struct {
+		level Level
+	}
+)
 
 var (
 	_lg = logger{
 		level: LogERR,
 	}
+	eLogger *log.Logger
 
-	_out = map[int]string{
+	_out = map[Level]string{
 		LogERR:   "! ERR  : ",
 		LogWARN:  "* WARN : ",
 		LogINFO:  "+ INFO : ",
@@ -29,7 +47,7 @@ var (
 	}
 )
 
-func SetLogLevel(level int) (ok bool) {
+func SetLogLevel(level Level) (ok bool) {
 	if level >= LogERR && level <= LogDEBUG {
 		_lg.level = level
 		ok = true
@@ -37,7 +55,11 @@ func SetLogLevel(level int) (ok bool) {
 	return
 }
 
-func (l *logger) logContent(level int, format string, v ...interface{}) {
+func GetLogger() Log {
+	return _lg
+}
+
+func (l *logger) logContent(level Level, format string, v ...interface{}) {
 	if level <= l.level {
 		fmt.Printf("%s"+format+"\n", append([]interface{}{
 			_out[level],
@@ -45,17 +67,11 @@ func (l *logger) logContent(level int, format string, v ...interface{}) {
 	}
 }
 
-func GetLogger() ILog {
-	return _lg
-}
-
-var eLogger *log.Logger
-
 func (l logger) GetErrorLogger() *log.Logger {
 	return eLogger
 }
 
-func (l logger) SetLogLevel(level int) bool {
+func (l logger) SetLogLevel(level Level) bool {
 	return SetLogLevel(level)
 }
 

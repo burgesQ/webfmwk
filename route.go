@@ -1,6 +1,7 @@
 package webfmwk
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -19,7 +20,7 @@ const (
 
 type (
 	// HandlerSign hold the signature of a webfmwk handler (chain of middlware)
-	HandlerFunc func(c IContext)
+	HandlerFunc func(c Context) error
 
 	// Handler hold the function signature of a webfmwk handler chaning (middlware)
 	Handler func(HandlerFunc) HandlerFunc
@@ -121,9 +122,9 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 	}
 }
 
-func RunHandler(next HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(c IContext) {
-		next(c)
+func Use(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c Context) error {
+		return next(c)
 	})
 }
 
@@ -162,7 +163,7 @@ func (s *Server) SetRouter() *mux.Router {
 			// register webfmwk.Handlers
 			if s.meta.handlers != nil {
 				for _, h := range s.meta.handlers {
-					handler = h(RunHandler(handler))
+					handler = h(Use(handler))
 				}
 			}
 
@@ -178,23 +179,35 @@ func hasBody(r *http.Request) bool {
 	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
 }
 
-// webfmwk main logic, return a http handler wrapped by webfmwk
-func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := s.genContext(w, r)
-
-		defer ctx.OwnRecover()
-
-		if hasBody(r) {
-			ctx.CheckHeader()
-		}
-
-		handler(ctx)
+func (s *Server) handleError(ctx Context, e error) {
+	var eh ErrorHandled
+	if errors.As(e, &eh) {
+		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
 	}
 }
 
-func (s *Server) genContext(w http.ResponseWriter, r *http.Request) IContext {
-	var ctx = s.meta.setter(&Context{})
+// webfmwk main logic, return a http handler wrapped by webfmwk
+func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var ctx = s.genContext(w, r)
+
+		//		defer ctx.OwnRecover()
+
+		if hasBody(r) {
+			if e := ctx.CheckHeader(); e != nil {
+				s.handleError(ctx, e)
+				return
+			}
+		}
+
+		if e := handler(ctx); e != nil {
+			s.handleError(ctx, e)
+		}
+	}
+}
+
+func (s *Server) genContext(w http.ResponseWriter, r *http.Request) Context {
+	var ctx = &icontext{}
 
 	ctx.SetRequest(r).SetWriter(w).
 		SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).

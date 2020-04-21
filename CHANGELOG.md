@@ -4,13 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0] - 2020.4.7
+## [4.0.2] - unreleased
+
+### Added
+### Changed
+### Fixed
+### Removed
+
+## [4.0.1] - 2020.4.7
 
 ### Added
 - new middlware implemented, the handlers use an IContext
 - add the webfmwktest package which warp the httptest one
 
-### Changer
+### Changed
 - pass more server field in private, please use the Options object to setup the server
 
 ## [3.2.0] - 2020.3.3

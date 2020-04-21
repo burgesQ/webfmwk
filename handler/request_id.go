@@ -5,9 +5,10 @@ import (
 	"github.com/google/uuid"
 )
 
+// RequestID add a unique identifier to the context object
 func RequestID(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
-	return webfmwk.HandlerFunc(func(c webfmwk.IContext) {
+	return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
 		c.SetRequestID(uuid.New().String())
-		next(c)
+		return next(c)
 	})
 }

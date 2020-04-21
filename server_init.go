@@ -31,13 +31,14 @@ type (
 		cors         bool
 		middlewares  []mux.MiddlewareFunc
 		handlers     []Handler
-		setter       Setter
 		docHandler   http.Handler
 		baseServer   *http.Server
 		prefix       string
 		routes       RoutesPerPrefix
 	}
 )
+
+var onceLogger sync.Once
 
 func getDefaultMeta() serverMeta {
 	return serverMeta{
@@ -46,9 +47,6 @@ func getDefaultMeta() serverMeta {
 			ReadHeaderTimeout: 20 * time.Second,
 			WriteTimeout:      20 * time.Second,
 			MaxHeaderBytes:    1 << 20,
-		},
-		setter: func(c *Context) IContext {
-			return c
 		},
 		routes:     make(RoutesPerPrefix),
 		prefix:     "",
@@ -80,9 +78,10 @@ func applyOptions(s *Server, opts ...Option) {
 // InitServer initialize a webfmwk.Server instance
 // It take the server options as parameters.
 // List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
-// WithDocHandler, WithCustomContext, WithMiddlewares, WithHandlers,
+// WithDocHandler, WithMiddlewares, WithHandlers,
 // SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
 func InitServer(opts ...Option) *Server {
+	onceLogger.Do(fetchLogger)
 	var (
 		wg          sync.WaitGroup
 		ctx, cancel = context.WithCancel(context.Background())
@@ -101,9 +100,9 @@ func InitServer(opts ...Option) *Server {
 	return s
 }
 
-// WithLogger set the server logger which implement the log.ILog interface
+// WithLogger set the server logger which implement the log.Log interface
 // Try to set it the earliest posible.
-func WithLogger(lg log.ILog) Option {
+func WithLogger(lg log.Log) Option {
 	return func(s *Server) {
 		s.registerLogger(lg)
 		lg.Debugf("\t-- logger loaded")
@@ -152,30 +151,6 @@ func WithDocHandler(handler http.Handler) Option {
 	}
 }
 
-// WithCustomContext allow to register a custom context
-//   package main
-//
-//   import "github.com/burgesQ/webfmwk/v4"
-//
-//   type CustomContext struct {
-//     webfmwk.IContext
-//     val string
-//   }
-//
-//   func main() {
-//     var s = webfmwk.InitServer(
-//       webfmwk.WithCustomContext(func(c *webfmwk.Context) webfmwk.IContext {
-//         return &CustomContext{*c, "custom"}
-//       }))
-//   }
-//
-func WithCustomContext(setter Setter) Option {
-	return func(s *Server) {
-		s.setCustomContext(setter)
-		s.log.Debugf("\t-- custom context loaded")
-	}
-}
-
 // WithMiddlewares allow to register a list of gorilla/mux.MiddlewareFunc.
 // Middlwares signature is the http.Handler one (func(w http.ResponseWriterm r *http.Request))
 //
@@ -197,7 +172,8 @@ func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
 }
 
 // WithHandlers allow to register a list of webfmwk.Handler
-// Handler signature is the webfmwk.HandlerFunc one (func(c IContext))
+// Handler signature is the webfmwk.HandlerFunc one (func(c Context)).
+// To register a custom context, simply do it in the toppest handler
 //
 //   package main
 //
@@ -206,9 +182,19 @@ func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
 //     "github.com/burgesQ/webfmwk/v4/handler"
 //   )
 //
-//   func main() {
-//     var s = webfmwk.InitServer(webfmwk.WithHandlers(handler.Logging, handler.RequestID))
+//   type CustomContext struct {
+//      webfmwk.Context
+//      val String
 //   }
+//
+//   func main() {
+//     var s = webfmwk.InitServer(webfmwk.WithHandlers(handler.Logging, handler.RequestID,
+//        webfmwk.HandlerFunc {
+//           return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
+// 	           cc := Context{c, "val"}
+//	           return next(cc)})}))
+//  }
+//
 func WithHandlers(h ...Handler) Option {
 	return func(s *Server) {
 		s.addHandlers(h...)

@@ -12,15 +12,11 @@
    - db interface ?
 ** IDEA fuzzit testing
    - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
-** DONE lighter package
-   CLOSED: [2020-04-08 Wed 13:03]
-   - log can became internal ..? just an interface
-   - testing could be on my own git
-   - same for pretty ?
+** TODO recover handler
+   Allow the toggling of the the panic2error pattern
 
 ** TODO read header for translator
 ** TODO perf profiling
-
 
 ** WIP cleaner doc [2/3] [66%]
     - [X] up to date example
@@ -31,6 +27,12 @@
       - [ ] workerConfig
       - [X] pretty
 
+
+** DONE lighter package
+   CLOSED: [2020-04-08 Wed 13:03]
+   - log can became internal ..? just an interface
+   - testing could be on my own git
+   - same for pretty ?
 
 ** DONE test via httptest
    CLOSED: [2020-04-07 Tue 18:16]
