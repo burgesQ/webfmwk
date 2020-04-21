@@ -43,7 +43,8 @@ func TestAddHandlers(t *testing.T) {
 	defer stopServer(t, s)
 
 	s.addHandlers(func(next HandlerFunc) HandlerFunc {
-		return HandlerFunc(func(c IContext) {
+		return HandlerFunc(func(c Context) error {
+			return nil
 		})
 	})
 

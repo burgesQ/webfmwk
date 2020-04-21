@@ -15,14 +15,12 @@ import (
 )
 
 type (
-	Setter func(c *Context) IContext
-
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
 		ctx      context.Context
 		wg       *sync.WaitGroup
 		launcher WorkerLauncher
-		log      log.ILog
+		log      log.Log
 		isReady  chan bool
 		meta     serverMeta
 	}
@@ -31,15 +29,20 @@ type (
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*http.Server
-	logger        = log.GetLogger()
+	logger        log.Log
 )
 
 //
 // Global methods
 //
 
-// GetLogger return an instance of the ILog interface used
-func GetLogger() log.ILog {
+func fetchLogger() {
+	logger = log.GetLogger()
+}
+
+// GetLogger return an instance of the Log interface used
+func GetLogger() log.Log {
+	onceLogger.Do(fetchLogger)
 	return logger
 }
 
@@ -170,7 +173,7 @@ func (s *Server) internalHandler() {
 			s.exitHandler(s.ctx, os.Interrupt)
 			return nil
 		})
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)
 		s.meta.ctrlcStarted = true
 	}
 }
@@ -185,7 +188,7 @@ func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
 	for ctx.Err() == nil {
 		select {
 		case si := <-c:
-			logger.Infof("captured %v, exiting...", si)
+			s.log.Infof("captured %v, exiting...", si)
 			return
 		case <-ctx.Done():
 			return
@@ -197,8 +200,8 @@ func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
 // Setter/Getter
 //
 
-// GetLogger return the used ILog instance
-func (s *Server) GetLogger() log.ILog {
+// GetLogger return the used Log instance
+func (s *Server) GetLogger() log.Log {
 	return s.log
 }
 
@@ -240,20 +243,14 @@ func (s *Server) addHandlers(h ...Handler) *Server {
 	return s
 }
 
-// SetCustomContext save a custom context so it can be fetched in the controllers
-func (s *Server) setCustomContext(setter Setter) *Server {
-	s.meta.setter = setter
-	return s
-}
-
-// SetCustomContext save a custom context so it can be fetched in the controllers
+// SetPrefix save a custom context so it can be fetched in the controllers
 func (s *Server) setPrefix(prefix string) *Server {
 	s.meta.prefix = prefix
 	return s
 }
 
-// RegisterLogger register the ILog used
-func (s *Server) registerLogger(lg log.ILog) *Server {
+// RegisterLogger register the Log used
+func (s *Server) registerLogger(lg log.Log) *Server {
 	logger = lg
 	s.log = lg
 	return s

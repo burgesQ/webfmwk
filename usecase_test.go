@@ -19,41 +19,48 @@ type testSerial struct {
 func TestUseCase(t *testing.T) {
 	var s = InitServer(
 		CheckIsUp(), SetPrefix("/api"),
-		WithCustomContext(func(c *Context) IContext {
-			return &customContext{*c, "turlu"}
-		}))
+		WithHandlers(func(next HandlerFunc) HandlerFunc {
+			return HandlerFunc(func(c Context) error {
+				cc := customContext{c, "turlu"}
+				return next(cc)
+			})
+		}),
+	)
 
 	// declare routes
-	s.GET("/hello", func(c IContext) {
-		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
+	s.GET("/hello", func(c Context) error {
+		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
-	s.GET("/routes", func(c IContext) {
-		c.JSON(http.StatusOK, &testSerial{"hello"})
+	s.GET("/routes", func(c Context) error {
+		return c.JSON(http.StatusOK, &testSerial{"hello"})
 	})
 
-	s.GET("/hello/{who}", func(c IContext) {
+	s.GET("/hello/{who}", func(c Context) error {
 		var content = `{ "message": "hello ` + c.GetVar("who") + `" }`
-		c.JSONBlob(http.StatusOK, []byte(content))
+		return c.JSONBlob(http.StatusOK, []byte(content))
 	})
 
-	s.GET("/testquery", func(c IContext) {
-		c.JSONOk(c.GetQueries())
+	s.GET("/testquery", func(c Context) error {
+		return c.JSONOk(c.GetQueries())
 	})
 
-	s.GET("/testContext", func(c IContext) {
-		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello `+
-			c.(*customContext).Value+`" }`))
+	s.GET("/testContext", func(c Context) error {
+		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello `+
+			c.(customContext).Value+`" }`))
 	})
 
-	s.POST("/world", func(c IContext) {
+	s.POST("/world", func(c Context) error {
 		anonymous := struct {
 			FirstName string `json:"first_name,omitempty" validate:"required"`
 			LastName  string `json:"last_name,omitempty"  validate:"required"`
 		}{}
-		// check body handle the error management, so no return needed
-		c.FetchContent(&anonymous)
-		c.JSONCreated(anonymous)
+
+		if e := c.FetchContent(&anonymous); e != nil {
+			return e
+		}
+
+		return c.JSONCreated(anonymous)
 	})
 
 	defer stopServer(t, s)

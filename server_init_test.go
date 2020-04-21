@@ -14,7 +14,8 @@ var (
 		})
 	}
 	_emptyHandler = func(next HandlerFunc) HandlerFunc {
-		return HandlerFunc(func(c IContext) {
+		return HandlerFunc(func(c Context) error {
+			return next(c)
 		})
 	}
 )

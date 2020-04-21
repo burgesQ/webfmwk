@@ -11,7 +11,7 @@ import (
 var (
 	_testOP              = 200
 	_testContent         = "ok"
-	_testingErrorHandled = ErrorHandled{
+	_testingErrorHandled = errorHandled{
 		op:      _testOP,
 		content: _testContent,
 	}
@@ -42,7 +42,7 @@ func TestWrapping(t *testing.T) {
 	var (
 		testE = errors.New("what a pretty test")
 		e     = NewUnauthorized(_testContent).SetWrapped(testE)
-		eh    IErrorHandled
+		eh    ErrorHandled
 	)
 
 	t.Run("test error is", func(t *testing.T) {

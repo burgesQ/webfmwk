@@ -17,7 +17,9 @@ const (
 	_testVerbe  = GET
 )
 
-var _emptyController = func(c IContext) {}
+var _emptyController = func(c Context) error {
+	return nil
+}
 
 // TODO: func TestAddRoute(t *testing.T)  {}
 // TODO: func TestAddRoutes(t *testing.T) {}
@@ -131,7 +133,9 @@ func TestSetRouter(t *testing.T) {
 	s := InitServer(CheckIsUp(), SetPrefix(_testPrefix))
 	defer stopServer(t, s)
 
-	s.GET(_testURL, func(c IContext) { c.JSONNoContent() })
+	s.GET(_testURL, func(c Context) error {
+		return c.JSONNoContent()
+	})
 
 	r := s.SetRouter()
 
@@ -161,13 +165,13 @@ func TestHandleParam(t *testing.T) {
 	s := InitServer(CheckIsUp())
 	defer stopServer(t, s)
 
-	s.GET("/test/{id}", func(c IContext) {
+	s.GET("/test/{id}", func(c Context) error {
 		if val, ok := c.GetQuery("pretty"); !ok || val != "1" {
 			t.Errorf("query Param wrongly decoded %s", val)
 		} else if c.GetVar("id") != "toto" {
 			t.Errorf("URL Param wrongly decoded")
 		}
-		c.JSONNoContent()
+		return c.JSONNoContent()
 	})
 
 	s.Start(_testPort)

@@ -7,17 +7,17 @@ import (
 
 type (
 	// IErrorHandled interface implement the panic recovering
-	IErrorHandled interface {
+	ErrorHandled interface {
 		// error
 		Error() string
 		Unwrap() error
 		GetOPCode() int
 		GetContent() interface{}
-		SetWrapped(err error) IErrorHandled
+		SetWrapped(err error) ErrorHandled
 	}
 
 	// ErrorHandled implement the IErrorHandled interface
-	ErrorHandled struct {
+	errorHandled struct {
 		op      int
 		content interface{}
 		err     error
@@ -69,53 +69,53 @@ func NewAnonymousErrorFromError(err error) AnonymousError {
 }
 
 // Error implement the Error interface
-func (e ErrorHandled) Error() string {
+func (e errorHandled) Error() string {
 	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
 }
 
 // Unwrap implemtation the Error interface
-func (e ErrorHandled) Unwrap() error {
+func (e errorHandled) Unwrap() error {
 	return e.err
 }
 
-func (e ErrorHandled) SetWrapped(err error) IErrorHandled {
+func (e errorHandled) SetWrapped(err error) ErrorHandled {
 	e.err = err
 	return e
 }
 
 // GetOPCode implement the IErrorHandled interface
-func (e ErrorHandled) GetOPCode() int {
+func (e errorHandled) GetOPCode() int {
 	return e.op
 }
 
 // GetContent implement the IErrorHandled interface
-func (e ErrorHandled) GetContent() interface{} {
+func (e errorHandled) GetContent() interface{} {
 	return e.content
 }
 
-func factory(op int, content interface{}) ErrorHandled {
-	return ErrorHandled{
+func factory(op int, content interface{}) errorHandled {
+	return errorHandled{
 		op:      op,
 		content: content,
 	}
 }
 
-// NewError return a new ErrorHandled var
+// NewError return a new errorHandled var
 func NewErrorHandled(op int, content interface{}) ErrorHandled {
 	return factory(op, content)
 }
 
-// NewProcessing produce an ErrorHandled with the status code 102
+// NewProcessing produce an errorHandled with the status code 102
 func NewProcessing(content interface{}) ErrorHandled {
 	return factory(http.StatusProcessing, content)
 }
 
-// NewNoContent produce an ErrorHandled with the status code 204
+// NewNoContent produce an errorHandled with the status code 204
 func NewNoContent() ErrorHandled {
 	return factory(http.StatusNoContent, nil)
 }
 
-// NewBadRequest produce an ErrorHandled with the status code 400
+// NewBadRequest produce an errorHandled with the status code 400
 func NewBadRequest(content interface{}) ErrorHandled {
 	return factory(http.StatusBadRequest, content)
 }
