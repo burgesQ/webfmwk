@@ -4,14 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.2] - unreleased
+## [4.1.0] - 2020-4-27
 
 ### Added
-### Changed
-### Fixed
-### Removed
+- new doc example runner
+- recover hanlder 
+- controller return error
+- ErrorHandled returned generate an API error response
 
-## [4.0.1] - 2020.4.7
+### Removed
+- panic/recover to error pattern
+- custom context setter, please use a hanlder
+
+### Changed
+- privatizate interface implementation
+
+### Fixed
+- logger was fetched to early, fetch it via a sync.Once
+
+## [4.0.3] - 2020.4.7
+
+### Added
+- IContext.XMLBlob method
+
+## [4.0.2] - 2020.4.7
 
 ### Added
 - new middlware implemented, the handlers use an IContext
