@@ -5,13 +5,13 @@ import (
 )
 
 // TODO: curl with HTTPS
-func main() {
+func tls() {
 	// init server w/ ctrl+c support
 	var s = webfmwk.InitServer(webfmwk.WithCtrlC())
 
 	// expose /test
-	s.GET("/test", func(c webfmwk.IContext) error {
-		c.JSONOk("ok")
+	s.GET("/test", func(c webfmwk.Context) error {
+		return c.JSONOk("ok")
 	})
 
 	// start asynchronously on :4242

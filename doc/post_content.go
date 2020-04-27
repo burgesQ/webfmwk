@@ -13,34 +13,35 @@ type (
 		Age  int    `schema:"age" json:"age" validate:"gte=1"`
 	}
 
-	// QueryParam hold the query params
-	QueryParam struct {
-		PJSON bool `schema:"pjson" json:"pjson"`
-		Val   int  `schema:"val" json:"val" validate:"gte=1"`
-	}
-
 	// Payload hold the output of the endpoint
+	// QueryParam is imported from query_param.go file
 	Payload struct {
-		Content Content    `json:"content"`
-		QP      QueryParam `json:"query_param"`
+		Content    Content    `json:"content"`
+		QueryParam QueryParam `json:"query_param"`
 	}
 )
 
-func main() {
+func post_content() {
 	var s = webfmwk.InitServer()
 
-	s.POST("/hello", func(c webfmwk.IContext) {
+	s.POST("/post", func(c webfmwk.Context) error {
 		var out = Payload{}
 
 		// process query params
-		c.DecodeQP(&out.qp)
-		c.Validate(out.qp)
+		if e := c.DecodeQP(&out.QueryParam); e != nil {
+			return e
+		} else if e := c.Validate(out.QueryParam); e != nil {
+			return e
+		}
 
 		// process payload
-		c.FetchContent(&out.content)
-		c.Validate(out.content)
+		if e := c.FetchContent(&out.Content); e != nil {
+			return e
+		} else if e := c.Validate(out.Content); e != nil {
+			return e
+		}
 
-		c.JSON(http.StatusOK, out)
+		return c.JSON(http.StatusOK, out)
 	})
 
 	// start asynchronously on :4242

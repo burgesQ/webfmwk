@@ -8,13 +8,13 @@ import (
 
 // curl -X GET 127.0.0.1:4242/hello
 // { "message": "hello world" }
-func main() {
+func hello_world() {
 	// create server
-	s := webfmwk.InitServer()
+	var s = webfmwk.InitServer()
 
 	// expose /hello
-	s.GET("/hello", func(c webfmwk.IContext) {
-		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
+	s.GET("/hello", func(c webfmwk.Context) error {
+		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
 	// start asynchronously on :4242

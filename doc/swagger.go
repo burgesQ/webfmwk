@@ -1,7 +1,7 @@
 package main
 
 import (
-	w "github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v4"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -19,8 +19,8 @@ type Answer struct {
 // @Success 200 {object} db.Reply
 // @Produce application/json
 // @Router /hello [get]
-func hello(c w.IContext) {
-	c.JSONOk(Answer{"ok"})
+func hello(c webfmwk.Context) error {
+	return c.JSONOk(Answer{"ok"})
 }
 
 // @title hello world API
@@ -32,11 +32,11 @@ func hello(c w.IContext) {
 // @contact.email quentin@frafos.com
 // @license.name GFO
 // @host localhost:4242
-func main() {
+func swagger() {
 	// init server w/ ctrl+c support, prefix and APIDoc.
 	// register prefix BEFORE api doc.
-	s := w.InitServer(
-		webfmwk.WithPrefix("/api"),
+	s := webfmwk.InitServer(
+		webfmwk.SetPrefix("/api"),
 		webfmwk.WithDocHandler(httpSwagger.WrapHandler),
 		webfmwk.WithCtrlC())
 
