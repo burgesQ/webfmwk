@@ -10,10 +10,10 @@ import (
 type Level int
 
 const (
-	LogERR   Level = 0
-	LogWARN        = 1
-	LogINFO        = 2
-	LogDEBUG       = 3
+	LogERR Level = iota
+	LogWARN
+	LogINFO
+	LogDEBUG
 )
 
 type (
