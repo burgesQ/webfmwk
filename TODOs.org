@@ -2,7 +2,7 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
-* WIP v4 [5/11] [45%]
+* WIP v4 [7/12] [58%]
 
 ** IDEA logger overload
    - [ ] allow adding of extra prefix to logger (context ID) ?
@@ -12,21 +12,23 @@
    - db interface ?
 ** IDEA fuzzit testing
    - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
-** TODO recover handler
-   Allow the toggling of the the panic2error pattern
-
 ** TODO read header for translator
 ** TODO perf profiling
 
-** WIP cleaner doc [2/3] [66%]
+
+** DONE recover handler
+CLOSED: [2020-04-27 Mon 12:42]
+   Allow the toggling of the the panic2error pattern
+
+** DONE cleaner doc [3/3] [100%]
+CLOSED: [2020-04-27 Mon 12:42]
     - [X] up to date example
     - [X] in code comment and example when needed
-    - [-] full readme [3/4] [75%]
+    - [X] full readme [4/4] [100%]
       - [X] miss http error handling
       - [X] schema / validate
-      - [ ] workerConfig
+      - [X] workerConfig
       - [X] pretty
-
 
 ** DONE lighter package
    CLOSED: [2020-04-08 Wed 13:03]

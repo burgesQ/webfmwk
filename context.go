@@ -59,7 +59,7 @@ type (
 		// Save the given context object into the fmwk context
 		SetContext(ctx context.Context) Context
 
-		// Fetch the previously saved context object
+		// GetContext fetch the previously saved context object
 		GetContext() context.Context
 
 		// GetRequest return the current request ID
@@ -73,6 +73,9 @@ type (
 
 		// Validate is used to validate a content of the content params
 		Validate(content interface{}) ErrorHandled
+
+		// FetchAndValidateContent fetch the content then validate it
+		FetchAndValidateContent(content interface{}) ErrorHandled
 
 		// Decode load the query param in the content object
 		DecodeQP(content interface{}) ErrorHandled
@@ -297,6 +300,13 @@ func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	}
 
 	return nil
+}
+
+func (c *icontext) FetchAndValidateContent(dest interface{}) ErrorHandled {
+	if e := c.FetchContent(&dest); e != nil {
+		return e
+	}
+	return c.Validate(dest)
 }
 
 // DecodeQP implement Context

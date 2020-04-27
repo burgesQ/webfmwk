@@ -183,6 +183,8 @@ func (s *Server) handleError(ctx Context, e error) {
 	var eh ErrorHandled
 	if errors.As(e, &eh) {
 		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
+	} else {
+		s.log.Errorf("catched from controller : %s", e.Error())
 	}
 }
 

@@ -23,6 +23,8 @@ type (
 	// 	    middleware.Security))
 	Option func(s *Server)
 
+	Options []Option
+
 	// ServerMeta hold the server meta information
 	serverMeta struct {
 		ctrlc        bool
