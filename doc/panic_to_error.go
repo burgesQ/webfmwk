@@ -1,25 +1,26 @@
 package main
 
 import (
+	"crypto/rand"
+	"math/big"
+
 	"github.com/burgesQ/webfmwk/v4"
 	"github.com/burgesQ/webfmwk/v4/handler"
 )
 
 func panic_to_error() {
-	var s = webfmwk.InitServer(
-		webfmwk.WithCtrlC(),
-		webfmwk.WithHandlers(handler.Recover, handler.Logging, handler.RequestID),
+	var (
+		s = webfmwk.InitServer(
+			webfmwk.WithCtrlC(),
+			webfmwk.WithHandlers(handler.Recover, handler.Logging, handler.RequestID),
+		)
 	)
-
-	// expose /no_panic
+	// expose /panic
 	s.GET("/no_panic", func(c webfmwk.Context) error {
+		if n, _ := rand.Int(rand.Reader, big.NewInt(1000)); n.Mod(n, big.NewInt(2)) == big.NewInt(0) {
+			panic(webfmwk.NewErrorHandled(422, webfmwk.NewAnonymousError("error by panic")))
+		}
 		return webfmwk.NewErrorHandled(500, webfmwk.NewAnonymousError("error by return"))
-	})
-
-	// expose /no_panic
-	s.GET("/panic", func(c webfmwk.Context) error {
-		panic(webfmwk.NewErrorHandled(422, webfmwk.NewAnonymousError("user not logged")))
-		return nil
 	})
 
 	// start asynchronously on :4242
