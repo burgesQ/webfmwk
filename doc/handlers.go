@@ -17,15 +17,16 @@ import (
 // X-Xss-Protection: 1; mode=block
 // Date: Mon, 06 Apr 2020 14:58:44 GMT
 // Content-Length: 4
-func main() {
+func handlers() {
 	// init server w/ ctrl+c support and middlewares
-	s := webfmwk.InitServer(
+	var s = webfmwk.InitServer(
 		webfmwk.WithCtrlC(),
-		webfmwk.WithHandlers(handler.Logging))
+		webfmwk.WithHandlers(handler.Logging),
+	)
 
 	// expose /test
-	s.GET("/test", handler.Security(func(c webfmwk.IContext) {
-		c.JSONOk("ok")
+	s.GET("/test", handler.Security(func(c webfmwk.Context) error {
+		return c.JSONOk("ok")
 	}))
 
 	// start asynchronously on :4242

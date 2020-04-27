@@ -7,15 +7,15 @@ import (
 	"github.com/burgesQ/webfmwk/v4/log"
 )
 
-func main() {
+func custom_worker() {
 	var (
 		s  = webfmwk.InitServer()
 		wl = s.GetLauncher()
 	)
 
 	// register /test
-	s.GET("/test", func(c webfmwk.IContext) {
-		c.JSONOk("ok")
+	s.GET("/test", func(c webfmwk.Context) error {
+		return c.JSONOk("ok")
 	})
 
 	// register extra eorker

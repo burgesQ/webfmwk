@@ -5,14 +5,14 @@ import (
 )
 
 var (
-	routes = webfmwk.RoutesPerPrefix{
+	_routes = webfmwk.RoutesPerPrefix{
 		"/api/v1": {
 			{
 				Verbe: "GET",
 				Path:  "/test",
 				Name:  "test v1",
-				Handler: func(c webfmwk.IContext) {
-					c.JSONOk("v1 ok")
+				Handler: func(c webfmwk.Context) error {
+					return c.JSONOk("v1 ok")
 				},
 			},
 		},
@@ -21,8 +21,8 @@ var (
 				Verbe: "GET",
 				Path:  "/test",
 				Name:  "test v2",
-				Handler: func(c webfmwk.IContext) {
-					c.JSONOk("v2 ok")
+				Handler: func(c webfmwk.Context) error {
+					return c.JSONOk("v2 ok")
 				},
 			},
 		},
@@ -33,11 +33,11 @@ var (
 // "v1 ok"
 // curl -X GET 127.0.0.1:4242/api/v2/test
 // "v2 ok"
-func main() {
+func routes() {
 	var s = webfmwk.InitServer()
 
 	// register routes object
-	s.RouteApplier(routes)
+	s.RouteApplier(_routes)
 
 	// start asynchronously on :4242
 	s.Start(":4242")
