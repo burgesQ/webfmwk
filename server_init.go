@@ -71,9 +71,13 @@ func (m *serverMeta) toServer(addr string) http.Server {
 	}
 }
 
-func applyOptions(s *Server, opts ...Option) {
-	for _, opt := range opts {
-		opt(s)
+func UseOption(s *Server, o Option) {
+	o(s)
+}
+
+func UseOptions(s *Server, opts ...Option) {
+	for _, o := range opts {
+		UseOption(s, o)
 	}
 }
 
@@ -97,7 +101,7 @@ func InitServer(opts ...Option) *Server {
 		}
 	)
 
-	applyOptions(s, opts...)
+	UseOptions(s, opts...)
 
 	return s
 }

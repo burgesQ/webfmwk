@@ -122,7 +122,7 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 	}
 }
 
-func Use(next HandlerFunc) HandlerFunc {
+func UseHanlder(next HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(c Context) error {
 		return next(c)
 	})
@@ -163,7 +163,7 @@ func (s *Server) SetRouter() *mux.Router {
 			// register webfmwk.Handlers
 			if s.meta.handlers != nil {
 				for _, h := range s.meta.handlers {
-					handler = h(Use(handler))
+					handler = h(UseHanlder(handler))
 				}
 			}
 
