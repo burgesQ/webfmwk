@@ -149,7 +149,7 @@ func (s *Server) pollPingEndpoint(addr string) {
 	addr += s.meta.prefix + _pingEndpoint
 
 	for {
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Millisecond * 10)
 
 		/* #nosec  */
 		if resp, e := http.Get(addr); e != nil {
