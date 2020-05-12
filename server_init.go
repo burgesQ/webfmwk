@@ -127,7 +127,7 @@ func WithCtrlC() Option {
 // when it's started
 func CheckIsUp() Option {
 	return func(s *Server) {
-		s.enableCheckIsUp()
+		s.EnableCheckIsUp()
 		s.log.Debugf("\t-- check is up support enabled")
 	}
 }

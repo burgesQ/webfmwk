@@ -265,7 +265,7 @@ func (s *Server) enableCORS() *Server {
 // EnableCheckIsUp add an /ping endpoint. Is used, cnce a server is started,
 // the user can check weather the server is up or not by reading the isReady channel
 // vie the IsReady() method
-func (s *Server) enableCheckIsUp() *Server {
+func (s *Server) EnableCheckIsUp() *Server {
 	s.meta.checkIsUp = true
 	return s
 }
