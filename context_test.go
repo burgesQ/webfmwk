@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	z "github.com/burgesQ/gommon/testing"
-	"github.com/burgesQ/webfmwk/v4/log"
+	"github.com/burgesQ/gommon/assert"
+	"github.com/burgesQ/gommon/log"
 )
 
 var (
@@ -28,7 +28,7 @@ func stopServer(t *testing.T, s *Server) {
 }
 
 func wrapperPost(t *testing.T, route, routeReq string, content []byte,
-	handlerRoute HandlerFunc, handlerTest z.HandlerForTest) {
+	handlerRoute HandlerFunc, handlerTest assert.HandlerForTest) {
 	var s = InitServer(CheckIsUp())
 
 	t.Log("init server...")
@@ -39,11 +39,11 @@ func wrapperPost(t *testing.T, route, routeReq string, content []byte,
 	<-s.isReady
 	t.Log("server inited")
 
-	z.PushAndTestAPI(t, _testAddr+routeReq, content, handlerTest)
+	assert.PushAndTestAPI(t, _testAddr+routeReq, content, handlerTest)
 }
 
 func wrapperGet(t *testing.T, route, routeReq string,
-	handlerRoute HandlerFunc, handlerTest z.HandlerForTest) {
+	handlerRoute HandlerFunc, handlerTest assert.HandlerForTest) {
 	var s = InitServer(CheckIsUp())
 
 	t.Log("init server...")
@@ -54,7 +54,7 @@ func wrapperGet(t *testing.T, route, routeReq string,
 	<-s.isReady
 	t.Log("server inited")
 
-	z.RequestAndTestAPI(t, _testAddr+routeReq, handlerTest)
+	assert.RequestAndTestAPI(t, _testAddr+routeReq, handlerTest)
 }
 
 func TestParam(t *testing.T) {
@@ -65,8 +65,8 @@ func TestParam(t *testing.T) {
 		}
 		return c.JSONOk(id)
 	}, func(t *testing.T, resp *http.Response) {
-		z.AssertBody(t, resp, `"tutu"`)
-		z.AssertStatusCode(t, resp, http.StatusOK)
+		assert.Body(t, resp, `"tutu"`)
+		assert.StatusCode(t, resp, http.StatusOK)
 	})
 }
 
@@ -78,12 +78,12 @@ func TestQuery(t *testing.T) {
 		v, ok = c.GetQuery("test")
 	)
 
-	z.AssertTrue(t, ok)
-	z.AssertStringEqual(t, v, "ok")
+	assert.True(t, ok)
+	assert.StringEqual(t, v, "ok")
 
 	v, ok = c.GetQuery("undef")
-	z.AssertFalse(t, ok)
-	z.AssertStringEqual(t, v, "")
+	assert.False(t, ok)
+	assert.StringEqual(t, v, "")
 }
 
 func TestLogger(t *testing.T) {
@@ -93,8 +93,8 @@ func TestLogger(t *testing.T) {
 	)
 
 	c.SetLogger(logger)
-	z.AssertTrue(t, logger == c.GetLogger())
-	z.AssertTrue(t, logger == GetLogger())
+	assert.True(t, logger == c.GetLogger())
+	assert.True(t, logger == GetLogger())
 
 }
 
@@ -105,14 +105,14 @@ func TestContext(t *testing.T) {
 			ctx: ctx,
 		}
 	)
-	z.AssertTrue(t, ctx == c.GetContext())
+	assert.True(t, ctx == c.GetContext())
 }
 
 func TestRequestID(t *testing.T) {
 	var ctx = icontext{}
 
 	ctx.SetRequestID("testing")
-	z.AssertStringEqual(t, ctx.GetRequestID(), "testing")
+	assert.StringEqual(t, ctx.GetRequestID(), "testing")
 }
 
 func TestFetchContent(t *testing.T) {
@@ -145,11 +145,11 @@ func TestFetchContent(t *testing.T) {
 				switch test.t {
 
 				case _ok:
-					z.AssertBody(t, resp, `{"first_name":"tutu"}`)
-					z.AssertStatusCode(t, resp, http.StatusCreated)
+					assert.Body(t, resp, `{"first_name":"tutu"}`)
+					assert.StatusCode(t, resp, http.StatusCreated)
 
 				case _unprocessable:
-					z.AssertStatusCode(t, resp, http.StatusUnprocessableEntity)
+					assert.StatusCode(t, resp, http.StatusUnprocessableEntity)
 				}
 			})
 		})
@@ -160,8 +160,8 @@ func TestCheckHeader(t *testing.T) {
 	wrapperPost(t, "/test", "/test", []byte(`{}`), func(c Context) error {
 		return c.JSONBlob(200, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
-		z.AssertBody(t, resp, hBody)
-		z.AssertStatusCode(t, resp, http.StatusOK)
+		assert.Body(t, resp, hBody)
+		assert.StatusCode(t, resp, http.StatusOK)
 	})
 }
 
@@ -213,13 +213,13 @@ func TestCheckHeaderError(t *testing.T) {
 
 			switch test.t {
 			case _xml:
-				z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
-				z.AssertBody(t, resp, `{"error":"Content-Type is not application/json"}`)
+				assert.StatusCode(t, resp, http.StatusNotAcceptable)
+				assert.Body(t, resp, `{"error":"Content-Type is not application/json"}`)
 			case _noValue:
-				z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
-				z.AssertBody(t, resp, `{"error":"Missing Content-Type header"}`)
+				assert.StatusCode(t, resp, http.StatusNotAcceptable)
+				assert.Body(t, resp, `{"error":"Missing Content-Type header"}`)
 			case _noHeader:
-				z.AssertStatusCode(t, resp, http.StatusNotAcceptable)
+				assert.StatusCode(t, resp, http.StatusNotAcceptable)
 			}
 
 		})
@@ -231,8 +231,8 @@ func TestJSONBlobPretty(t *testing.T) {
 	wrapperGet(t, "/test", "/test?pretty", func(c Context) error {
 		return c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
-		z.AssertBodyDiffere(t, resp, hBody)
-		z.AssertStatusCode(t, resp, http.StatusOK)
+		assert.BodyDiffere(t, resp, hBody)
+		assert.StatusCode(t, resp, http.StatusOK)
 	})
 }
 
@@ -307,12 +307,12 @@ func TestJSONResponse(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			z.RequestAndTestAPI(t, _testAddr+"/"+name, func(t *testing.T, resp *http.Response) {
+			assert.RequestAndTestAPI(t, _testAddr+"/"+name, func(t *testing.T, resp *http.Response) {
 
 				if test.expectedOP != http.StatusNoContent {
-					z.AssertBody(t, resp, hBody)
+					assert.Body(t, resp, hBody)
 				}
-				z.AssertStatusCode(t, resp, test.expectedOP)
+				assert.StatusCode(t, resp, test.expectedOP)
 			})
 		})
 	}

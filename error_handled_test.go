@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	z "github.com/burgesQ/gommon/testing"
+	"github.com/burgesQ/gommon/assert"
 )
 
 var (
@@ -18,24 +18,24 @@ var (
 )
 
 func TestGetOPCode(t *testing.T) {
-	z.AssertEqual(t, _testingErrorHandled.GetOPCode(), _testOP)
+	assert.Equal(t, _testingErrorHandled.GetOPCode(), _testOP)
 }
 
 func TestGetContent(t *testing.T) {
-	z.AssertEqual(t, _testingErrorHandled.GetContent(), _testContent)
+	assert.Equal(t, _testingErrorHandled.GetContent(), _testContent)
 }
 
 func TestFactory(t *testing.T) {
 	test := factory(_testOP, _testContent)
-	z.AssertEqual(t, test.GetOPCode(), _testOP)
-	z.AssertEqual(t, test.GetContent(), _testContent)
+	assert.Equal(t, test.GetOPCode(), _testOP)
+	assert.Equal(t, test.GetContent(), _testContent)
 }
 
 func TestNewErrorHandled(t *testing.T) {
 	e := NewErrorHandled(_testOP, _testContent)
-	z.AssertEqual(t, e.GetOPCode(), _testOP)
-	z.AssertEqual(t, e.GetContent(), _testContent)
-	z.AssertEqual(t, e.Error(), `[200]: "ok"`)
+	assert.Equal(t, e.GetOPCode(), _testOP)
+	assert.Equal(t, e.GetContent(), _testContent)
+	assert.Equal(t, e.Error(), `[200]: "ok"`)
 }
 
 func TestWrapping(t *testing.T) {
@@ -58,7 +58,7 @@ func TestWrapping(t *testing.T) {
 	})
 
 	t.Run("test error unwrap", func(t *testing.T) {
-		z.AssertEqual(t, e.Unwrap().Error(), testE.Error())
+		assert.Equal(t, e.Unwrap().Error(), testE.Error())
 	})
 
 	// test wrap
@@ -70,22 +70,22 @@ func TestWrapping(t *testing.T) {
 }
 
 func TestResponse(t *testing.T) {
-	z.AssertStringEqual(t, NewResponse("test").Content, "test")
+	assert.StringEqual(t, NewResponse("test").Content, "test")
 }
 
 func TestAnonymousError(t *testing.T) {
 	var err = errors.New("test")
 
 	e := NewAnonymousError("testing")
-	z.AssertTrue(t, e.Err == "testing")
+	assert.True(t, e.Err == "testing")
 	e = NewAnonymousWrappedError(err, "testing")
-	z.AssertTrue(t, e.e == err)
-	z.AssertStringEqual(t, e.Err, "testing")
+	assert.True(t, e.e == err)
+	assert.StringEqual(t, e.Err, "testing")
 	e = NewAnonymousErrorFromError(err)
-	z.AssertStringEqual(t, e.Err, "test")
-	z.AssertTrue(t, e.e == err)
-	z.AssertStringEqual(t, e.Err, "test")
-	z.AssertStringEqual(t, e.Error(), "test")
+	assert.StringEqual(t, e.Err, "test")
+	assert.True(t, e.e == err)
+	assert.StringEqual(t, e.Err, "test")
+	assert.StringEqual(t, e.Error(), "test")
 }
 
 func TestMethod(t *testing.T) {
@@ -132,7 +132,7 @@ func TestMethod(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			z.AssertEqual(t, test.actual, test.expected)
+			assert.Equal(t, test.actual, test.expected)
 		})
 	}
 }

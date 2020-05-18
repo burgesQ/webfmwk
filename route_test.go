@@ -5,7 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	z "github.com/burgesQ/gommon/testing"
+	"github.com/burgesQ/gommon/assert"
+	z "github.com/burgesQ/gommon/assert"
 	"github.com/gorilla/mux"
 )
 
@@ -55,8 +56,8 @@ func TestAddRoutes(t *testing.T) {
 		Handler: _emptyController,
 	})
 
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURI)
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, _testVerbe)
+	assert.StringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURI)
+	assert.StringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, _testVerbe)
 
 	s.AddRoutes(Routes{
 		{
@@ -71,10 +72,10 @@ func TestAddRoutes(t *testing.T) {
 		},
 	}...)
 
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Path, _testURI)
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][1].Verbe, _testVerbe)
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][2].Path, _testURI2)
-	z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][2].Verbe, _testVerbe)
+	assert.StringEqual(t, s.meta.routes[s.meta.prefix][1].Path, _testURI)
+	assert.StringEqual(t, s.meta.routes[s.meta.prefix][1].Verbe, _testVerbe)
+	assert.StringEqual(t, s.meta.routes[s.meta.prefix][2].Path, _testURI2)
+	assert.StringEqual(t, s.meta.routes[s.meta.prefix][2].Verbe, _testVerbe)
 
 }
 
@@ -122,8 +123,8 @@ func TestRouteMethod(t *testing.T) {
 				testVerb = PATCH
 			}
 
-			z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURL)
-			z.AssertStringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, testVerb)
+			assert.StringEqual(t, s.meta.routes[s.meta.prefix][0].Path, _testURL)
+			assert.StringEqual(t, s.meta.routes[s.meta.prefix][0].Verbe, testVerb)
 		})
 	}
 
@@ -151,7 +152,7 @@ func TestSetRouter(t *testing.T) {
 			t.Errorf("[%s][%s][%s]", _testURI, _testPrefix, _pingEndpoint)
 		}
 		if verbe != "" {
-			z.AssertStringEqual(t, verbe, GET)
+			assert.StringEqual(t, verbe, GET)
 		}
 		return nil
 	}); e != nil {

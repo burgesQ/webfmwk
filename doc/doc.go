@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/burgesQ/webfmwk/v4/log"
+	"github.com/burgesQ/gommon/log"
 )
 
 type (

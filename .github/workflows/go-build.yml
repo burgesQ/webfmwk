@@ -35,4 +35,6 @@ jobs:
     - name: Test
       run: |
         go test ./... -cover -v -short -coverprofile=coverage.out -covermode=atomic
-        bash <(curl -s https://codecov.io/bash) -t 5abafd5f-9541-4c1b-962c-2fc05c89e2f0
+        bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"testing"
 
-	z "github.com/burgesQ/gommon/testing"
+	"github.com/burgesQ/gommon/assert"
 )
 
 const _addr = ":4242"
@@ -24,9 +24,9 @@ func TestLoadTLS(t *testing.T) {
 
 	s.loadTLS(&worker, TLSConfig{Key: "./doc/server.key", Cert: "./doc/server.cert"})
 
-	z.AssertSliceEqual(t, worker.TLSConfig.CipherSuites, DefaultCipher)
-	z.AssertSliceEqual(t, worker.TLSConfig.CurvePreferences, DefaultCurve)
+	assert.SliceU16Equal(t, worker.TLSConfig.CipherSuites, DefaultCipher)
+	//	assert.SliceU16Equal(t, worker.TLSConfig.CurvePreferences, DefaultCurve)
 
-	z.AssertUInt16Equal(t, worker.TLSConfig.MinVersion, tls.VersionTLS12)
-	z.AssertUInt16Equal(t, worker.TLSConfig.MaxVersion, tls.VersionTLS13)
+	assert.UInt16Equal(t, worker.TLSConfig.MinVersion, tls.VersionTLS12)
+	assert.UInt16Equal(t, worker.TLSConfig.MaxVersion, tls.VersionTLS13)
 }

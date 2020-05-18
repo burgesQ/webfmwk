@@ -10,8 +10,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/burgesQ/gommon/log"
 	"github.com/burgesQ/gommon/pretty"
-	"github.com/burgesQ/webfmwk/v4/log"
 	"github.com/gorilla/schema"
 
 	en_translator "github.com/go-playground/locales/en"

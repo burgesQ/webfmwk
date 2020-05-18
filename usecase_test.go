@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	z "github.com/burgesQ/gommon/testing"
+	"github.com/burgesQ/gommon/assert"
+	z "github.com/burgesQ/gommon/assert"
 )
 
 type customContext struct {
@@ -109,22 +110,22 @@ func TestUseCase(t *testing.T) {
 				z.RequestAndTestAPI(t, _testAddr+test.url, func(t *testing.T, resp *http.Response) {
 					if test.header {
 						for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
-							z.AssertHeader(t, resp, testVal, jsonEncode)
+							assert.Header(t, resp, testVal, jsonEncode)
 						}
 					}
 					if test.bodyDiffer {
-						z.AssertBodyDiffere(t, resp, test.expectedBody)
+						assert.BodyDiffere(t, resp, test.expectedBody)
 					} else {
-						z.AssertBody(t, resp, test.expectedBody)
+						assert.Body(t, resp, test.expectedBody)
 					}
-					z.AssertStatusCode(t, resp, test.expectedSC)
+					assert.StatusCode(t, resp, test.expectedSC)
 				})
 
 			case _pushNTest:
 				z.PushAndTestAPI(t, _testAddr+test.url, []byte(string(`{"first_name":"jean"}`)),
 					func(t *testing.T, resp *http.Response) {
-						z.AssertBody(t, resp, test.expectedBody)
-						z.AssertStatusCode(t, resp, test.expectedSC)
+						assert.Body(t, resp, test.expectedBody)
+						assert.StatusCode(t, resp, test.expectedSC)
 					})
 			}
 

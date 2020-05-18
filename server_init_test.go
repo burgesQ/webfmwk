@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	z "github.com/burgesQ/gommon/testing"
+	"github.com/burgesQ/gommon/assert"
 )
 
 var (
@@ -34,18 +34,18 @@ func TestServerNewInit(t *testing.T) {
 			WithHandlers(_emptyHandler))
 	)
 
-	z.AssertTrue(t, s.meta.ctrlc)
-	z.AssertTrue(t, s.meta.checkIsUp)
-	z.AssertTrue(t, s.meta.cors)
-	z.AssertTrue(t, len(s.meta.middlewares) == 1)
-	z.AssertTrue(t, len(s.meta.handlers) == 1)
+	assert.True(t, s.meta.ctrlc)
+	assert.True(t, s.meta.checkIsUp)
+	assert.True(t, s.meta.cors)
+	assert.True(t, len(s.meta.middlewares) == 1)
+	assert.True(t, len(s.meta.handlers) == 1)
 
-	z.AssertEqual(t, s.meta.baseServer.ReadTimeout, testT)
-	z.AssertEqual(t, s.meta.baseServer.WriteTimeout, testT)
-	z.AssertEqual(t, s.meta.baseServer.ReadHeaderTimeout, testT)
-	z.AssertEqual(t, s.meta.baseServer.MaxHeaderBytes, 42)
+	assert.Equal(t, s.meta.baseServer.ReadTimeout, testT)
+	assert.Equal(t, s.meta.baseServer.WriteTimeout, testT)
+	assert.Equal(t, s.meta.baseServer.ReadHeaderTimeout, testT)
+	assert.Equal(t, s.meta.baseServer.MaxHeaderBytes, 42)
 
-	z.AssertTrue(t, s.meta.docHandler != nil)
+	assert.True(t, s.meta.docHandler != nil)
 
-	z.AssertEqual(t, s.meta.prefix, "/api")
+	assert.Equal(t, s.meta.prefix, "/api")
 }
