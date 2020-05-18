@@ -10,9 +10,7 @@
 
 ## What
 
-`webfmwk` is a go web API framework. Credits to Frafos GmbH.
-
-It's a go web framework supporting JSON API.
+`webfmwk` is a go web API framework. Credits to Frafos GmbH :tada:.
 
 ## Use it
 
@@ -20,13 +18,13 @@ Import `github.com/burgesQ/webfmwk/v4`.
 
 ### Important 
 
-Go 1.13 is required. Make sure the environment variable `GO111MODULE` is set to on when running the install command.
+Go 1.13 is required. Make sure the environment variable `GO111MODULE` is set to `ON` when running the `go get` command.
 
-### example
+### Usage
 
 #### Hello world
 
-<details><summary>hello world</summary>
+<details><summary>Code sample</summary>
 <p>
 
 ```go
@@ -42,7 +40,7 @@ import (
 // { "message": "hello world" }
 func main() {
 	// create server
-	s := webfmwk.InitServer()
+	var s = webfmwk.InitServer()
 
 	// expose /hello
 	s.GET("/hello", func(c webfmwk.Context) error {
@@ -56,9 +54,13 @@ func main() {
 	defer s.WaitAndStop()
 }
 ```
+</p>
+</details>
 
 Reach the endpoint: 
 
+<details><summary>curl sample</summary>
+<p>
 ```bash
 $ curl -i 'http://localhost:4242/hello'
 HTTP/1.1 200 OK
@@ -74,9 +76,9 @@ Content-Length: 25
 </p>
 </details>
 
-#### code samples
+#### example
 
-Some samples are in the `./doc` directory. A main hande the sample running, use `go run . [sample file name]` to test it 
+Some samples are in the `./doc` directory. The main (`doc.go`) hande the sample orchestration. Use `go run . [sample file name]` to run the example.
 
 ```bash
 $ cd doc
@@ -97,7 +99,6 @@ running panic_to_error (use panic to handle some error case)
 ## Test
 
 Simply run `make`
-
 
 [1]: https://github.com/gorilla/mux
 [2]: https://github.com/gorilla/handlers
