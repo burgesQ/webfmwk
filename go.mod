@@ -1,7 +1,7 @@
 module github.com/burgesQ/webfmwk/v4
 
 require (
-	github.com/burgesQ/gommon v0.0.0-20200408074355-8bd02b7c451f
+	github.com/burgesQ/gommon v0.0.0-20200518184402-0a2379aab0e8
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.0.1
