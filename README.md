@@ -10,49 +10,21 @@
 
 ## What
 
-`webfmwk` is a go web API framework. Proprietary of Frafos GmbH.
+`webfmwk` is a go web API framework. Credits to Frafos GmbH.
 
-It was designed to be a minimalist go web framework supporting JSON API.
+It's a go web framework supporting JSON API.
 
-The purpose of the framework is to use as few external library than possible.
+## Use it
 
-## Test
-
-Simply run `make`
-
-## Contribute
-
-## Run
+Import `github.com/burgesQ/webfmwk/v4`.
 
 ### Important 
 
-Go 1.13 is required. Make sure the environment variable GO111MODULE is set as on when running the install command.
+Go 1.13 is required. Make sure the environment variable `GO111MODULE` is set to on when running the install command.
 
-### Example
+### example
 
-Simply import `github.com/burgesQ/webfmwk/v4`
-
-Their are a few exmaples in the `./doc` directory. You can run run them using : 
-
-```bash
-$ cd doc
-$ go run . panic_to_error
-. panic_to_error
-running panic_to_error (use panic to handle some error case)
-- DBG  : 	-- crtl-c support enabled
-- DBG  : 	-- handlers loaded
-- DBG  : exit handler: starting
-- DBG  : http server :4242: starting
-- DBG  : [+] server 1 (:4242) 
-- DBG  : [+] new connection
-+ INFO : [+] (f2124b89-414b-4361-96ec-5f227c0e3369) : [GET]/panic
-+ INFO : [-] (f2124b89-414b-4361-96ec-5f227c0e3369) : [422](27)
-- DBG  : [-] (f2124b89-414b-4361-96ec-5f227c0e3369) : >{"error":"user not logged"}<
-```
-
-#### Hello world !
-
-Reach the endpoint with `curl -X GET 'http://localhost:4242/hello'`.
+#### Hello world
 
 <details><summary>hello world</summary>
 <p>
@@ -85,8 +57,47 @@ func main() {
 }
 ```
 
+Reach the endpoint: 
+
+```bash
+$ curl -i 'http://localhost:4242/hello'
+HTTP/1.1 200 OK
+Accept: application/json; charset=UTF-8
+Content-Type: application/json; charset=UTF-8
+Produce: application/json; charset=UTF-8
+Date: Mon, 18 May 2020 07:45:31 GMT
+Content-Length: 25
+
+{"message":"hello world"}%
+```
+
 </p>
 </details>
+
+#### code samples
+
+Some samples are in the `./doc` directory. A main hande the sample running, use `go run . [sample file name]` to test it 
+
+```bash
+$ cd doc
+$ go run . panic_to_error
+. panic_to_error
+running panic_to_error (use panic to handle some error case)
+- DBG  : 	-- crtl-c support enabled
+- DBG  : 	-- handlers loaded
+- DBG  : exit handler: starting
+- DBG  : http server :4242: starting
+- DBG  : [+] server 1 (:4242) 
+- DBG  : [+] new connection
++ INFO : [+] (f2124b89-414b-4361-96ec-5f227c0e3369) : [GET]/panic
++ INFO : [-] (f2124b89-414b-4361-96ec-5f227c0e3369) : [422](27)
+- DBG  : [-] (f2124b89-414b-4361-96ec-5f227c0e3369) : >{"error":"user not logged"}<
+```
+
+## Test
+
+Simply run `make`
+
 
 [1]: https://github.com/gorilla/mux
 [2]: https://github.com/gorilla/handlers
