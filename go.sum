@@ -1,5 +1,5 @@
-github.com/burgesQ/gommon v0.0.0-20200518184402-0a2379aab0e8 h1:Qh2KjJTyR/6Uqq+VUQ3htx53lhTvqN7GuuWYBlbWHHs=
-github.com/burgesQ/gommon v0.0.0-20200518184402-0a2379aab0e8/go.mod h1:lBIU5Qg3WyCm8VA5rXIVrosxa7q6xBckxGuYtfEptDM=
+github.com/burgesQ/gommon v1.0.0 h1:nTe0niJyxSOANY8wr13Ohx1OW56eZNF+i7UYUSOVOkQ=
+github.com/burgesQ/gommon v1.0.0/go.mod h1:lBIU5Qg3WyCm8VA5rXIVrosxa7q6xBckxGuYtfEptDM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

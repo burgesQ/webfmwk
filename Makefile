@@ -33,7 +33,7 @@ lint:
 
 .PHONY: test
 test:
-	@ $(TEST)
+	 $(TEST)
 
 .PHONY: tidy
 tidy:
