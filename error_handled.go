@@ -26,7 +26,7 @@ type (
 	// AnonymousError struct is used to answer error
 	AnonymousError struct {
 		Err string `json:"error"`
-		e   error
+		e   error  `json:"-"`
 	}
 
 	// Response is returned in case of success
