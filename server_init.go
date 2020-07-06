@@ -18,9 +18,9 @@ type (
 	//     webfmwk.EnableCheckIsUp()
 	//     webfmwk.WithCORS(),
 	//     webfmwk.WithPrefix("/api"),
-	//     webfmwk.WithMiddlewars(
-	// 	    middleware.Logging,
-	// 	    middleware.Security))
+	//     webfmwk.WithHanlders(
+	// 	    hanlder.Logging,
+	// 	    handler.Security))
 	Option func(s *Server)
 
 	Options []Option
@@ -84,7 +84,7 @@ func UseOptions(s *Server, opts ...Option) {
 // InitServer initialize a webfmwk.Server instance
 // It take the server options as parameters.
 // List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
-// WithDocHandler, WithMiddlewares, WithHandlers,
+// WithDocHandler, WithHandlers,
 // SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
 func InitServer(opts ...Option) *Server {
 	onceLogger.Do(fetchLogger)
@@ -164,7 +164,7 @@ func WithDocHandler(handler http.Handler) Option {
 //
 //   import (
 //     "github.com/burgesQ/webfmwk/v4"
-//     "github.com/burgesQ/webfmwk/v4/middleware"
+//     "github.com/burgesQ/webfmwk/v3/middleware"
 //   )
 //
 //   func main() {
