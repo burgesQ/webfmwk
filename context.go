@@ -20,9 +20,11 @@ import (
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
-type Header [2]string
+const _prettyTag = "pretty"
 
 type (
+	Header [2]string
+
 	// Context Interface implement the context used in this project
 	Context interface {
 
@@ -220,7 +222,7 @@ func (c *icontext) GetVar(key string) string {
 
 // IsPretty implement Context
 func (c *icontext) IsPretty() bool {
-	return len(c.query["pretty"]) > 0
+	return len(c.query[_prettyTag]) > 0
 }
 
 // SetQuery implement Context
