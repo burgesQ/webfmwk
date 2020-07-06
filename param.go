@@ -21,6 +21,10 @@ func (a Address) String() string {
 	return string(b)
 }
 
+func (a Address) IsOk() bool {
+	return a.Addr != ""
+}
+
 // Run allow to launch multiple server from a single call.
 // It take an vaarg Address param argument. WaitAndStop is called via defer.
 func (s *Server) Run(addrs ...Address) {
@@ -28,12 +32,16 @@ func (s *Server) Run(addrs ...Address) {
 
 	for i := range addrs {
 		addr := addrs[i]
-		if addr.TLS != nil {
-			s.GetLogger().Infof("listening on https://%q", addr.Addr)
-			s.StartTLS(addr.Addr, addr.TLS)
+		if addr.IsOk() {
+			if addr.TLS != nil {
+				s.GetLogger().Infof("starting %s on https://%s", addr.Name, addr.Addr)
+				s.StartTLS(addr.Addr, addr.TLS)
+			} else {
+				s.GetLogger().Infof("starting %s on http://%s", addr.Name, addr.Addr)
+				s.Start(addr.Addr)
+			}
 		} else {
-			s.GetLogger().Infof("listening on http://%q", addr.Addr)
-			s.Start(addr.Addr)
+			s.GetLogger().Errorf("invalid address format : %v", addr)
 		}
 	}
 }
