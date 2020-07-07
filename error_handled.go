@@ -12,6 +12,7 @@ type (
 		Error() string
 		Unwrap() error
 		GetOPCode() int
+		SetStatusCode(op int)
 		GetContent() interface{}
 		SetWrapped(err error) ErrorHandled
 	}
@@ -25,47 +26,58 @@ type (
 
 	// AnonymousError struct is used to answer error
 	AnonymousError struct {
-		Err string `json:"error"`
-		e   error  `json:"-"`
+		Status  int    `json:"status,omitempty"`
+		Message string `json:"message"`
+		e       error  `json:"-"`
 	}
 
 	// Response is returned in case of success
 	Response struct {
-		Content string `json:"content"`
+		Status  int    `json:"status,omitempty"`
+		Message string `json:"content"`
 	}
 )
 
 // NewResponse generate a new json response payload
 func NewResponse(str string) Response {
-	return Response{Content: str}
+	return Response{Message: str, Status: 200}
+}
+
+func (r *Response) SetStatusCode(op int) {
+	r.Status = op
 }
 
 // Error implement the Error interface
 func (a AnonymousError) Error() string {
-	return a.Err
+	return a.Message
 }
 
 // NewAnonymousError generate a new json error response payload
 func NewAnonymousError(err string) AnonymousError {
 	return AnonymousError{
-		Err: err,
+		Message: err,
 	}
 }
 
 // NewAnonymousWrappedError generate a AnonymousError which wrap the err params
 func NewAnonymousWrappedError(err error, msg string) AnonymousError {
 	return AnonymousError{
-		Err: msg,
-		e:   err,
+		Message: msg,
+		e:       err,
 	}
 }
 
 // NewAnonymousWrappedError generate a AnonymousError which wrap the err params
 func NewAnonymousErrorFromError(err error) AnonymousError {
 	return AnonymousError{
-		Err: err.Error(),
-		e:   err,
+		Message: err.Error(),
+		e:       err,
 	}
+}
+
+// SetStatusCode set the AE internal status code
+func (a *AnonymousError) SetStatusCode(op int) {
+	a.Status = op
 }
 
 // Error implement the Error interface
@@ -76,6 +88,10 @@ func (e errorHandled) Error() string {
 // Unwrap implemtation the Error interface
 func (e errorHandled) Unwrap() error {
 	return e.err
+}
+
+func (e errorHandled) SetStatusCode(op int) {
+	e.op = op
 }
 
 func (e errorHandled) SetWrapped(err error) ErrorHandled {
@@ -94,10 +110,18 @@ func (e errorHandled) GetContent() interface{} {
 }
 
 func factory(op int, content interface{}) errorHandled {
-	return errorHandled{
+	ret := errorHandled{
 		op:      op,
 		content: content,
 	}
+
+	// happend status code is possible
+	if e, ok := content.(AnonymousError); ok {
+		e.SetStatusCode(op)
+		ret.content = e
+	}
+
+	return ret
 }
 
 // NewError return a new errorHandled var

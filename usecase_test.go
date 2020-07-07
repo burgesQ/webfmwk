@@ -6,6 +6,7 @@ import (
 
 	"github.com/burgesQ/gommon/assert"
 	z "github.com/burgesQ/gommon/assert"
+	"github.com/burgesQ/webfmwk/v4/webfmwktest"
 )
 
 type customContext struct {
@@ -134,13 +135,18 @@ func TestUseCase(t *testing.T) {
 
 }
 
-// func TestBasic(t *testing.T) {
-// 	testHandler := func(c IContext) {
-// 		c.JSONOk("ok")
-// 	}
+func TestBasic(t *testing.T) {
+	testHandler := func(c webfmwk.Context) error {
+		return c.JSONOk(webfmwk.Response{"ok"})
+	}
 
-// 	webfmwktest.GetAndTest(t, testHandler, z.Expected{
-// 		Method: "GET",
-// 		URI:    "/",
-// 	})
-// }
+	// not test handler but : -->
+	//	CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
+	// create context (s.CustomHandler)
+	// }
+
+	webfmwktest.GetAndTest(t, testHandler, webfmwktest.Expected{
+		Code: 200,
+		Body: `{"content":"ok"}`,
+	})
+}
