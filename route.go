@@ -135,6 +135,18 @@ func UseHanlder(next HandlerFunc) HandlerFunc {
 func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
 
+	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(404)
+		w.Write([]byte(`{"status":404,"message":"not found"}`))
+	})
+
+	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(405)
+		w.Write([]byte(`{"status":405,"message":"method not allowed"}`))
+	})
+
 	// register http handler / mux.Middleware
 	for _, mw := range s.meta.middlewares {
 		router.Use(mw)
@@ -192,8 +204,6 @@ func (s *Server) handleError(ctx Context, e error) {
 func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ctx = s.genContext(w, r)
-
-		//		defer ctx.OwnRecover()
 
 		if hasBody(r) {
 			if e := ctx.CheckHeader(); e != nil {
