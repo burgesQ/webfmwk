@@ -70,21 +70,21 @@ func TestWrapping(t *testing.T) {
 }
 
 func TestResponse(t *testing.T) {
-	assert.StringEqual(t, NewResponse("test").Content, "test")
+	assert.StringEqual(t, NewResponse("test").Message, "test")
 }
 
 func TestAnonymousError(t *testing.T) {
 	var err = errors.New("test")
 
 	e := NewAnonymousError("testing")
-	assert.True(t, e.Err == "testing")
+	assert.True(t, e.Message == "testing")
 	e = NewAnonymousWrappedError(err, "testing")
 	assert.True(t, e.e == err)
-	assert.StringEqual(t, e.Err, "testing")
+	assert.StringEqual(t, e.Message, "testing")
 	e = NewAnonymousErrorFromError(err)
-	assert.StringEqual(t, e.Err, "test")
+	assert.StringEqual(t, e.Message, "test")
 	assert.True(t, e.e == err)
-	assert.StringEqual(t, e.Err, "test")
+	assert.StringEqual(t, e.Message, "test")
 	assert.StringEqual(t, e.Error(), "test")
 }
 

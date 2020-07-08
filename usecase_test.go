@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/assert"
-	z "github.com/burgesQ/gommon/assert"
-	"github.com/burgesQ/webfmwk/v4/webfmwktest"
 )
 
 type customContext struct {
@@ -108,7 +106,7 @@ func TestUseCase(t *testing.T) {
 			switch test.testType {
 			case _reqNTest:
 
-				z.RequestAndTestAPI(t, _testAddr+test.url, func(t *testing.T, resp *http.Response) {
+				assert.RequestAndTestAPI(t, _testAddr+test.url, func(t *testing.T, resp *http.Response) {
 					if test.header {
 						for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
 							assert.Header(t, resp, testVal, jsonEncode)
@@ -123,7 +121,7 @@ func TestUseCase(t *testing.T) {
 				})
 
 			case _pushNTest:
-				z.PushAndTestAPI(t, _testAddr+test.url, []byte(string(`{"first_name":"jean"}`)),
+				assert.PushAndTestAPI(t, _testAddr+test.url, []byte(string(`{"first_name":"jean"}`)),
 					func(t *testing.T, resp *http.Response) {
 						assert.Body(t, resp, test.expectedBody)
 						assert.StatusCode(t, resp, test.expectedSC)
@@ -133,20 +131,4 @@ func TestUseCase(t *testing.T) {
 		})
 	}
 
-}
-
-func TestBasic(t *testing.T) {
-	testHandler := func(c webfmwk.Context) error {
-		return c.JSONOk(webfmwk.Response{"ok"})
-	}
-
-	// not test handler but : -->
-	//	CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
-	// create context (s.CustomHandler)
-	// }
-
-	webfmwktest.GetAndTest(t, testHandler, webfmwktest.Expected{
-		Code: 200,
-		Body: `{"content":"ok"}`,
-	})
 }

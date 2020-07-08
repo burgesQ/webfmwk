@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/assert"
-	z "github.com/burgesQ/gommon/assert"
 	"github.com/gorilla/mux"
 )
 
@@ -178,5 +177,5 @@ func TestHandleParam(t *testing.T) {
 	s.Start(_testPort)
 	<-s.isReady
 
-	z.RequestAndTestAPI(t, _testAddr+"/test/toto?pretty=1", func(t *testing.T, resp *http.Response) {})
+	assert.RequestAndTestAPI(t, _testAddr+"/test/toto?pretty=1", func(t *testing.T, resp *http.Response) {})
 }

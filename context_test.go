@@ -214,10 +214,10 @@ func TestCheckHeaderError(t *testing.T) {
 			switch test.t {
 			case _xml:
 				assert.StatusCode(t, resp, http.StatusNotAcceptable)
-				assert.Body(t, resp, `{"error":"Content-Type is not application/json"}`)
+				assert.Body(t, resp, `{"status":406,"message":"Content-Type is not application/json"}`)
 			case _noValue:
 				assert.StatusCode(t, resp, http.StatusNotAcceptable)
-				assert.Body(t, resp, `{"error":"Missing Content-Type header"}`)
+				assert.Body(t, resp, `{"status":406,"message":"Missing Content-Type header"}`)
 			case _noHeader:
 				assert.StatusCode(t, resp, http.StatusNotAcceptable)
 			}
