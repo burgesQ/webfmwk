@@ -154,7 +154,8 @@ type (
 
 	// ValidationError is returned in case of form / query validation error
 	ValidationError struct {
-		Error validator.ValidationErrorsTranslations `json:"error"`
+		Status int                                    `json:"status"`
+		Error  validator.ValidationErrorsTranslations `json:"message"`
 	}
 )
 
@@ -298,7 +299,10 @@ func (c *icontext) Validate(dest interface{}) ErrorHandled {
 
 	if e := validate.Struct(dest); e != nil {
 		c.log.Errorf("[!] (%s) validating : %s", c.GetRequestID(), e.Error())
-		return NewUnprocessable(ValidationError{e.(validator.ValidationErrors).Translate(trans)})
+		return NewUnprocessable(ValidationError{
+			Status: http.StatusUnprocessableEntity,
+			Error:  e.(validator.ValidationErrors).Translate(trans),
+		})
 	}
 
 	return nil

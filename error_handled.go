@@ -26,16 +26,16 @@ type (
 
 	// AnonymousError struct is used to answer error
 	AnonymousError struct {
-		Status  int    `json:"status,omitempty"`
-		Message string `json:"message"`
+		Status  int    `json:"status" example:"404" validate:"required"`
+		Message string `json:"message" example:"no such resource" validate:"required"`
 		e       error  `json:"-"`
-	}
+	} //@name Error
 
 	// Response is returned in case of success
 	Response struct {
-		Status  int    `json:"status,omitempty"`
-		Message string `json:"content"`
-	}
+		Status  int    `json:"status" example:"action successfully completed" validate:"required"`
+		Message string `json:"content,omitempty" example:"204"`
+	} //@name Response
 )
 
 // NewResponse generate a new json response payload
@@ -115,7 +115,7 @@ func factory(op int, content interface{}) errorHandled {
 		content: content,
 	}
 
-	// happend status code is possible
+	// append status code is possible
 	if e, ok := content.(AnonymousError); ok {
 		e.SetStatusCode(op)
 		ret.content = e
