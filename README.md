@@ -10,7 +10,7 @@
 
 ## What
 
-`webfmwk` is a go web API framework. Credits to Frafos GmbH :tada:.
+`webfmwk` is a go web API framework
 
 ## Use it
 
@@ -18,13 +18,13 @@ Import `github.com/burgesQ/webfmwk/v4`.
 
 ### Important 
 
-Go 1.13 is required. Make sure the environment variable `GO111MODULE` is set to `ON` when running the `go get` command.
+Go `1.13` is required. 
 
-### Usage
+### Example
 
 #### Hello world
 
-<details><summary>Code sample</summary>
+<details><summary>go sample</summary>
 <p>
 
 ```go
@@ -39,15 +39,12 @@ import (
 // curl -X GET 127.0.0.1:4242/hello
 // { "message": "hello world" }
 func main() {
-	// create server
 	var s = webfmwk.InitServer()
 
-	// expose /hello
 	s.GET("/hello", func(c webfmwk.Context) error {
 		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
-	// start asynchronously on :4242
 	s.Start(":4242")
 
 	// ctrl+c is handled internaly
@@ -61,6 +58,7 @@ Reach the endpoint:
 
 <details><summary>curl sample</summary>
 <p>
+
 ```bash
 $ curl -i 'http://localhost:4242/hello'
 HTTP/1.1 200 OK
@@ -76,9 +74,12 @@ Content-Length: 25
 </p>
 </details>
 
-#### example
+#### code samples
 
-Some samples are in the `./doc` directory. The main (`doc.go`) hande the sample orchestration. Use `go run . [sample file name]` to run the example.
+Some samples are in the `./doc` directory. The main (`doc.go`) hande the samples orchestration. Use `go run . [sample file name]` to run the example file.
+
+<details><summary>see more sample</summary>
+<p>
 
 ```bash
 $ cd doc
@@ -96,9 +97,41 @@ running panic_to_error (use panic to handle some error case)
 - DBG  : [-] (f2124b89-414b-4361-96ec-5f227c0e3369) : >{"error":"user not logged"}<
 ```
 
+
+| what                                         | **filename**        |
+| :-                                           | :-                  |
+| return hello world                           | `hello_world.go`    |
+| fetch value from url                         | `url_param.go`      |
+| fetch query param value                      | `query_param.go`    |
+| post content handling                        | `post_content.go`   |
+| register mutliple endpoints                  | `routes.go`         |
+| overload the framework context               | `custom_context.go` |
+| register extra hanlders / middleware         | `handlers.go`       |
+| generate and expose a swagger doc            | `swagger.go`        |
+| start the server in https                    | `tls.go`            |
+| attach worker to the server pool             | `custom_worker.go`  |
+| add an ID per requrest (ease logging for ex) | `request_id.go`     |
+| panic to return an http error                | `panic_to_error.go` |
+
+</p>
+</details>
+
 ## Test
 
 Simply run `make`
+
+## Contributing
+
+First of all, **thank you** for contributing hearts
+
+If you find any typo/misconfiguration/... please send me a PR or open an issue. 
+
+Also, while creating your Pull Request on GitHub, please write a description which gives the context and/or explains why you are creating it.
+
+## Credit
+
+Frafos GmbH :tada: where I've writted most of that code
+
 
 [1]: https://github.com/gorilla/mux
 [2]: https://github.com/gorilla/handlers
