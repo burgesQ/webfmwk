@@ -42,7 +42,9 @@ func fetchLogger() {
 
 // GetLogger return an instance of the Log interface used
 func GetLogger() log.Log {
-	onceLogger.Do(fetchLogger)
+	// from init server - if the logger is fetched before
+	// the server init (which happend pretty often)
+	once.Do(initOnce)
 	return logger
 }
 

@@ -40,41 +40,19 @@ type (
 	}
 )
 
-var onceLogger sync.Once
+var once sync.Once
 
-func getDefaultMeta() serverMeta {
-	return serverMeta{
-		baseServer: &http.Server{
-			ReadTimeout:       20 * time.Second,
-			ReadHeaderTimeout: 20 * time.Second,
-			WriteTimeout:      20 * time.Second,
-			MaxHeaderBytes:    1 << 20,
-		},
-		routes:     make(RoutesPerPrefix),
-		prefix:     "",
-		docHandler: nil,
-		handlers:   nil,
-	}
+func initOnce() {
+	initValidator()
+	fetchLogger()
 }
 
-func (m *serverMeta) toServer(addr string) http.Server {
-	return http.Server{
-		Addr:           addr,
-		ReadTimeout:    m.baseServer.ReadTimeout,
-		WriteTimeout:   m.baseServer.WriteTimeout,
-		MaxHeaderBytes: m.baseServer.MaxHeaderBytes,
-		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
-			log.Debugf("[+] new connection")
-
-			return ctx
-		},
-	}
-}
-
+// UseOption apply the param o option to the params s server
 func UseOption(s *Server, o Option) {
 	o(s)
 }
 
+// UseOptions apply the params opts option to the param s server
 func UseOptions(s *Server, opts ...Option) {
 	for _, o := range opts {
 		UseOption(s, o)
@@ -87,7 +65,7 @@ func UseOptions(s *Server, opts ...Option) {
 // WithDocHandler, WithHandlers,
 // SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
 func InitServer(opts ...Option) *Server {
-	onceLogger.Do(fetchLogger)
+	once.Do(initOnce)
 	var (
 		wg          sync.WaitGroup
 		ctx, cancel = context.WithCancel(context.Background())
@@ -239,5 +217,35 @@ func SetMaxHeaderBytes(val int) Option {
 func SetReadHeaderTimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.ReadHeaderTimeout = val
+	}
+}
+
+// return default cfg
+func getDefaultMeta() serverMeta {
+	return serverMeta{
+		baseServer: &http.Server{
+			ReadTimeout:       20 * time.Second,
+			ReadHeaderTimeout: 20 * time.Second,
+			WriteTimeout:      20 * time.Second,
+			MaxHeaderBytes:    1 << 20,
+		},
+		routes:     make(RoutesPerPrefix),
+		prefix:     "",
+		docHandler: nil,
+		handlers:   nil,
+	}
+}
+
+func (m *serverMeta) toServer(addr string) http.Server {
+	return http.Server{
+		Addr:           addr,
+		ReadTimeout:    m.baseServer.ReadTimeout,
+		WriteTimeout:   m.baseServer.WriteTimeout,
+		MaxHeaderBytes: m.baseServer.MaxHeaderBytes,
+		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
+			log.Debugf("[+] new connection")
+
+			return ctx
+		},
 	}
 }

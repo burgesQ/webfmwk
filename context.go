@@ -7,17 +7,13 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"unicode/utf8"
 
 	"github.com/burgesQ/gommon/log"
 	"github.com/burgesQ/gommon/pretty"
 	"github.com/gorilla/schema"
 
-	en_translator "github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
 	validator "github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
 const _prettyTag = "pretty"
@@ -151,47 +147,16 @@ type (
 		ctx   context.Context
 		uid   string
 	}
-
-	// ValidationError is returned in case of form / query validation error
-	ValidationError struct {
-		Status int                                    `json:"status"`
-		Error  validator.ValidationErrorsTranslations `json:"message"`
-	}
 )
 
 var (
-	// validate annotation : `validate` : go-playground
-	validate = validator.New()
 	// decoder annotation : `schema` : gorilla
 	decoder = schema.NewDecoder()
-	// this is usually know or extracted from http 'Accept-Language' header
-	// also see uni.FindTranslator(...)
-	trans ut.Translator
-	once  sync.Once
 
 	errMissingContentType   = NewNotAcceptable(NewAnonymousError("Missing Content-Type header"))
 	errNotJSON              = NewNotAcceptable(NewAnonymousError("Content-Type is not application/json"))
 	errUnprocessablePayload = NewUnprocessable(NewAnonymousError("Unprocessable payload"))
 )
-
-func initOnce() {
-	var (
-		// tranlator
-		en = en_translator.New()
-
-		// universal translator
-		uni *ut.UniversalTranslator
-	)
-
-	// universal translator
-	uni = ut.New(en, en)
-	// this is usually know or extracted from http 'Accept-Language' header
-	// also see uni.FindTranslator(...)
-	trans, _ = uni.GetTranslator("en")
-	if e := en_translations.RegisterDefaultTranslations(validate, trans); e != nil {
-		logger.Fatalf("cannot init translations : %v", e)
-	}
-}
 
 // GetRequest implement Context
 func (c *icontext) GetRequest() *http.Request {
@@ -295,8 +260,6 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 // Validate implement Context
 // this implemt use validator to anotate & check struct
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
-	once.Do(initOnce)
-
 	if e := validate.Struct(dest); e != nil {
 		c.log.Errorf("[!] (%s) validating : %s", c.GetRequestID(), e.Error())
 		return NewUnprocessable(ValidationError{
