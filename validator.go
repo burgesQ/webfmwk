@@ -9,6 +9,7 @@ import (
 
 type (
 	// ValidationError is returned in case of form / query validation error
+	// see gtihub.com/go-playground/validator.v10
 	ValidationError struct {
 		Status int                                    `json:"status"`
 		Error  validator.ValidationErrorsTranslations `json:"message"`
@@ -38,16 +39,40 @@ func initValidator() {
 	}
 }
 
-func GetValidator() *validator.Validate {
-	// from init server - if validator is called before
-	// the server init (which happend pretty often)
+// // GetValidator return a pointer to the instancied validator object
+// // see gtihub.com/go-playground/validator.v10
+// func GetValidator() *validator.Validate {
+// 	// from init server - if validator is called before
+// 	// the server init (which may happen pretty often)
+// 	once.Do(initOnce)
+// 	return validate
+// }
+
+// RegisterValidatorRule register the  validation rule param
+// see gtihub.com/go-playground/validator.v10
+func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) error {
 	once.Do(initOnce)
-	return validate
+	return validate.RegisterValidation(name, fn)
 }
 
+// RegisterCustomValidator register some validation alias
+// see gtihub.com/go-playground/validator.v10
 func RegisterValidatorAlias(name, what string) {
 	// from init server - if validator is called before
-	// the server init (which happend pretty often)
+	// the server init (which may happen pretty often)
 	once.Do(initOnce)
 	validate.RegisterAlias(name, what)
+}
+
+// RegisterValidatorTrans register some validation alias
+// see gtihub.com/go-playground/validator.v10
+func RegisterValidatorTrans(name, what string) error {
+	return validate.RegisterTranslation(name, trans,
+		func(ut ut.Translator) error {
+			return ut.Add(name, what, true) // see universal-translator for details
+		},
+		func(ut ut.Translator, fe validator.FieldError) string {
+			t, _ := ut.T(name, fe.Field())
+			return t
+		})
 }
