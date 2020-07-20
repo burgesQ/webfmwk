@@ -73,15 +73,15 @@ func TestResponse(t *testing.T) {
 	assert.StringEqual(t, NewResponse("test").Message, "test")
 }
 
-func TestAnonymousError(t *testing.T) {
+func TestError(t *testing.T) {
 	var err = errors.New("test")
 
-	e := NewAnonymousError("testing")
+	e := NewError("testing")
 	assert.True(t, e.Message == "testing")
 	e = NewAnonymousWrappedError(err, "testing")
 	assert.True(t, e.e == err)
 	assert.StringEqual(t, e.Message, "testing")
-	e = NewAnonymousErrorFromError(err)
+	e = NewErrorFromError(err)
 	assert.StringEqual(t, e.Message, "test")
 	assert.True(t, e.e == err)
 	assert.StringEqual(t, e.Message, "test")

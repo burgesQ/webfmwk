@@ -153,9 +153,9 @@ var (
 	// decoder annotation : `schema` : gorilla
 	decoder = schema.NewDecoder()
 
-	errMissingContentType   = NewNotAcceptable(NewAnonymousError("Missing Content-Type header"))
-	errNotJSON              = NewNotAcceptable(NewAnonymousError("Content-Type is not application/json"))
-	errUnprocessablePayload = NewUnprocessable(NewAnonymousError("Unprocessable payload"))
+	errMissingContentType   = NewNotAcceptable(NewError("Missing Content-Type header"))
+	errNotJSON              = NewNotAcceptable(NewError("Content-Type is not application/json"))
+	errUnprocessablePayload = NewUnprocessable(NewError("Unprocessable payload"))
 )
 
 // GetRequest implement Context
@@ -282,7 +282,7 @@ func (c *icontext) FetchAndValidateContent(dest interface{}) ErrorHandled {
 func (c *icontext) DecodeQP(dest interface{}) (e ErrorHandled) {
 	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
 		c.log.Errorf("[!] (%s) validating qp : %s", c.GetRequestID(), e.Error())
-		return NewUnprocessable(NewAnonymousErrorFromError(e))
+		return NewUnprocessable(NewErrorFromError(e))
 	}
 
 	return nil
@@ -293,6 +293,7 @@ func (c *icontext) CheckHeader() ErrorHandled {
 	if ctype := c.r.Header.Get("Content-Type"); len(ctype) == 0 {
 		return errMissingContentType
 	} else if !strings.HasPrefix(ctype, "application/json") {
+		c.log.Errorf("%q != application/json", ctype)
 		return errNotJSON
 	}
 

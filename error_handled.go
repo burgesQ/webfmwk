@@ -24,8 +24,8 @@ type (
 		err     error
 	}
 
-	// AnonymousError struct is used to answer error
-	AnonymousError struct {
+	// Error struct is used to answer error
+	Error struct {
 		Status  int    `json:"status" example:"404" validate:"required"`
 		Message string `json:"message" example:"no such resource" validate:"required"`
 		e       error  `json:"-"`
@@ -33,8 +33,8 @@ type (
 
 	// Response is returned in case of success
 	Response struct {
-		Status  int    `json:"status" example:"action successfully completed" validate:"required"`
-		Message string `json:"content,omitempty" example:"204"`
+		Status  int    `json:"status" example:"204" validate:"required"`
+		Message string `json:"content,omitempty" example:"action successfully completed"`
 	} //@name Response
 )
 
@@ -48,35 +48,35 @@ func (r *Response) SetStatusCode(op int) {
 }
 
 // Error implement the Error interface
-func (a AnonymousError) Error() string {
+func (a Error) Error() string {
 	return a.Message
 }
 
-// NewAnonymousError generate a new json error response payload
-func NewAnonymousError(err string) AnonymousError {
-	return AnonymousError{
+// NewError generate a new json error response payload
+func NewError(err string) Error {
+	return Error{
 		Message: err,
 	}
 }
 
-// NewAnonymousWrappedError generate a AnonymousError which wrap the err params
-func NewAnonymousWrappedError(err error, msg string) AnonymousError {
-	return AnonymousError{
+// NewAnonymousWrappedError generate a Error which wrap the err params
+func NewAnonymousWrappedError(err error, msg string) Error {
+	return Error{
 		Message: msg,
 		e:       err,
 	}
 }
 
-// NewAnonymousWrappedError generate a AnonymousError which wrap the err params
-func NewAnonymousErrorFromError(err error) AnonymousError {
-	return AnonymousError{
+// NewAnonymousWrappedError generate a Error which wrap the err params
+func NewErrorFromError(err error) Error {
+	return Error{
 		Message: err.Error(),
 		e:       err,
 	}
 }
 
 // SetStatusCode set the AE internal status code
-func (a *AnonymousError) SetStatusCode(op int) {
+func (a *Error) SetStatusCode(op int) {
 	a.Status = op
 }
 
@@ -116,7 +116,7 @@ func factory(op int, content interface{}) errorHandled {
 	}
 
 	// append status code is possible
-	if e, ok := content.(AnonymousError); ok {
+	if e, ok := content.(Error); ok {
 		e.SetStatusCode(op)
 		ret.content = e
 	}

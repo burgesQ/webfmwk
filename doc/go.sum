@@ -7,6 +7,8 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdko
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/burgesQ/gommon v0.0.0-20200518184402-0a2379aab0e8 h1:Qh2KjJTyR/6Uqq+VUQ3htx53lhTvqN7GuuWYBlbWHHs=
 github.com/burgesQ/gommon v0.0.0-20200518184402-0a2379aab0e8/go.mod h1:lBIU5Qg3WyCm8VA5rXIVrosxa7q6xBckxGuYtfEptDM=
+github.com/burgesQ/gommon v1.1.0 h1:LnW7T0tdI+/Lmryj+C8RoaSvqOZLuLb2RaSts1lm2YY=
+github.com/burgesQ/gommon v1.1.0/go.mod h1:lBIU5Qg3WyCm8VA5rXIVrosxa7q6xBckxGuYtfEptDM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -36,6 +38,8 @@ github.com/go-playground/universal-translator v0.17.0 h1:icxd5fm+REJzpZx7ZfpaD87
 github.com/go-playground/universal-translator v0.17.0/go.mod h1:UkSxE5sNxxRwHyU+Scu5vgOQjsIJAF8j9muTVoKLVtA=
 github.com/go-playground/validator/v10 v10.0.1 h1:QgDDZpXlR/L3atIL2PbFt0TpazbtN7N6PxTGcgcyEUg=
 github.com/go-playground/validator/v10 v10.0.1/go.mod h1:uOYAAleCW8F/7oMFd6aG0GOhaH6EGOAJShg8Id5JGkI=
+github.com/go-playground/validator/v10 v10.3.0 h1:nZU+7q+yJoFmwvNgv/LnPUkwPal62+b2xXj0AU1Es7o=
+github.com/go-playground/validator/v10 v10.3.0/go.mod h1:uOYAAleCW8F/7oMFd6aG0GOhaH6EGOAJShg8Id5JGkI=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
