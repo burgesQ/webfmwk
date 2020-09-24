@@ -86,7 +86,7 @@ func (config TLSConfig) String() string {
 func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
-		go s.pollPingEndpoint(addr)
+		// go s.pollPingEndpoint(addr)
 		return s.internalInit(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.GetCert(), tlsStuffs.GetKey())
 	})
 }
