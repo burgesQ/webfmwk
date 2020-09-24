@@ -146,6 +146,8 @@ func (s *Server) pollPingEndpoint(addr string) {
 
 	if len(addr) > 1 && addr[0] == ':' {
 		addr = "http://127.0.0.1" + addr
+	} else if strings.HasPrefix(addr, "127.0.0.1") {
+		addr = "http://" + addr
 	}
 
 	addr += s.meta.prefix + _pingEndpoint
@@ -155,7 +157,7 @@ func (s *Server) pollPingEndpoint(addr string) {
 
 		/* #nosec  */
 		if resp, e := http.Get(addr); e != nil {
-			s.log.Infof("server not up ... %s", e.Error())
+			s.log.Infof("server not up (%q) ... %s", addr, e.Error())
 			continue
 		} else if e = resp.Body.Close(); e != nil || resp.StatusCode != http.StatusOK {
 			s.log.Infof("unexpected status code, %s : %v", resp.StatusCode, e)
