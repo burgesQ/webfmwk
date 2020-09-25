@@ -321,8 +321,13 @@ func (c *icontext) setHeaders(headers ...Header) {
 // IDEA: add toggler `logReponse` ?
 func (c *icontext) response(statusCode int, content []byte) error {
 	if utf8.Valid(content) {
-		c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, len(content))
-		c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:200])
+		l := len(content)
+		c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, l)
+		if l > 200 {
+			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:200])
+		} else {
+			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content)
+		}
 	} else {
 		c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, len(content))
 	}
