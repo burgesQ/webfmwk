@@ -323,8 +323,8 @@ func (c *icontext) response(statusCode int, content []byte) error {
 	if utf8.Valid(content) {
 		l := len(content)
 		c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, l)
-		if l > 200 {
-			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:200])
+		if l > 1024 {
+			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:1024])
 		} else {
 			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content)
 		}
