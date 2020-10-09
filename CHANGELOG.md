@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.9] - 2020-10-9
+
+### Added
+- Option type to start server
+- Address as param of Run
+- Custom handler for 404 and 405
+- Status code to response payload when possible
+- Expose the validator (v10)
+
+### Changed
+- UseHandler -> Use, applyOption-> UseOption(s)
+- Sleep a bit in CheckIsUp
+- Gommon assertion 
+- Better context handling
+- Validator v9 -> v10
+- AnonymousError -> Error
+- Trunkat logged payload to 1kb
+
+### Fixed
+- Don't poll PingEndpoint in case of tls
+
+### Removed
+
 ## [4.1.0] - 2020-4-27
 
 ### Added
