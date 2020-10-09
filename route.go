@@ -1,6 +1,7 @@
 package webfmwk
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -203,7 +204,8 @@ func (s *Server) handleError(ctx Context, e error) {
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var ctx = s.genContext(w, r)
+		var ctx, cancel = s.genContext(w, r)
+		defer cancel()
 
 		if hasBody(r) {
 			if e := ctx.CheckHeader(); e != nil {
@@ -218,12 +220,15 @@ func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *h
 	}
 }
 
-func (s *Server) genContext(w http.ResponseWriter, r *http.Request) Context {
-	var ctx = &icontext{}
+func (s *Server) genContext(w http.ResponseWriter, r *http.Request) (Context, context.CancelFunc) {
+	var (
+		ctx, fn = context.WithCancel(s.ctx)
+		c       = &icontext{}
+	)
 
-	ctx.SetRequest(r).SetWriter(w).
+	c.SetRequest(r).SetWriter(w).
 		SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
-		SetLogger(s.log).SetContext(s.ctx)
+		SetLogger(s.log).SetContext(ctx)
 
-	return ctx
+	return c, fn
 }
