@@ -25,6 +25,7 @@ func (a Address) String() string {
 	if e != nil {
 		return e.Error()
 	}
+
 	return string(b)
 }
 

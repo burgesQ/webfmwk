@@ -55,6 +55,7 @@ func Shutdown(ctx context.Context) {
 		if e := server.Shutdown(ctx); e != nil {
 			logger.Errorf("shutdowning server : %v", e)
 		}
+
 		logger.Infof("server %s down", server.Addr)
 	}
 
@@ -137,17 +138,14 @@ func (s *Server) internalInit(addr string, tlsStuffs ...ITLSConfig) *http.Server
 	return &worker
 }
 
-func concatAddr(addr, prefix string) (new string) {
-	new = addr
+func concatAddr(addr, prefix string) string {
 	if len(addr) > 1 && addr[0] == ':' {
-		new = "http://127.0.0.1" + addr
+		return "http://127.0.0.1" + addr + prefix + _pingEndpoint
 	} else if strings.HasPrefix(addr, "127.0.0.1") {
-		new = "http://" + addr
+		return "http://" + addr + prefix + _pingEndpoint
 	}
 
-	new += prefix + _pingEndpoint
-
-	return
+	return addr + prefix + _pingEndpoint
 }
 
 // launch the ctrl+c job if needed
@@ -157,7 +155,7 @@ func (s *Server) internalHandler() {
 			s.exitHandler(s.ctx, os.Interrupt)
 			return nil
 		})
-		time.Sleep(1 * time.Millisecond)
+
 		s.meta.ctrlcStarted = true
 	}
 }
@@ -165,6 +163,7 @@ func (s *Server) internalHandler() {
 // handle ctrl+c internaly
 func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
 	var c = make(chan os.Signal, 1)
+
 	signal.Notify(c, sig...)
 
 	defer Shutdown(ctx)
@@ -235,8 +234,7 @@ func (s *Server) setPrefix(prefix string) *Server {
 
 // RegisterLogger register the Log used
 func (s *Server) registerLogger(lg log.Log) *Server {
-	logger = lg
-	s.log = lg
+	logger, s.log = lg, lg
 	return s
 }
 

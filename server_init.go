@@ -66,6 +66,7 @@ func UseOptions(s *Server, opts ...Option) {
 // SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
 func InitServer(opts ...Option) *Server {
 	once.Do(initOnce)
+
 	var (
 		wg          sync.WaitGroup
 		ctx, cancel = context.WithCancel(context.Background())

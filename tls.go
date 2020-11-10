@@ -69,7 +69,7 @@ func (config TLSConfig) GetInsecure() bool {
 
 // GetInsecure implemte ITLSConfig
 func (config TLSConfig) Empty() bool {
-	return len(config.Cert) == 0 && len(config.Key) == 0 && !config.Insecure
+	return config.Cert == "" && config.Key == "" && !config.Insecure
 }
 
 // String implement Stringer interface

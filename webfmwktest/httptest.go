@@ -1,9 +1,11 @@
 package webfmwktest
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/burgesQ/webfmwk/v4"
 )
@@ -19,15 +21,19 @@ type Expected struct {
 func GetAndTest(t *testing.T, h webfmwk.HandlerFunc, e Expected) {
 	t.Helper()
 
-	var check = func(ctx string, err error) {
+	var check = func(reason string, err error) {
 		if err != nil {
-			t.Fatal(ctx + err.Error())
+			t.Fatal(reason + err.Error())
 		}
 	}
 
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter
-	req, err := http.NewRequest("GET", "/tests", nil)
+	ctx, cancel :=
+		context.WithTimeout(context.TODO(), time.Second*1)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "/tests", nil)
 	check("cannot create http requesst : ", err)
 
 	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response

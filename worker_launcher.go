@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sync"
 )
@@ -20,7 +21,7 @@ func CreateWorkerLauncher(wg *sync.WaitGroup, cancel context.CancelFunc) WorkerL
 func (l *WorkerLauncher) run(name string, fn func() error) {
 	logger.Debugf("%s: starting", name)
 
-	if err := fn(); err != nil && err != http.ErrServerClosed {
+	if err := fn(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Errorf("%s (%T): %s", name, err, err)
 	} else {
 		logger.Infof("%s: done", name)

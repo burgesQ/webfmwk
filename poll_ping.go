@@ -20,14 +20,14 @@ func (s *Server) getResp(uri string) (r *http.Response, e error) {
 // pollPingEndpoint try to reach the /ping endpoint of the server
 // to then infrome that the server is up via the isReady channel
 func (s *Server) pollPingEndpoint(addr string) {
-	if !s.meta.checkIsUp {
-		return
-	}
-
 	var (
 		uri   = concatAddr(addr, s.meta.prefix)
 		delay = time.Millisecond * 0
 	)
+
+	if !s.meta.checkIsUp {
+		return
+	}
 
 	defer func() {
 		s.isReady <- true
@@ -47,6 +47,7 @@ func (s *Server) pollPingEndpoint(addr string) {
 			}
 
 			s.log.Infof("server is up")
+
 			return
 
 		case <-s.ctx.Done():

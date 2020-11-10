@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.11] - 2020-11-10
+
+### Added 
+- Runner method and Address struct
+- Log source IP in logger handler and 404/405 
+
+### Fixed
+- pollPingEndpoint didn't follow server context
+- linting
+
+### Changed
+- update golangci linting config 
+
 ## [4.1.9] - 2020-10-9
 
 ### Added

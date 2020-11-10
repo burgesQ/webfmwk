@@ -16,7 +16,10 @@ import (
 	validator "github.com/go-playground/validator/v10"
 )
 
-const _prettyTag = "pretty"
+const (
+	_prettyTag   = "pretty"
+	_limitOutput = 2014
+)
 
 type (
 	Header [2]string
@@ -262,6 +265,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	if e := validate.Struct(dest); e != nil {
 		c.log.Errorf("[!] (%s) validating : %s", c.GetRequestID(), e.Error())
+
 		return NewUnprocessable(ValidationError{
 			Status: http.StatusUnprocessableEntity,
 			Error:  e.(validator.ValidationErrors).Translate(trans),
@@ -275,6 +279,7 @@ func (c *icontext) FetchAndValidateContent(dest interface{}) ErrorHandled {
 	if e := c.FetchContent(&dest); e != nil {
 		return e
 	}
+
 	return c.Validate(dest)
 }
 
@@ -290,7 +295,7 @@ func (c *icontext) DecodeQP(dest interface{}) (e ErrorHandled) {
 
 // CheckHeader implement Context
 func (c *icontext) CheckHeader() ErrorHandled {
-	if ctype := c.r.Header.Get("Content-Type"); len(ctype) == 0 {
+	if ctype := c.r.Header.Get("Content-Type"); ctype == "" {
 		return errMissingContentType
 	} else if !strings.HasPrefix(ctype, "application/json") {
 		c.log.Errorf("%q != application/json", ctype)
@@ -320,19 +325,20 @@ func (c *icontext) setHeaders(headers ...Header) {
 // response generate the http.Response with the holded http.ResponseWriter
 // IDEA: add toggler `logReponse` ?
 func (c *icontext) response(statusCode int, content []byte) error {
+	var l = len(content)
+
+	c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, l)
+
 	if utf8.Valid(content) {
-		l := len(content)
-		c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, l)
-		if l > 1024 {
-			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:1024])
+		if l > _limitOutput {
+			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:_limitOutput])
 		} else {
 			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content)
 		}
-	} else {
-		c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, len(content))
 	}
 
 	c.w.WriteHeader(statusCode)
+
 	if _, e := c.w.Write(content); e != nil {
 		return fmt.Errorf("cannot write response : %w", e)
 	}

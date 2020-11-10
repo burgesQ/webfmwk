@@ -47,10 +47,9 @@ type (
 func getIP(r *http.Request) string {
 	ip := r.Header.Get("X-Real-Ip")
 	if ip == "" {
-		ip = r.Header.Get("X-Forwarded-For")
-	}
-	if ip == "" {
-		ip = r.RemoteAddr
+		if ip = r.Header.Get("X-Forwarded-For"); ip == "" {
+			ip = r.RemoteAddr
+		}
 	}
 
 	return ip
@@ -150,7 +149,7 @@ func (s *Server) SetRouter() *mux.Router {
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.log.Infof("[!] 404 reached for [%s] %sL%s", getIP(r), r.Method, r.RequestURI)
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		if _, e := w.Write([]byte(`{"status":404,"message":"not found"}`)); e != nil {
 			s.log.Errorf("[!] cannot write 404 ! %s", e.Error())
 		}
@@ -159,7 +158,7 @@ func (s *Server) SetRouter() *mux.Router {
 	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.log.Infof("[!] 405 reached for [%s] %sL%s", getIP(r), r.Method, r.RequestURI)
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(405)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
 			s.log.Errorf("cannot write 405 ! %s", e.Error())
 		}
