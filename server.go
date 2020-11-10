@@ -43,7 +43,7 @@ func fetchLogger() {
 // GetLogger return an instance of the Log interface used
 func GetLogger() log.Log {
 	// from init server - if the logger is fetched before
-	// the server init (which happend pretty often)
+	// the server init (which happened pretty often)
 	once.Do(initOnce)
 	return logger
 }
@@ -137,37 +137,17 @@ func (s *Server) internalInit(addr string, tlsStuffs ...ITLSConfig) *http.Server
 	return &worker
 }
 
-// pollPingEndpoint try to reach the /ping endpoint of the server
-// to then infrome that the server is up via the isReady channel
-func (s *Server) pollPingEndpoint(addr string) {
-	if !s.meta.checkIsUp {
-		return
-	}
-
+func concatAddr(addr, prefix string) (new string) {
+	new = addr
 	if len(addr) > 1 && addr[0] == ':' {
-		addr = "http://127.0.0.1" + addr
+		new = "http://127.0.0.1" + addr
 	} else if strings.HasPrefix(addr, "127.0.0.1") {
-		addr = "http://" + addr
+		new = "http://" + addr
 	}
 
-	addr += s.meta.prefix + _pingEndpoint
+	new += prefix + _pingEndpoint
 
-	for {
-		time.Sleep(time.Millisecond * 10)
-
-		/* #nosec  */
-		if resp, e := http.Get(addr); e != nil {
-			s.log.Infof("server not up (%q) ... %s", addr, e.Error())
-			continue
-		} else if e = resp.Body.Close(); e != nil || resp.StatusCode != http.StatusOK {
-			s.log.Infof("unexpected status code, %s : %v", resp.StatusCode, e)
-			continue
-		}
-
-		s.log.Infof("server is up")
-		s.isReady <- true
-		break
-	}
+	return
 }
 
 // launch the ctrl+c job if needed
@@ -182,7 +162,7 @@ func (s *Server) internalHandler() {
 	}
 }
 
-// handle ctrl+c in intern
+// handle ctrl+c internaly
 func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
 	var c = make(chan os.Signal, 1)
 	signal.Notify(c, sig...)
