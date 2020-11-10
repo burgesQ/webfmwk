@@ -29,13 +29,13 @@ type (
 		Status  int    `json:"status" example:"404" validate:"required"`
 		Message string `json:"message" example:"no such resource" validate:"required"`
 		e       error  `json:"-"`
-	} //@name Error
+	} // @name Error
 
 	// Response is returned in case of success
 	Response struct {
 		Status  int    `json:"status" example:"204" validate:"required"`
 		Message string `json:"content,omitempty" example:"action successfully completed"`
-	} //@name Response
+	} // @name Response
 )
 
 // NewResponse generate a new json response payload
