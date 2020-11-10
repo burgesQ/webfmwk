@@ -6,7 +6,16 @@ import "github.com/burgesQ/webfmwk/v4"
 func Logging(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 	return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
 		r := c.GetRequest()
-		c.GetLogger().Infof("[+] (%s) : [%s]%s", c.GetRequestID(), r.Method, r.RequestURI)
+
+		IPAddress := r.Header.Get("X-Real-Ip")
+		if IPAddress == "" {
+			IPAddress = r.Header.Get("X-Forwarded-For")
+		}
+		if IPAddress == "" {
+			IPAddress = r.RemoteAddr
+		}
+
+		c.GetLogger().Infof("[+] (%s) %s : [%s]%s", c.GetRequestID(), IPAddress, r.Method, r.RequestURI)
 
 		return next(c)
 	})
