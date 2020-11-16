@@ -12,12 +12,14 @@ import (
 )
 
 type (
-	// Option is tu be used this way :
+	// Option are tu be used this way :
 	//   s := w.InitServer(
 	//     webfmwk.WithLogger(log.GetLogger()),
 	//     webfmwk.EnableCheckIsUp()
 	//     webfmwk.WithCORS(),
 	//     webfmwk.WithPrefix("/api"),
+	//     webfmwk.WithMiddlewares(log.GetLogger()),
+	//     webfmwk.WithDocHanlders(docs.GetRedocHandler(nil))
 	//     webfmwk.WithHanlders(
 	// 	    hanlder.Logging,
 	// 	    handler.Security))
@@ -33,7 +35,7 @@ type (
 		cors         bool
 		middlewares  []mux.MiddlewareFunc
 		handlers     []Handler
-		docHandler   http.Handler
+		docHandlers  []DocHandler
 		baseServer   *http.Server
 		prefix       string
 		routes       RoutesPerPrefix
@@ -62,7 +64,7 @@ func UseOptions(s *Server, opts ...Option) {
 // InitServer initialize a webfmwk.Server instance
 // It take the server options as parameters.
 // List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
-// WithDocHandler, WithHandlers,
+// WithHandlers,
 // SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
 func InitServer(opts ...Option) *Server {
 	once.Do(initOnce)
@@ -127,17 +129,10 @@ func SetPrefix(prefix string) Option {
 	}
 }
 
-// WithDocHandler allow to register a http.Handler doc handler (ex: swaggo).
-// If use with SetPrefix, register WithDocHandler after the SetPrefix one
-func WithDocHandler(handler http.Handler) Option {
-	return func(s *Server) {
-		s.registerDocHandler(handler)
-		s.log.Debugf("\t-- doc handler loaded")
-	}
-}
-
 // WithMiddlewares allow to register a list of gorilla/mux.MiddlewareFunc.
 // Middlwares signature is the http.Handler one (func(w http.ResponseWriterm r *http.Request))
+//
+// Middlewates were depreceated since v4 in favor of Handlers.
 //
 //   package main
 //
@@ -153,6 +148,26 @@ func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
 	return func(s *Server) {
 		s.addMiddlewares(mw...)
 		s.log.Debugf("\t-- middlewares loaded")
+	}
+}
+
+// WithDocHandlers allow to register custom DocHandler struct (ex: swaggo, redoc).
+// If use with SetPrefix, register WithDocHandler after the SetPrefix one
+//
+//   package main
+//
+//   import (
+//     "github.com/burgesQ/webfmwk/v4"
+//     "github.com/burgesQ/webfmwk/v4/docs"
+//   )
+//
+//   func main() {
+//     var s = webfmwk.InitServer(webfmwk.WithDocHandlers(docs.GetRedocHandler(nil)))
+//   }
+func WithDocHandlers(handler ...DocHandler) Option {
+	return func(s *Server) {
+		s.addDocHandlers(handler...)
+		s.log.Debugf("\t-- doc handlers loaded")
 	}
 }
 
@@ -230,10 +245,7 @@ func getDefaultMeta() serverMeta {
 			WriteTimeout:      20 * time.Second,
 			MaxHeaderBytes:    1 << 20,
 		},
-		routes:     make(RoutesPerPrefix),
-		prefix:     "",
-		docHandler: nil,
-		handlers:   nil,
+		routes: make(RoutesPerPrefix),
 	}
 }
 

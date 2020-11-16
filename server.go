@@ -203,12 +203,6 @@ func (s *Server) IsReady() chan bool {
 	return s.isReady
 }
 
-// RegisterDocHandler is used to register an swagger doc handler
-func (s *Server) registerDocHandler(handler http.Handler) *Server {
-	s.meta.docHandler = handler
-	return s
-}
-
 // AddMiddlewares register the mux.MiddlewaresFunc middlewares
 func (s *Server) addMiddlewares(mw ...mux.MiddlewareFunc) *Server {
 	s.meta.middlewares = append(s.meta.middlewares, mw...)
@@ -223,6 +217,12 @@ func (s *Server) addMiddlewares(mw ...mux.MiddlewareFunc) *Server {
 //   s.AddHandlers(handler.Logging, handler.RequestID)
 func (s *Server) addHandlers(h ...Handler) *Server {
 	s.meta.handlers = append(s.meta.handlers, h...)
+	return s
+}
+
+// RegisterDocHandler is used to register an swagger doc handler
+func (s *Server) addDocHandlers(h ...DocHandler) *Server {
+	s.meta.docHandlers = append(s.meta.docHandlers, h...)
 	return s
 }
 

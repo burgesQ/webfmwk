@@ -26,6 +26,16 @@ type (
 	// Handler hold the function signature of a webfmwk handler chaning (middlware)
 	Handler func(HandlerFunc) HandlerFunc
 
+	// DocHandler hold the required data to expose a  documentation handlers
+	DocHandler struct {
+		// Bla
+		H http.HandlerFunc
+		// Bla
+		Name string
+		// Bla
+		Path string
+	}
+
 	// Route hold the data for one route
 	Route struct {
 		Verbe   string      `json:"verbe"`
@@ -170,9 +180,12 @@ func (s *Server) SetRouter() *mux.Router {
 	}
 
 	// register doc handler
-	if s.meta.docHandler != nil {
-		s.log.Infof("load swagger doc")
-		router.PathPrefix(s.meta.prefix + "/doc/").Handler(s.meta.docHandler)
+	if len(s.meta.docHandlers) > 0 {
+		for i := range s.meta.docHandlers {
+			h := s.meta.docHandlers[i]
+			s.log.Infof("load %q doc handler", h.Name)
+			router.HandleFunc(s.meta.prefix+h.Path, h.H)
+		}
 	}
 
 	// register test handler

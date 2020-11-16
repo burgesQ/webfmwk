@@ -22,11 +22,11 @@ var (
 
 func TestServerNewInit(t *testing.T) {
 	var (
-		fakeswagger = http.HandlerFunc(func(q http.ResponseWriter, r *http.Request) {})
+		fakeswagger = DocHandler{}
 		testT       = time.Second * 42
 		s           = InitServer(
 			WithCtrlC(), CheckIsUp(), WithCORS(),
-			WithDocHandler(fakeswagger),
+			WithDocHandlers(fakeswagger),
 			SetMaxHeaderBytes(42), SetReadTimeout(testT),
 			SetWriteTimeout(testT), SetReadHeaderTimeout(testT),
 			SetPrefix("/api"),
@@ -45,7 +45,7 @@ func TestServerNewInit(t *testing.T) {
 	assert.Equal(t, s.meta.baseServer.ReadHeaderTimeout, testT)
 	assert.Equal(t, s.meta.baseServer.MaxHeaderBytes, 42)
 
-	assert.True(t, s.meta.docHandler != nil)
+	assert.True(t, len(s.meta.docHandlers) == 1)
 
 	assert.Equal(t, s.meta.prefix, "/api")
 }
