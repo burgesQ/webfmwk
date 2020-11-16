@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.1.11] - 2020-11-10
+## [4.2.1] - 2020-16-10
+
+### Added
+- NewForbidden error method
+
+### Fixed
+- context max output was 2014 instead of 2048 
+ 
+### Removed
+- dropped support for external doc handlers
+
+## [4.2.0] - 2020-11-10
 
 ### Added 
 - Runner method and Address struct
