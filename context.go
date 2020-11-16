@@ -18,7 +18,7 @@ import (
 
 const (
 	_prettyTag   = "pretty"
-	_limitOutput = 2014
+	_limitOutput = 2048
 )
 
 type (
