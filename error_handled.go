@@ -149,6 +149,11 @@ func NewUnauthorized(content interface{}) ErrorHandled {
 	return factory(http.StatusUnauthorized, content)
 }
 
+// NewUnauthorized  produce an ErrorHandled with the status code 403
+func NewForbidden(content interface{}) ErrorHandled {
+	return factory(http.StatusForbidden, content)
+}
+
 // NewNotAcceptable produce an ErrorHandled with the status code 404
 func NewNotFound(content interface{}) ErrorHandled {
 	return factory(http.StatusNotFound, content)
