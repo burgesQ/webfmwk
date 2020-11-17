@@ -158,7 +158,8 @@ func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.log.Infof("[!] 404 reached for [%s] %sL%s", getIP(r), r.Method, r.RequestURI)
+		s.log.Infof("[!] 404 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		if _, e := w.Write([]byte(`{"status":404,"message":"not found"}`)); e != nil {
@@ -167,7 +168,7 @@ func (s *Server) SetRouter() *mux.Router {
 	})
 
 	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.log.Infof("[!] 405 reached for [%s] %sL%s", getIP(r), r.Method, r.RequestURI)
+		s.log.Infof("[!] 405 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
