@@ -18,6 +18,8 @@ VET					= $(GO_CC) vet .
 
 TIDY				= $(GO_CC) mod tidy
 
+GODOC				= godoc -http=:6060
+
 .PHONY: all
 all: $(NAME)
 
@@ -38,3 +40,7 @@ test:
 .PHONY: tidy
 tidy:
 	@	$(TIDY)
+
+.PHONY: godoc
+godoc:
+	@ $(GODOC)
