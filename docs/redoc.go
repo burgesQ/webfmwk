@@ -8,9 +8,12 @@ import (
 	"github.com/burgesQ/webfmwk/v4"
 )
 
-// TODO
+// RedocParam hold the required metadata to expose the
+// redoc handler
 type RedocParam struct {
-	Path   string
+	// Path hold the value on which is exposed the handler
+	Path string
+	// DocURI hold the swagger.json URI
 	DocURI string
 }
 
@@ -46,23 +49,14 @@ var (
 	}
 )
 
+// GetTemplate return the value of the redoc template
 func GetTemplate() string {
 	return _redocTmpl
 }
 
+// SetTemplate update the value of the internal redoc template
 func SetTemplate(tmpl string) {
 	_redocTmpl = tmpl
-}
-
-func (p *RedocParam) sync() {
-	if p.DocURI == "" {
-		p.DocURI = "/api/docs/swagger.json"
-
-	}
-
-	if p.Path == "" {
-		p.Path = "/docs/redoc"
-	}
 }
 
 // Return a DocHandler settup for redoc
@@ -71,6 +65,7 @@ func GetRedocHandler(p *RedocParam) webfmwk.DocHandler {
 	if p == nil {
 		p = _defRedoc
 	}
+
 	p.sync()
 
 	t := template.Must(template.New("redoc").Parse(_redocTmpl))
@@ -86,5 +81,15 @@ func GetRedocHandler(p *RedocParam) webfmwk.DocHandler {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write(b)
 		},
+	}
+}
+
+func (p *RedocParam) sync() {
+	if p.DocURI == "" {
+		p.DocURI = "/api/docs/swagger.json"
+	}
+
+	if p.Path == "" {
+		p.Path = "/docs/redoc"
 	}
 }

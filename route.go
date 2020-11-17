@@ -26,13 +26,14 @@ type (
 	// Handler hold the function signature of a webfmwk handler chaning (middlware)
 	Handler func(HandlerFunc) HandlerFunc
 
-	// DocHandler hold the required data to expose a  documentation handlers
+	// DocHandler hold the required data to expose a documentation handlers
 	DocHandler struct {
-		// Bla
+		// H represent the doc handler to expose
 		H http.HandlerFunc
-		// Bla
+		// Name is used in debug message
 		Name string
-		// Bla
+		// Path hold the URI at  which the handler is exposed.
+		// If one used, will be prefixed by the api base.
 		Path string
 	}
 

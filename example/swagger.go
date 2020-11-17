@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/burgesQ/webfmwk/v4"
-	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/burgesQ/webfmwk/v4/docs"
 )
 
 // TODO: form & payload schema
@@ -37,7 +37,9 @@ func swagger() {
 	// register prefix BEFORE api doc.
 	s := webfmwk.InitServer(
 		webfmwk.SetPrefix("/api"),
-		webfmwk.WithDocHandler(httpSwagger.WrapHandler),
+		// webfmwk.WithDocHandlers(httpSwagger.WrapHandler),
+		webfmwk.WithDocHandlers(docs.GetRedocHandler(nil)),
+
 		webfmwk.WithCtrlC())
 
 	// register /test

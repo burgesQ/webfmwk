@@ -85,7 +85,7 @@ func root(args []string) error {
 		}
 	}
 
-	return fmt.Errorf("Unknown subcommand: %s", subcommand)
+	return fmt.Errorf("Unknown subcommand: %q", subcommand)
 }
 
 // go run . (filename)
@@ -94,10 +94,8 @@ func root(args []string) error {
 //   running panic_to_error (use panic to handle some error case)
 //   ! ERR  : http server :4242 (*net.OpError): listen tcp :4242: bind: address already in use
 func main() {
-
 	if err := root(os.Args[1:]); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
 }

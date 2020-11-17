@@ -15,7 +15,13 @@
 ** TODO read header for translator
 ** TODO perf profiling
 
+** doc how'to
 
+** WIP mutliple doc handler [2/4] [50%]
+- [X] support for redoc
+- [X] wrap doc handlers
+- [ ] update test?
+- [ ] update doc
 ** DONE recover handler
 CLOSED: [2020-04-27 Mon 12:42]
    Allow the toggling of the the panic2error pattern
