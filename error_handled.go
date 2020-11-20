@@ -26,16 +26,31 @@ type (
 
 	// Error struct is used to answer error
 	Error struct {
-		Status  int    `json:"status" example:"404" validate:"required"`
+		// Status hold the error code status
+		//
+		// Example: 500
+		Status int `json:"status" validate:"required"`
+
+		// Message hold the error message
+		//
+		// Example: the impossible appened
 		Message string `json:"message" example:"no such resource" validate:"required"`
-		e       error  `json:"-"`
-	} // @name Error
+
+		e error `json:"-"`
+	}
 
 	// Response is returned in case of success
 	Response struct {
-		Status  int    `json:"status" example:"204" validate:"required"`
-		Message string `json:"content,omitempty" example:"action successfully completed"`
-	} // @name Response
+		// Status hold the error code status
+		//
+		// Example: 200
+		Status int `json:"status" example:"204" validate:"required"`
+
+		// Message hold the error message
+		//
+		// Example: action successfully completed
+		Message string `json:"content,omitempty"`
+	}
 )
 
 // NewResponse generate a new json response payload
