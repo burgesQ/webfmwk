@@ -18,55 +18,32 @@ type RedocParam struct {
 }
 
 var (
-	_redocTmpl = `<!DOCTYPE html>
-<html>
-    <head>
-        <title>ReDoc</title>
-        <!-- needed for adaptive design -->
-        <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
-
-        <!--
-             ReDoc doesn't change outer page styles
-        -->
-        <style>
-         body {
-             margin: 0;
-             padding: 0;
-         }
-        </style>
-    </head>
-    <body>
-        <redoc spec-url={{ .DocURI }}></redoc>
-        <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
-    </body>
-</html>`
-
 	_defRedoc = &RedocParam{
 		DocURI: "/api/docs/swagger.json",
 		Path:   "/docs/redoc",
 	}
 )
 
-// GetTemplate return the value of the redoc template
-func GetTemplate() string {
-	return _redocTmpl
+func Path(path string) func(*RedocParam) {
+	return func(rp *RedocParam) {
+		rp.Path = path
+	}
 }
 
-// SetTemplate update the value of the internal redoc template
-func SetTemplate(tmpl string) {
-	_redocTmpl = tmpl
+func DocURI(uri string) func(*RedocParam) {
+	return func(rp *RedocParam) {
+		rp.DocURI = uri
+	}
 }
 
 // Return a DocHandler settup for redoc
 // use of template, params expect the DocURI string
-func GetRedocHandler(p *RedocParam) webfmwk.DocHandler {
-	if p == nil {
-		p = _defRedoc
-	}
+func GetRedocHandler(opt ...func(*RedocParam)) webfmwk.DocHandler {
+	var p = _defRedoc
 
-	p.sync()
+	for _, o := range opt {
+		o(p)
+	}
 
 	t := template.Must(template.New("redoc").Parse(_redocTmpl))
 	buf := bytes.NewBuffer(nil)
@@ -84,12 +61,30 @@ func GetRedocHandler(p *RedocParam) webfmwk.DocHandler {
 	}
 }
 
-func (p *RedocParam) sync() {
-	if p.DocURI == "" {
-		p.DocURI = "/api/docs/swagger.json"
-	}
+const (
+	_redocTmpl = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ReDoc</title>
+    <!-- needed for adaptive design -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
 
-	if p.Path == "" {
-		p.Path = "/docs/redoc"
-	}
-}
+    <!--
+        ReDoc doesn't change outer page styles
+      -->
+    <style>
+      body {
+      margin: 0;
+      padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <redoc spec-url={{ .DocURI }}></redoc>
+    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
+  </body>
+</html>`
+)
