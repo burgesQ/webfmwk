@@ -29,7 +29,9 @@ type (
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*http.Server
-	logger        log.Log
+
+	logger   log.Log
+	loggerMu sync.Mutex
 )
 
 //
@@ -234,7 +236,11 @@ func (s *Server) setPrefix(prefix string) *Server {
 
 // RegisterLogger register the Log used
 func (s *Server) registerLogger(lg log.Log) *Server {
+	loggerMu.Lock()
+	defer loggerMu.Unlock()
+
 	logger, s.log = lg, lg
+
 	return s
 }
 

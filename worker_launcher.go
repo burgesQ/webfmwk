@@ -24,7 +24,9 @@ func (l *WorkerLauncher) run(name string, fn func() error) {
 	if err := fn(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Errorf("%s (%T): %s", name, err, err)
 	} else {
+		loggerMu.Lock()
 		logger.Infof("%s: done", name)
+		loggerMu.Unlock()
 	}
 
 	l.cancel()

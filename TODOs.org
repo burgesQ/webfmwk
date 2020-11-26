@@ -17,6 +17,7 @@
 
 ** doc how'to
 
+** DONE [#A] data race on logger
 ** WIP mutliple doc handler [2/4] [50%]
 - [X] support for redoc
 - [X] wrap doc handlers
@@ -149,4 +150,3 @@ CLOSED: [2020-04-27 Mon 12:42]
 ** DONE stuffs
    CLOSED: [2019-09-28 Sat 14:52]
   - [x] swagger compat
-
