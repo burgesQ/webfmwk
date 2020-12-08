@@ -21,8 +21,8 @@ func (s *Server) getResp(uri string) (r *http.Response, e error) {
 // to then infrome that the server is up via the isReady channel
 func (s *Server) pollPingEndpoint(addr string) {
 	var (
-		uri   = concatAddr(addr, s.meta.prefix)
-		delay = time.Millisecond * 0
+		uri      = concatAddr(addr, s.meta.prefix)
+		duration = time.Millisecond * 10
 	)
 
 	if !s.meta.checkIsUp {
@@ -33,10 +33,14 @@ func (s *Server) pollPingEndpoint(addr string) {
 		s.isReady <- true
 	}()
 
+	delay := time.NewTimer(time.Millisecond * 0)
+	defer delay.Stop()
+
 	for s.ctx.Err() == nil {
+		delay.Reset(duration)
 		select {
-		case <-time.After(delay):
-			delay = time.Millisecond * 10
+		case <-delay.C:
+			delay.Reset(duration)
 			/* #nosec  */
 			if resp, e := s.getResp(uri); e != nil {
 				s.log.Infof("server not up (%q) ... %s", uri, e.Error())
