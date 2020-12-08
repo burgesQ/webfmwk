@@ -12,7 +12,7 @@ type (
 		Error() string
 		Unwrap() error
 		GetOPCode() int
-		SetStatusCode(op int)
+		SetStatusCode(op int) ErrorHandled
 		GetContent() interface{}
 		SetWrapped(err error) ErrorHandled
 	}
@@ -71,6 +71,7 @@ func (a Error) Error() string {
 func NewError(err string) Error {
 	return Error{
 		Message: err,
+		Status:  500,
 	}
 }
 
@@ -79,6 +80,7 @@ func NewAnonymousWrappedError(err error, msg string) Error {
 	return Error{
 		Message: msg,
 		e:       err,
+		Status:  500,
 	}
 }
 
@@ -87,6 +89,7 @@ func NewErrorFromError(err error) Error {
 	return Error{
 		Message: err.Error(),
 		e:       err,
+		Status:  500,
 	}
 }
 
@@ -105,12 +108,15 @@ func (e errorHandled) Unwrap() error {
 	return e.err
 }
 
-func (e errorHandled) SetStatusCode(op int) {
+func (e errorHandled) SetStatusCode(op int) ErrorHandled {
 	e.op = op
+
+	return e
 }
 
 func (e errorHandled) SetWrapped(err error) ErrorHandled {
 	e.err = err
+
 	return e
 }
 

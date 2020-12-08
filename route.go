@@ -228,7 +228,7 @@ func (s *Server) handleError(ctx Context, e error) {
 	if errors.As(e, &eh) {
 		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
 	} else {
-		s.log.Errorf("catched from controller : %s", e.Error())
+		s.log.Errorf("catched from controller (%T) : %s", e, e.Error())
 	}
 }
 
@@ -246,6 +246,7 @@ func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *h
 		}
 
 		if e := handler(ctx); e != nil {
+			s.log.Errorf("catch an e: %s", e.Error())
 			s.handleError(ctx, e)
 		}
 	}
