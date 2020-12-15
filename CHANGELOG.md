@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.4] - 2020-15-12
+
+### Changed
+- redoc handler
+- error comment for go-swagger compat
+
+### Fixed
+- datarace on the logger
+- time.After not always gc'ed
+
 ## [4.2.1] - 2020-17-10
 
 ### Added
@@ -11,24 +21,24 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 - godoc target to makefile
 
 ### Fixed
-- context max output was 2014 instead of 2048 
- 
+- context max output was 2014 instead of 2048
+
 ### Changed
 - Wrapped support for external doc handlers
 - Moved example to the `example` sub directory
 
 ## [4.2.0] - 2020-11-10
 
-### Added 
+### Added
 - Runner method and Address struct
-- Log source IP in logger handler and 404/405 
+- Log source IP in logger handler and 404/405
 
 ### Fixed
 - pollPingEndpoint didn't follow server context
 - linting
 
 ### Changed
-- update golangci linting config 
+- update golangci linting config
 
 ## [4.1.9] - 2020-10-9
 
@@ -42,7 +52,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 ### Changed
 - UseHandler -> Use, applyOption-> UseOption(s)
 - Sleep a bit in CheckIsUp
-- Gommon assertion 
+- Gommon assertion
 - Better context handling
 - Validator v9 -> v10
 - AnonymousError -> Error
@@ -57,7 +67,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 
 ### Added
 - new doc example runner
-- recover hanlder 
+- recover hanlder
 - controller return error
 - ErrorHandled returned generate an API error response
 
@@ -101,7 +111,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 ### Added
 - Option type to init server
 - Error Service Unavailable
-- Dump method, which dump exposed routes 
+- Dump method, which dump exposed routes
 - isReady channel pattern
 - More unit test
 
@@ -116,7 +126,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 ## [3.0.1] - 2020.1.21
 
 ### Fixed
-- Wrong custom context implementation ... 
+- Wrong custom context implementation ...
 
 ## [3.0.0] - 2020.1.20
 
