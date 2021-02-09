@@ -21,8 +21,8 @@ type (
 	//     webfmwk.WithMiddlewares(log.GetLogger()),
 	//     webfmwk.WithDocHanlders(docs.GetRedocHandler(nil))
 	//     webfmwk.WithHanlders(
-	// 	    hanlder.Logging,
-	// 	    handler.Security))
+	//			hanlder.Logging,
+	//			handler.Security))
 	Option func(s *Server)
 
 	Options []Option
@@ -45,8 +45,8 @@ type (
 var once sync.Once
 
 func initOnce() {
-	initValidator()
 	fetchLogger()
+	initValidator()
 }
 
 // UseOption apply the param o option to the params s server
@@ -191,8 +191,8 @@ func WithDocHandlers(handler ...DocHandler) Option {
 //     var s = webfmwk.InitServer(webfmwk.WithHandlers(handler.Logging, handler.RequestID,
 //        webfmwk.HandlerFunc {
 //           return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
-// 	           cc := Context{c, "val"}
-//	           return next(cc)})}))
+//						 cc := Context{c, "val"}
+//						 return next(cc)})}))
 //  }
 //
 func WithHandlers(h ...Handler) Option {

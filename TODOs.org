@@ -2,6 +2,11 @@
 #+AUTHOR: Quentin Burgess (quentin.burgess@frafos.com)
 #+DESCRIPTION: Quick summary of web framework todo's
 
+# arhciving:
+# to archive: C-c C-x A (org-archive-to-archive-sibling)
+# to archive to file: C-c C-x C-a
+# open archive sibling: C-c C-tab
+
 * WIP v4 [7/12] [58%]
 
 ** IDEA logger overload
@@ -57,26 +62,44 @@ CLOSED: [2020-04-27 Mon 12:42]
    - [X] what for webfmwk's middlewares
 
 
-* DONE v3 [3/3] [100%]
-  CLOSED: [2020-04-06 Mon 17:26]
+* Archive                                                           :ARCHIVE:
+** DONE v1 [4/4] [100%]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-02-04 Thu 10:02
+:END:
+*** DONE server [3/3] [100%]
+   CLOSED: [2019-09-28 Sat 14:50]
+  - [X] Headers
+  - [X] Middelware
+    - [X] logging
+    - [X] secu
+    - [X] CORS
+  - [X] test multiple listning address
 
-** DONE ctx id's
-   CLOSED: [2020-04-06 Mon 17:24]
-   - [X] generate id per request
-   - [X] save it in go ctx
-   - [X] pass it to ctx obj
+*** DONE route [4/4] [100%]
+   CLOSED: [2019-09-28 Sat 14:52]
+  - [X] GET/DELETE
+  - [X] POST/PUT
+  - [X] url params
+    - [X] query param
+  - [X] routes prefix
+  - [X] pjson
 
-** DONE better option handling (optional options)
-   CLOSED: [2020-04-06 Mon 17:25]
-   - https://sagikazarmark.hu/blog/functional-options-on-steroids/
-** DONE PING endrpojnt should be optional
-   CLOSED: [2020-04-06 Mon 17:25]
-   - done
+*** DONE context [4/4] [100%]
+   CLOSED: [2019-09-28 Sat 14:52]
+    - [X] register custom context
+    - [X] use custom
+    - [X] json validation
 
-
-* DONE v2 [4/4] [100%]
+*** DONE stuffs
+   CLOSED: [2019-09-28 Sat 14:52]
+  - [x] swagger compat
+** DONE v2 [4/4] [100%]
   CLOSED: [2020-02-04 Tue 16:21]
-** DONE stuffs [9/12] [75%]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-02-04 Thu 10:03
+:END:
+*** DONE stuffs [9/12] [75%]
    CLOSED: [2020-02-04 Tue 16:20]
   - [X] group route per prefix (v1 - v2 ...)
   - [X] clean that CI
@@ -104,49 +127,39 @@ CLOSED: [2020-04-27 Mon 12:42]
   - [X] server should return custom error so worker launcher can ignore it
   - [ ] preload content ?
 
-** DONE Panic / Recover [2/3] [66%]
+*** DONE Panic / Recover [2/3] [66%]
    CLOSED: [2019-10-08 Tue 18:44]
    - [X] implement pattern
    - [X] implement error class
    - [ ] propagate change
 
-** DONE IContext [4/4] [100%]
+*** DONE IContext [4/4] [100%]
    CLOSED: [2019-09-29 Sun 00:58]
    - [X] base interface
    - [X] interface implement
    - [X] redo context extensions
    - [X] propagate IContext
 
-** DONE fix logger implem
+*** DONE fix logger implem
    CLOSED: [2019-09-30 Mon 19:11]
    Some part of the code wasn't using the same logger than the server
 
 
-* DONE v1 [4/4] [100%]
-** DONE server [3/3] [100%]
-   CLOSED: [2019-09-28 Sat 14:50]
-  - [X] Headers
-  - [X] Middelware
-    - [X] logging
-    - [X] secu
-    - [X] CORS
-  - [X] test multiple listning address
+** DONE v3 [3/3] [100%]
+  CLOSED: [2020-04-06 Mon 17:26]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-02-04 Thu 10:03
+:END:
 
-** DONE route [4/4] [100%]
-   CLOSED: [2019-09-28 Sat 14:52]
-  - [X] GET/DELETE
-  - [X] POST/PUT
-  - [X] url params
-    - [X] query param
-  - [X] routes prefix
-  - [X] pjson
+*** DONE ctx id's
+   CLOSED: [2020-04-06 Mon 17:24]
+   - [X] generate id per request
+   - [X] save it in go ctx
+   - [X] pass it to ctx obj
 
-** DONE context [4/4] [100%]
-   CLOSED: [2019-09-28 Sat 14:52]
-    - [X] register custom context
-    - [X] use custom
-    - [X] json validation
-
-** DONE stuffs
-   CLOSED: [2019-09-28 Sat 14:52]
-  - [x] swagger compat
+*** DONE better option handling (optional options)
+   CLOSED: [2020-04-06 Mon 17:25]
+   - https://sagikazarmark.hu/blog/functional-options-on-steroids/
+*** DONE PING endrpojnt should be optional
+   CLOSED: [2020-04-06 Mon 17:25]
+   - done
