@@ -55,24 +55,10 @@ type (
 //
 // Routes method
 //
-func getIP(r *http.Request) string {
-	ip := r.Header.Get("X-Real-Ip")
-	if ip == "" {
-		if ip = r.Header.Get("X-Forwarded-For"); ip == "" {
-			ip = r.RemoteAddr
-		}
-	}
-
-	return ip
-}
-
-func (rpp *RoutesPerPrefix) addRoutes(p string, r ...Route) {
-	(*rpp)[p] = append((*rpp)[p], r...)
-}
 
 // AddRoute add the endpoint to the server
 func (s *Server) AddRoutes(r ...Route) {
-	s.meta.routes.addRoutes(s.meta.prefix, r...)
+	s.meta.routes[s.meta.prefix] = append(s.meta.routes[s.meta.prefix], r...)
 }
 
 // GET expose a route to the http verb GET
@@ -144,6 +130,7 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 	}
 }
 
+// UseHanlder apply the HandlerFunc method
 func UseHanlder(next HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(c Context) error {
 		return next(c)
@@ -157,24 +144,8 @@ func UseHanlder(next HandlerFunc) HandlerFunc {
 func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
 
-	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.log.Infof("[!] 404 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		if _, e := w.Write([]byte(`{"status":404,"message":"not found"}`)); e != nil {
-			s.log.Errorf("[!] cannot write 404 ! %s", e.Error())
-		}
-	})
-
-	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.log.Infof("[!] 405 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
-			s.log.Errorf("cannot write 405 ! %s", e.Error())
-		}
-	})
+	router.NotFoundHandler, router.MethodNotAllowedHandler =
+		http.HandlerFunc(s.notFoundHandler), http.HandlerFunc(s.notAllowedFunc)
 
 	// register http handler / mux.Middleware
 	for _, mw := range s.meta.middlewares {
@@ -219,26 +190,13 @@ func (s *Server) SetRouter() *mux.Router {
 	return router
 }
 
-func hasBody(r *http.Request) bool {
-	return r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH"
-}
-
-func (s *Server) handleError(ctx Context, e error) {
-	var eh ErrorHandled
-	if errors.As(e, &eh) {
-		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
-	} else {
-		s.log.Errorf("catched from controller (%T) : %s", e, e.Error())
-	}
-}
-
 // webfmwk main logic, return a http handler wrapped by webfmwk
 func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ctx, cancel = s.genContext(w, r)
 		defer cancel()
 
-		if hasBody(r) {
+		if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
 			if e := ctx.CheckHeader(); e != nil {
 				s.handleError(ctx, e)
 				return
@@ -252,15 +210,57 @@ func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *h
 	}
 }
 
+func getIP(r *http.Request) string {
+	ip := r.Header.Get("X-Real-Ip")
+	if ip == "" {
+		if ip = r.Header.Get("X-Forwarded-For"); ip == "" {
+			ip = r.RemoteAddr
+		}
+	}
+
+	return ip
+}
+
+func (s *Server) notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	s.log.Infof("[!] 404 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+
+	if _, e := w.Write([]byte(`{"status":404,"message":"not found"}`)); e != nil {
+		s.log.Errorf("[!] cannot write 404 ! %s", e.Error())
+	}
+}
+
+func (s *Server) notAllowedFunc(w http.ResponseWriter, r *http.Request) {
+	s.log.Infof("[!] 405 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusMethodNotAllowed)
+
+	if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
+		s.log.Errorf("cannot write 405 ! %s", e.Error())
+	}
+}
+
+func (s *Server) handleError(ctx Context, e error) {
+	var eh ErrorHandled
+	if errors.As(e, &eh) {
+		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
+		return
+	}
+
+	s.log.Errorf("catched from controller (%T) : %s", e, e.Error())
+	_ = ctx.JSONInternalError(NewErrorFromError(e))
+}
+
 func (s *Server) genContext(w http.ResponseWriter, r *http.Request) (Context, context.CancelFunc) {
-	var (
-		ctx, fn = context.WithCancel(s.ctx)
-		c       = &icontext{}
-	)
+	var ctx, fn = context.WithCancel(s.ctx)
 
-	c.SetRequest(r).SetWriter(w).
-		SetVars(mux.Vars(r)).SetQuery(r.URL.Query()).
-		SetLogger(s.log).SetContext(ctx)
-
-	return c, fn
+	return &icontext{
+		r:     r,
+		w:     w,
+		vars:  mux.Vars(r),
+		query: r.URL.Query(),
+		log:   s.log,
+		ctx:   ctx,
+	}, fn
 }
