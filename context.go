@@ -3,10 +3,8 @@ package webfmwk
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/burgesQ/gommon/log"
 	validator "github.com/go-playground/validator/v10"
@@ -19,29 +17,6 @@ const (
 )
 
 type (
-	Header [2]string
-
-	RequestID interface {
-		// GetRequest return the current request ID
-		GetRequestID() string
-
-		// SetRequest set the id of the current request
-		SetRequestID(id string) Context
-	}
-
-	SendResponse interface {
-		JSONResponse
-		XMLResponse
-
-		// SendResponse create & send a response according to the parameters
-		SendResponse(op int, content []byte, headers ...Header) error
-	}
-
-	XMLResponse interface {
-		// JSONBlob answer the JSON content with the status code op
-		XMLBlob(op int, content []byte) error
-	}
-
 	InputHandling interface {
 		// FetchContent extract the content from the body
 		FetchContent(content interface{}) ErrorHandled
@@ -88,9 +63,6 @@ type (
 
 		// IsPretty toggle the compact outptu mode
 		IsPretty() bool
-
-		// SetHeader set the header of the http response
-		SetHeaders(headers ...Header)
 	}
 
 	// icontext implement the Context interface
@@ -159,17 +131,6 @@ func (c *icontext) GetContext() context.Context {
 	return c.ctx
 }
 
-// GetRequestID implement Context
-func (c *icontext) GetRequestID() string {
-	return c.uid
-}
-
-// SetRequestID implement Context
-func (c *icontext) SetRequestID(id string) Context {
-	c.uid = id
-	return c
-}
-
 // FetchContent implement Context
 // It load payload in the dest interface{} using the system json library
 func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
@@ -226,60 +187,4 @@ func (c *icontext) CheckHeader() ErrorHandled {
 	}
 
 	return nil
-}
-
-// SetHeaders implement Context
-func (c *icontext) SetHeaders(headers ...Header) {
-	c.setHeaders(headers...)
-}
-
-// setHeader set the header of the holded http.ResponseWriter
-func (c *icontext) setHeaders(headers ...Header) {
-	for _, h := range headers {
-		key, val := h[0], h[1]
-		if key == "" || val == "" {
-			c.log.Warnf("can't set header [%s] to [%s] (empty value)", key, val)
-
-			return
-		}
-
-		c.w.Header().Set(key, val)
-	}
-}
-
-// response generate the http.Response with the holded http.ResponseWriter
-// IDEA: add toggler `logReponse` ?
-func (c *icontext) response(statusCode int, content []byte) error {
-	var l = len(content)
-
-	c.log.Infof("[%d](%d)", statusCode, l)
-
-	if utf8.Valid(content) {
-		if l > _limitOutput {
-			c.log.Debugf(">%s<", content[:_limitOutput])
-		} else {
-			c.log.Debugf(">%s<", content)
-		}
-	}
-
-	c.w.WriteHeader(statusCode)
-
-	if _, e := c.w.Write(content); e != nil {
-		return fmt.Errorf("cannot write response : %w", e)
-	}
-
-	return nil
-}
-
-// SendResponse implement Context
-func (c *icontext) SendResponse(statusCode int, content []byte, headers ...Header) error {
-	c.setHeaders(headers...)
-	return c.response(statusCode, content)
-}
-
-// XMLBlob sent a XML response already encoded
-func (c *icontext) XMLBlob(statusCode int, content []byte) error {
-	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
-		Header{"Produce", "application/xml; charset=UTF-8"})
-	return c.response(statusCode, content)
 }
