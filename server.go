@@ -29,9 +29,8 @@ type (
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*http.Server
-
-	logger   log.Log
-	loggerMu sync.Mutex
+	logger        log.Log
+	loggerMu      sync.Mutex
 )
 
 //

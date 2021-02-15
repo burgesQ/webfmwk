@@ -254,7 +254,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 	defer c.r.Body.Close()
 
 	if e := json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
-		c.log.Errorf("[!] (%s) fetching payload: %s", c.GetRequestID(), e.Error())
+		c.log.Errorf("fetching payload: %s", e.Error())
 		return errUnprocessablePayload
 	}
 
@@ -265,7 +265,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 // this implemt use validator to anotate & check struct
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	if e := validate.Struct(dest); e != nil {
-		c.log.Errorf("[!] (%s) validating : %s", c.GetRequestID(), e.Error())
+		c.log.Errorf("validating : %s", e.Error())
 
 		return NewUnprocessable(ValidationError{
 			Status: http.StatusUnprocessableEntity,
@@ -287,7 +287,7 @@ func (c *icontext) FetchAndValidateContent(dest interface{}) ErrorHandled {
 // DecodeQP implement Context
 func (c *icontext) DecodeQP(dest interface{}) (e ErrorHandled) {
 	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
-		c.log.Errorf("[!] (%s) validating qp : %s", c.GetRequestID(), e.Error())
+		c.log.Errorf("validating qp : %s", e.Error())
 		return NewUnprocessable(NewErrorFromError(e))
 	}
 
@@ -328,13 +328,13 @@ func (c *icontext) setHeaders(headers ...Header) {
 func (c *icontext) response(statusCode int, content []byte) error {
 	var l = len(content)
 
-	c.log.Infof("[-] (%s) : [%d](%d)", c.GetRequestID(), statusCode, l)
+	c.log.Infof("[%d](%d)", statusCode, l)
 
 	if utf8.Valid(content) {
 		if l > _limitOutput {
-			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content[:_limitOutput])
+			c.log.Debugf(">%s<", content[:_limitOutput])
 		} else {
-			c.log.Debugf("[-] (%s) : >%s<", c.GetRequestID(), content)
+			c.log.Debugf(">%s<", content)
 		}
 	}
 
