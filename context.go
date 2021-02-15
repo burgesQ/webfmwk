@@ -1,7 +1,6 @@
 package webfmwk
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,10 +9,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/burgesQ/gommon/log"
-	"github.com/burgesQ/gommon/pretty"
-	"github.com/gorilla/schema"
-
 	validator "github.com/go-playground/validator/v10"
+	"github.com/gorilla/schema"
 )
 
 const (
@@ -43,50 +40,6 @@ type (
 	XMLResponse interface {
 		// JSONBlob answer the JSON content with the status code op
 		XMLBlob(op int, content []byte) error
-	}
-
-	JSONResponse interface {
-		// JSONBlob answer the JSON content with the status code op
-		JSONBlob(op int, content []byte) error
-
-		// JSON answer the JSON content with the status code op
-		JSON(op int, content interface{}) error
-
-		// JSONOk return the interface with an http.StatusOK (200)
-		JSONOk(content interface{}) error
-
-		// JSONCreated return the interface with an http.StatusCreated (201)
-		JSONCreated(content interface{}) error
-
-		// JSONAccepted return the interface with an http.StatusAccepted (202)
-		JSONAccepted(content interface{}) error
-
-		// JSONNoContent return an empty payload an http.StatusNoContent (204)
-		JSONNoContent() error
-
-		// JSONBadRequest return the interface with an http.StatusBadRequest (400)
-		JSONBadRequest(content interface{}) error
-
-		// JSONUnauthorized return the interface with an http.StatusUnauthorized (401)
-		JSONUnauthorized(content interface{}) error
-
-		// JSONForbiden return the interface with an http.StatusForbidden (403)
-		JSONForbiden(content interface{}) error
-
-		// JSONNoContent return the interface with an http.StatusNotFound (404)
-		JSONNotFound(content interface{}) error
-
-		// JSONConflict return the interface with an http.StatusConflict (409)
-		JSONConflict(content interface{}) error
-
-		// JSONUnauthorized return the interface with an http.StatusUnprocessableEntity (422)
-		JSONUnprocessable(content interface{}) error
-
-		// JSONInternalError return the interface with an http.StatusInternalServerError (500)
-		JSONInternalError(content interface{}) error
-
-		// JSONNotImplemented return the interface with an http.StatusNotImplemented (501)
-		JSONNotImplemented(content interface{}) error
 	}
 
 	InputHandling interface {
@@ -155,8 +108,7 @@ type (
 
 var (
 	// decoder annotation : `schema` : gorilla
-	decoder = schema.NewDecoder()
-
+	decoder                 = schema.NewDecoder()
 	errMissingContentType   = NewNotAcceptable(NewError("Missing Content-Type header"))
 	errNotJSON              = NewNotAcceptable(NewError("Content-Type is not application/json"))
 	errUnprocessablePayload = NewUnprocessable(NewError("Unprocessable payload"))
@@ -167,24 +119,6 @@ func (c *icontext) GetRequest() *http.Request {
 	return c.r
 }
 
-// SetRequest implement Context
-func (c *icontext) SetRequest(r *http.Request) Context {
-	c.r = r
-	return c
-}
-
-// SetWriter implement Context
-func (c *icontext) SetWriter(w http.ResponseWriter) Context {
-	c.w = w
-	return c
-}
-
-// SetVars implement Context
-func (c *icontext) SetVars(v map[string]string) Context {
-	c.vars = v
-	return c
-}
-
 // GetVar implement Context
 func (c *icontext) GetVar(key string) string {
 	return c.vars[key]
@@ -193,12 +127,6 @@ func (c *icontext) GetVar(key string) string {
 // IsPretty implement Context
 func (c *icontext) IsPretty() bool {
 	return len(c.query[_prettyTag]) > 0
-}
-
-// SetQuery implement Context
-func (c *icontext) SetQuery(q map[string][]string) Context {
-	c.query = q
-	return c
 }
 
 // GetQueries implement Context
@@ -224,12 +152,6 @@ func (c *icontext) SetLogger(logger log.Log) Context {
 // GetLogger implement Context
 func (c *icontext) GetLogger() log.Log {
 	return c.log
-}
-
-// SetContext implement Context
-func (c *icontext) SetContext(ctx context.Context) Context {
-	c.ctx = ctx
-	return c
 }
 
 // GetContext implement Context
@@ -315,11 +237,13 @@ func (c *icontext) SetHeaders(headers ...Header) {
 func (c *icontext) setHeaders(headers ...Header) {
 	for _, h := range headers {
 		key, val := h[0], h[1]
-		if key != "" && val != "" {
-			c.w.Header().Set(key, val)
-		} else {
+		if key == "" || val == "" {
 			c.log.Warnf("can't set header [%s] to [%s] (empty value)", key, val)
+
+			return
 		}
+
+		c.w.Header().Set(key, val)
 	}
 }
 
@@ -358,91 +282,4 @@ func (c *icontext) XMLBlob(statusCode int, content []byte) error {
 	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
 		Header{"Produce", "application/xml; charset=UTF-8"})
 	return c.response(statusCode, content)
-}
-
-// JSONBlob sent a JSON response already encoded
-func (c *icontext) JSONBlob(statusCode int, content []byte) error {
-	c.setHeaders(Header{"Accept", "application/json; charset=UTF-8"})
-
-	if statusCode != http.StatusNoContent {
-		c.setHeaders(Header{"Content-Type", "application/json; charset=UTF-8"},
-			Header{"Produce", "application/json; charset=UTF-8"})
-	}
-
-	pcontent, e := pretty.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
-	if e != nil {
-		return fmt.Errorf("canno't pretting the content : %w", e)
-	}
-
-	return c.response(statusCode, []byte(pcontent))
-}
-
-// JSON create a JSON response based on the param content.
-func (c *icontext) JSON(statusCode int, content interface{}) error {
-	data, e := json.Marshal(content)
-	if e != nil {
-		return fmt.Errorf("cannot json response : %w", e)
-	}
-
-	return c.JSONBlob(statusCode, data)
-}
-
-// JSONOk implement Context
-func (c *icontext) JSONOk(content interface{}) error {
-	return c.JSON(http.StatusOK, content)
-}
-
-// JSONCreated implement Context
-func (c *icontext) JSONCreated(content interface{}) error {
-	return c.JSON(http.StatusCreated, content)
-}
-
-// JSONAccepted implement Context
-func (c *icontext) JSONAccepted(content interface{}) error {
-	return c.JSON(http.StatusAccepted, content)
-}
-
-// JSONNoContent implement Context
-func (c *icontext) JSONNoContent() error {
-	return c.JSON(http.StatusNoContent, nil)
-}
-
-// JSONBadRequest implement Context
-func (c *icontext) JSONBadRequest(content interface{}) error {
-	return c.JSON(http.StatusBadRequest, content)
-}
-
-// JSONUnauthorized implement Context
-func (c *icontext) JSONUnauthorized(content interface{}) error {
-	return c.JSON(http.StatusUnauthorized, content)
-}
-
-// JSONForbiden implement Context
-func (c *icontext) JSONForbiden(content interface{}) error {
-	return c.JSON(http.StatusForbidden, content)
-}
-
-// JSONNotFound implement Context
-func (c *icontext) JSONNotFound(content interface{}) error {
-	return c.JSON(http.StatusNotFound, content)
-}
-
-// JSONConflict implement Context
-func (c *icontext) JSONConflict(content interface{}) error {
-	return c.JSON(http.StatusConflict, content)
-}
-
-// JSONUnprocessable implement Context
-func (c *icontext) JSONUnprocessable(content interface{}) error {
-	return c.JSON(http.StatusUnprocessableEntity, content)
-}
-
-// JSONInternalError implement Context
-func (c *icontext) JSONInternalError(content interface{}) error {
-	return c.JSON(http.StatusInternalServerError, content)
-}
-
-// JSONNotImplemented implement Context
-func (c *icontext) JSONNotImplemented(content interface{}) error {
-	return c.JSON(http.StatusNotImplemented, content)
 }
