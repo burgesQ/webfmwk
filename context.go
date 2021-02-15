@@ -24,78 +24,28 @@ const (
 type (
 	Header [2]string
 
-	// Context Interface implement the context used in this project
-	Context interface {
-
-		// GetRequest return the holded http.Request object
-		GetRequest() *http.Request
-
-		// SetRequest is used to save the request object
-		SetRequest(rq *http.Request) Context
-
-		// SetWriter is used to save the ResponseWriter obj
-		SetWriter(rw http.ResponseWriter) Context
-
-		// SetVars is used to save the url vars
-		SetVars(vars map[string]string) Context
-
-		// GetVar return the url var parameters. Empty string for none
-		GetVar(key string) (val string)
-
-		// SetQuery save the query param object
-		SetQuery(query map[string][]string) Context
-
-		// GetQueries return the queries object
-		GetQueries() map[string][]string
-
-		// GetQuery fetch the query object key
-		GetQuery(key string) (val string, ok bool)
-
-		// SetLogger set the logger of the ctx
-		SetLogger(logger log.Log) Context
-
-		// GetLogger return the logger of the ctx
-		GetLogger() log.Log
-
-		// Save the given context object into the fmwk context
-		SetContext(ctx context.Context) Context
-
-		// GetContext fetch the previously saved context object
-		GetContext() context.Context
-
+	RequestID interface {
 		// GetRequest return the current request ID
 		GetRequestID() string
 
 		// SetRequest set the id of the current request
 		SetRequestID(id string) Context
+	}
 
-		// FetchContent extract the content from the body
-		FetchContent(content interface{}) ErrorHandled
-
-		// Validate is used to validate a content of the content params
-		Validate(content interface{}) ErrorHandled
-
-		// FetchAndValidateContent fetch the content then validate it
-		FetchAndValidateContent(content interface{}) ErrorHandled
-
-		// Decode load the query param in the content object
-		DecodeQP(content interface{}) ErrorHandled
-
-		// CheckHeader ensure the Content-Type of the request
-		CheckHeader() ErrorHandled
-
-		// IsPretty toggle the compact outptu mode
-		IsPretty() bool
-
-		// SetHeader set the header of the http response
-		SetHeaders(headers ...Header)
+	SendResponse interface {
+		JSONResponse
+		XMLResponse
 
 		// SendResponse create & send a response according to the parameters
 		SendResponse(op int, content []byte, headers ...Header) error
+	}
 
+	XMLResponse interface {
 		// JSONBlob answer the JSON content with the status code op
 		XMLBlob(op int, content []byte) error
+	}
 
+	JSONResponse interface {
 		// JSONBlob answer the JSON content with the status code op
 		JSONBlob(op int, content []byte) error
 
@@ -137,6 +87,57 @@ type (
 
 		// JSONNotImplemented return the interface with an http.StatusNotImplemented (501)
 		JSONNotImplemented(content interface{}) error
+	}
+
+	InputHandling interface {
+		// FetchContent extract the content from the body
+		FetchContent(content interface{}) ErrorHandled
+
+		// Validate is used to validate a content of the content params
+		Validate(content interface{}) ErrorHandled
+
+		// FetchAndValidateContent fetch the content then validate it
+		FetchAndValidateContent(content interface{}) ErrorHandled
+
+		// Decode load the query param in the content object
+		DecodeQP(content interface{}) ErrorHandled
+
+		// CheckHeader ensure the Content-Type of the request
+		CheckHeader() ErrorHandled
+	}
+
+	// Context Interface implement the context used in this project
+	Context interface {
+		SendResponse
+		RequestID
+		InputHandling
+
+		// GetRequest return the holded http.Request object
+		GetRequest() *http.Request
+
+		// GetVar return the url var parameters. Empty string for none
+		GetVar(key string) (val string)
+
+		// GetQueries return the queries object
+		GetQueries() map[string][]string
+
+		// GetQuery fetch the query object key
+		GetQuery(key string) (val string, ok bool)
+
+		// SetLogger set the logger of the ctx
+		SetLogger(logger log.Log) Context
+
+		// GetLogger return the logger of the ctx
+		GetLogger() log.Log
+
+		// GetContext fetch the previously saved context object
+		GetContext() context.Context
+
+		// IsPretty toggle the compact outptu mode
+		IsPretty() bool
+
+		// SetHeader set the header of the http response
+		SetHeaders(headers ...Header)
 	}
 
 	// icontext implement the Context interface
