@@ -7,15 +7,22 @@ import (
 	"sync"
 )
 
-// WorkerLauncher hold the different workers
+// WorkerLauncher hold the different workers and wait for them to finish before exiting.
 type WorkerLauncher struct {
 	wg     *sync.WaitGroup
 	cancel context.CancelFunc
 }
 
-// CreateWorkerLauncher initialize and return a WorkerLauncher instance
+// CreateWorkerLauncher initialize and return a WorkerLauncher instance.
 func CreateWorkerLauncher(wg *sync.WaitGroup, cancel context.CancelFunc) WorkerLauncher {
 	return WorkerLauncher{wg, cancel}
+}
+
+// Start launch a worker job.
+func (l *WorkerLauncher) Start(name string, fn func() error) {
+	l.wg.Add(1)
+
+	go l.run(name, fn)
 }
 
 func (l *WorkerLauncher) run(name string, fn func() error) {
@@ -31,12 +38,4 @@ func (l *WorkerLauncher) run(name string, fn func() error) {
 
 	l.cancel()
 	l.wg.Done()
-}
-
-// Start launch a worker task which will be waited & killed at the same time than
-// the others one in the pool
-func (l *WorkerLauncher) Start(name string, fn func() error) {
-	l.wg.Add(1)
-
-	go l.run(name, fn)
 }

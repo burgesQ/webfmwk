@@ -17,7 +17,7 @@ type (
 )
 
 var (
-	// validate annotation : `validate` : go-playground
+	//  validate annotation : `validate` : go-playground
 	validate *validator.Validate
 	// universal translator
 	uni *ut.UniversalTranslator
@@ -42,10 +42,10 @@ func initValidator() {
 // // GetValidator return a pointer to the instancied validator object
 // // see gtihub.com/go-playground/validator.v10
 // func GetValidator() *validator.Validate {
-// 	// from init server - if validator is called before
-// 	// the server init (which may happen pretty often)
-// 	once.Do(initOnce)
-// 	return validate
+//	// from init server - if validator is called before
+//	// the server init (which may happen pretty often)
+//	once.Do(initOnce)
+//	return validate
 // }
 
 // RegisterValidatorRule register the  validation rule param
