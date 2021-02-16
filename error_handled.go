@@ -35,8 +35,7 @@ type (
 		//
 		// Example: the impossible appened
 		Message string `json:"message" example:"no such resource" validate:"required"`
-
-		e error `json:"-"`
+		e       error
 	}
 
 	// Response is returned in case of success
