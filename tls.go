@@ -46,7 +46,6 @@ var (
 		tls.TLS_AES_128_GCM_SHA256,                  // 1.3 tls cipher
 		tls.TLS_AES_256_GCM_SHA384,                  // 1.3 tls cipher
 		tls.TLS_CHACHA20_POLY1305_SHA256,            // 1.3 tls cipher
-
 		/* unaproved ? */
 		tls.TLS_RSA_WITH_AES_256_GCM_SHA384, // ECDH-RSA-AES256-SHA384
 	}
@@ -82,7 +81,7 @@ func (config TLSConfig) String() string {
 	return string(b)
 }
 
-// StartTLS expose an server to an HTTPS address
+// StartTLS expose an server to an HTTPS address.
 func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {

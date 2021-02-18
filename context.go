@@ -37,7 +37,6 @@ type (
 	// Context Interface implement the context used in this project
 	Context interface {
 		SendResponse
-		RequestID
 		InputHandling
 
 		// GetRequest return the holded http.Request object
@@ -74,7 +73,6 @@ type (
 		query map[string][]string
 		log   log.Log
 		ctx   context.Context
-		uid   string
 	}
 )
 
