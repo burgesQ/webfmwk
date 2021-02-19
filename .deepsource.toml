@@ -1,5 +1,9 @@
 version = 1
 
+exclude_patterns = [
+ "example/**",
+]
+
 test_patterns = [
   "*test.*.*"
 ]
@@ -9,4 +13,8 @@ name = "go"
 enabled = true
 
   [analyzers.meta]
-  import_path = "gtihub.com/burgesQ/webfmwk/v4"
+  import_paths = [
+  "github.com/burgesQ/webfmwk/v4",
+  "github.com/burgesQ/webfmwk/handler",
+  "github.com/burgesQ/webfmwk/webfmwktest" ]
+  import_root = "github.com/burgesQ/webfmwk/v4"
