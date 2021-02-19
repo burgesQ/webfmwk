@@ -15,6 +15,7 @@ enabled = true
   [analyzers.meta]
   import_paths = [
   "github.com/burgesQ/webfmwk/v4",
-  "github.com/burgesQ/webfmwk/handler",
-  "github.com/burgesQ/webfmwk/webfmwktest" ]
+  "github.com/burgesQ/webfmwk/v4/handler",
+  "github.com/burgesQ/webfmwk/v4/webfmwktest",
+]
   import_root = "github.com/burgesQ/webfmwk/v4"
