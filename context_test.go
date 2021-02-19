@@ -108,13 +108,6 @@ func TestContext(t *testing.T) {
 	assert.True(t, ctx == c.GetContext())
 }
 
-func TestRequestID(t *testing.T) {
-	var ctx = icontext{}
-
-	ctx.SetRequestID("testing")
-	assert.StringEqual(t, ctx.GetRequestID(), "testing")
-}
-
 func TestFetchContent(t *testing.T) {
 	const (
 		_ok = iota

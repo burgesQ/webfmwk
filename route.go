@@ -2,9 +2,9 @@ package webfmwk
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -145,7 +145,7 @@ func (s *Server) SetRouter() *mux.Router {
 	var router = mux.NewRouter().StrictSlash(true)
 
 	router.NotFoundHandler, router.MethodNotAllowedHandler =
-		http.HandlerFunc(s.notFoundHandler), http.HandlerFunc(s.notAllowedFunc)
+		http.HandlerFunc(s.handleNotFound), http.HandlerFunc(s.handleNotAllowed)
 
 	// register http handler / mux.Middleware
 	for _, mw := range s.meta.middlewares {
@@ -196,60 +196,35 @@ func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *h
 		var ctx, cancel = s.genContext(w, r)
 		defer cancel()
 
-		if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
-			if e := ctx.CheckHeader(); e != nil {
-				s.handleError(ctx, e)
-				return
-			}
-		}
-
-		if e := handler(ctx); e != nil {
-			s.log.Errorf("catch an e: %s", e.Error())
+		if e := checkHeader(r); e != nil {
+			s.handleError(ctx, e)
+		} else if e := handler(ctx); e != nil {
+			ctx.GetLogger().Errorf("catched from controller (%T) : %s", e, e.Error())
 			s.handleError(ctx, e)
 		}
 	}
 }
 
-func getIP(r *http.Request) string {
-	ip := r.Header.Get("X-Real-Ip")
-	if ip == "" {
-		if ip = r.Header.Get("X-Forwarded-For"); ip == "" {
-			ip = r.RemoteAddr
-		}
+func GetIPFromRequest(r *http.Request) string {
+	if ip := r.Header.Get("X-Real-Ip"); ip != "" {
+		return ip
+	} else if ip = r.Header.Get("X-Forwarded-For"); ip != "" {
+		return ip
 	}
 
-	return ip
+	return r.RemoteAddr
 }
 
-func (s *Server) notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	s.log.Infof("[!] 404 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotFound)
-
-	if _, e := w.Write([]byte(`{"status":404,"message":"not found"}`)); e != nil {
-		s.log.Errorf("[!] cannot write 404 ! %s", e.Error())
-	}
-}
-
-func (s *Server) notAllowedFunc(w http.ResponseWriter, r *http.Request) {
-	s.log.Infof("[!] 405 reached for [%s] %s %s", getIP(r), r.Method, r.RequestURI)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusMethodNotAllowed)
-
-	if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
-		s.log.Errorf("cannot write 405 ! %s", e.Error())
-	}
-}
-
-func (s *Server) handleError(ctx Context, e error) {
-	var eh ErrorHandled
-	if errors.As(e, &eh) {
-		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
-		return
+func checkHeader(r *http.Request) ErrorHandled {
+	if !(r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH") {
+		return nil
+	} else if ctype := r.Header.Get("Content-Type"); ctype == "" {
+		return errMissingContentType
+	} else if !strings.HasPrefix(ctype, "application/json") {
+		return errNotJSON
 	}
 
-	s.log.Errorf("catched from controller (%T) : %s", e, e.Error())
-	_ = ctx.JSONInternalError(NewErrorFromError(e))
+	return nil
 }
 
 func (s *Server) genContext(w http.ResponseWriter, r *http.Request) (Context, context.CancelFunc) {

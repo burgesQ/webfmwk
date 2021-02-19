@@ -17,6 +17,11 @@ type (
 
 		// SetHeader set the header of the http response
 		SetHeaders(headers ...Header)
+
+		SetHeader(k, v string)
+
+		// IsPretty toggle the compact output mode
+		IsPretty() bool
 	}
 
 	XMLResponse interface {
@@ -28,6 +33,29 @@ type (
 // SetHeaders implement Context
 func (c *icontext) SetHeaders(headers ...Header) {
 	c.setHeaders(headers...)
+}
+
+// SetHeaders implement Context
+func (c *icontext) SetHeader(k, v string) {
+	c.setHeaders(Header{k, v})
+}
+
+// IsPretty implement Context
+func (c *icontext) IsPretty() bool {
+	return len(c.query[_prettyTag]) > 0
+}
+
+// XMLBlob sent a XML response already encoded
+func (c *icontext) XMLBlob(statusCode int, content []byte) error {
+	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
+		Header{"Produce", "application/xml; charset=UTF-8"})
+	return c.response(statusCode, content)
+}
+
+// SendResponse implement Context
+func (c *icontext) SendResponse(statusCode int, content []byte, headers ...Header) error {
+	c.setHeaders(headers...)
+	return c.response(statusCode, content)
 }
 
 // setHeader set the header of the holded http.ResponseWriter
@@ -42,19 +70,6 @@ func (c *icontext) setHeaders(headers ...Header) {
 
 		c.w.Header().Set(key, val)
 	}
-}
-
-// XMLBlob sent a XML response already encoded
-func (c *icontext) XMLBlob(statusCode int, content []byte) error {
-	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
-		Header{"Produce", "application/xml; charset=UTF-8"})
-	return c.response(statusCode, content)
-}
-
-// SendResponse implement Context
-func (c *icontext) SendResponse(statusCode int, content []byte, headers ...Header) error {
-	c.setHeaders(headers...)
-	return c.response(statusCode, content)
 }
 
 // response generate the http.Response with the holded http.ResponseWriter

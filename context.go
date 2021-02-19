@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/burgesQ/gommon/log"
 	validator "github.com/go-playground/validator/v10"
@@ -29,15 +28,21 @@ type (
 
 		// Decode load the query param in the content object
 		DecodeQP(content interface{}) ErrorHandled
+	}
 
-		// CheckHeader ensure the Content-Type of the request
-		CheckHeader() ErrorHandled
+	ContextLogger interface {
+		// SetLogger set the logger of the ctx
+		SetLogger(logger log.Log) Context
+
+		// GetLogger return the logger of the ctx
+		GetLogger() log.Log
 	}
 
 	// Context Interface implement the context used in this project
 	Context interface {
 		SendResponse
 		InputHandling
+		ContextLogger
 
 		// GetRequest return the holded http.Request object
 		GetRequest() *http.Request
@@ -51,17 +56,8 @@ type (
 		// GetQuery fetch the query object key
 		GetQuery(key string) (val string, ok bool)
 
-		// SetLogger set the logger of the ctx
-		SetLogger(logger log.Log) Context
-
-		// GetLogger return the logger of the ctx
-		GetLogger() log.Log
-
 		// GetContext fetch the previously saved context object
 		GetContext() context.Context
-
-		// IsPretty toggle the compact outptu mode
-		IsPretty() bool
 	}
 
 	// icontext implement the Context interface
@@ -92,11 +88,6 @@ func (c *icontext) GetRequest() *http.Request {
 // GetVar implement Context
 func (c *icontext) GetVar(key string) string {
 	return c.vars[key]
-}
-
-// IsPretty implement Context
-func (c *icontext) IsPretty() bool {
-	return len(c.query[_prettyTag]) > 0
 }
 
 // GetQueries implement Context
@@ -170,18 +161,6 @@ func (c *icontext) DecodeQP(dest interface{}) (e ErrorHandled) {
 	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
 		c.log.Errorf("validating qp : %s", e.Error())
 		return NewUnprocessable(NewErrorFromError(e))
-	}
-
-	return nil
-}
-
-// CheckHeader implement Context
-func (c *icontext) CheckHeader() ErrorHandled {
-	if ctype := c.r.Header.Get("Content-Type"); ctype == "" {
-		return errMissingContentType
-	} else if !strings.HasPrefix(ctype, "application/json") {
-		c.log.Errorf("%q != application/json", ctype)
-		return errNotJSON
 	}
 
 	return nil
