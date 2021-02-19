@@ -2,8 +2,8 @@ package handler
 
 import "github.com/burgesQ/webfmwk/v4"
 
-// Recover launch a panic catcher. If the catched panic hold an
-// webfmwk.ErrorHandled then a response is generated from it
+// Recover launch a panic catcher - if the catched panic hold an
+// webfmwk.ErrorHandled then a API error response is generated from it.
 func Recover(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 	return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
 		defer func() {
