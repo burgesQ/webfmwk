@@ -2,43 +2,46 @@ package webfmwk
 
 import (
 	"context"
-	"net"
-	"net/http"
 	"sync"
 	"time"
 
-	"github.com/burgesQ/gommon/log"
-	"github.com/gorilla/mux"
+	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/valyala/fasthttp"
 )
 
 type (
-	// Option are tu be used this way :
+	// Option apply specific configuration to the server at init time
+	// They are tu be used this way :
 	//   s := w.InitServer(
 	//     webfmwk.WithLogger(log.GetLogger()),
-	//     webfmwk.EnableCheckIsUp()
+	//     webfmwk.WithCtrlC(),
+	//     webfmwk.CheckIsUp(),
 	//     webfmwk.WithCORS(),
-	//     webfmwk.WithPrefix("/api"),
-	//     webfmwk.WithMiddlewares(log.GetLogger()),
-	//     webfmwk.WithDocHanlders(docs.GetRedocHandler(nil))
+	//     webfmwk.SetPrefix("/api"),
+	//     webfmwk.WithDocHanlders(redoc.GetHandler()),
+	//     webfmwk.SetIdleTimeout(1 * time.Second),
+	//     webfmwk.SetReadTimeout(1 * time.Second),
+	//     webfmwk.SetWriteTimeout(1 * time.Second),
 	//     webfmwk.WithHanlders(
-	//			hanlder.Logging,
-	//			handler.Security))
+	//       recover.Handler,
+	//       logging.Handler,
+	//       security.Handler))
 	Option func(s *Server)
 
+	// Options is a list of options
 	Options []Option
 
-	// ServerMeta hold the server meta information
 	serverMeta struct {
-		ctrlc        bool
-		checkIsUp    bool
-		ctrlcStarted bool
-		cors         bool
-		middlewares  []mux.MiddlewareFunc
-		handlers     []Handler
-		docHandlers  []DocHandler
-		baseServer   *http.Server
-		prefix       string
-		routes       RoutesPerPrefix
+		ctrlc            bool
+		checkIsUp        bool
+		ctrlcStarted     bool
+		cors             bool
+		disableKeepAlive bool
+		handlers         []Handler
+		docHandlers      []DocHandler
+		baseServer       *fasthttp.Server
+		prefix           string
+		routes           RoutesPerPrefix
 	}
 )
 
@@ -49,23 +52,23 @@ func initOnce() {
 	initValidator()
 }
 
-// UseOption apply the param o option to the params s server
-func UseOption(s *Server, o Option) {
+// useOption apply the param o option to the params s server
+func useOption(s *Server, o Option) {
 	o(s)
 }
 
-// UseOptions apply the params opts option to the param s server
-func UseOptions(s *Server, opts ...Option) {
+// useOptions apply the params opts option to the param s server
+func useOptions(s *Server, opts ...Option) {
 	for _, o := range opts {
-		UseOption(s, o)
+		useOption(s, o)
 	}
 }
 
-// InitServer initialize a webfmwk.Server instance
-// It take the server options as parameters.
+// InitServer initialize a webfmwk.Server instance.
+// It may take some server options as parameters.
 // List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
-// WithHandlers,
-// SetReadTimeout, SetWriteTimeout, SetMaxHeaderBytes, SetReadHeaderTimeout,
+// WithHandlers, WithDocHandler, SetReadTimeout, SetWriteTimeout, SetIdleTimeout,
+// DisableKeepAlive.
 func InitServer(opts ...Option) *Server {
 	once.Do(initOnce)
 
@@ -75,6 +78,7 @@ func InitServer(opts ...Option) *Server {
 		s           = &Server{
 			launcher: CreateWorkerLauncher(&wg, cancel),
 			ctx:      ctx,
+			cancel:   cancel,
 			wg:       &wg,
 			log:      logger,
 			isReady:  make(chan bool),
@@ -82,7 +86,7 @@ func InitServer(opts ...Option) *Server {
 		}
 	)
 
-	UseOptions(s, opts...)
+	useOptions(s, opts...)
 
 	return s
 }
@@ -96,7 +100,7 @@ func WithLogger(lg log.Log) Option {
 	}
 }
 
-// WithCtrlC enable the internal ctrl+c support from the server
+// WithCtrlC enable the internal ctrl+c support from the server.
 func WithCtrlC() Option {
 	return func(s *Server) {
 		s.enableCtrlC()
@@ -105,15 +109,15 @@ func WithCtrlC() Option {
 }
 
 // CheckIsUp expose a `/ping` endpoint and try to poll to check the server healt
-// when it's started
+// when it's started.
 func CheckIsUp() Option {
 	return func(s *Server) {
-		s.EnableCheckIsUp()
+		s.enableCheckIsUp()
 		s.log.Debugf("\t-- check is up support enabled")
 	}
 }
 
-// WithCORS enable the CORS (Cross-Origin Resource Sharing) support
+// WithCORS enable the CORS (Cross-Origin Resource Sharing) support.
 func WithCORS() Option {
 	return func(s *Server) {
 		s.enableCORS()
@@ -121,7 +125,7 @@ func WithCORS() Option {
 	}
 }
 
-// SetPrefix set the API root prefix
+// SetPrefix set the API root prefix.
 func SetPrefix(prefix string) Option {
 	return func(s *Server) {
 		s.setPrefix(prefix)
@@ -129,40 +133,19 @@ func SetPrefix(prefix string) Option {
 	}
 }
 
-// WithMiddlewares allow to register a list of gorilla/mux.MiddlewareFunc.
-// Middlwares signature is the http.Handler one (func(w http.ResponseWriterm r *http.Request))
-//
-// Middlewates were depreceated since v4 in favor of Handlers.
-//
-//   package main
-//
-//   import (
-//     "github.com/burgesQ/webfmwk/v4"
-//     "github.com/burgesQ/webfmwk/v3/middleware"
-//   )
-//
-//   func main() {
-//     var s = webfmwk.InitServer(webfmwk.WithMiddlewares(middleware.Security))
-//   }
-func WithMiddlewares(mw ...mux.MiddlewareFunc) Option {
-	return func(s *Server) {
-		s.addMiddlewares(mw...)
-		s.log.Debugf("\t-- middlewares loaded")
-	}
-}
-
 // WithDocHandlers allow to register custom DocHandler struct (ex: swaggo, redoc).
-// If use with SetPrefix, register WithDocHandler after the SetPrefix one
+// If use with SetPrefix, register WithDocHandler after the SetPrefix one.
+// Example:
 //
 //   package main
 //
 //   import (
-//     "github.com/burgesQ/webfmwk/v4"
-//     "github.com/burgesQ/webfmwk/v4/docs"
+//     "github.com/burgesQ/webfmwk/v5"
+//     "github.com/burgesQ/webfmwk/v5/handler/redoc"
 //   )
 //
 //   func main() {
-//     var s = webfmwk.InitServer(webfmwk.WithDocHandlers(docs.GetRedocHandler(nil)))
+//     var s = webfmwk.InitServer(webfmwk.WithDocHandlers(redoc.GetHandler()))
 //   }
 func WithDocHandlers(handler ...DocHandler) Option {
 	return func(s *Server) {
@@ -173,28 +156,27 @@ func WithDocHandlers(handler ...DocHandler) Option {
 
 // WithHandlers allow to register a list of webfmwk.Handler
 // Handler signature is the webfmwk.HandlerFunc one (func(c Context)).
-// To register a custom context, simply do it in the toppest handler
+// To register a custom context, simply do it in the toppest handler.
 //
-//   package main
+//  package main
 //
-//   import (
-//     "github.com/burgesQ/webfmwk/v4"
-//     "github.com/burgesQ/webfmwk/v4/handler"
-//   )
+//  import (
+//    "github.com/burgesQ/webfmwk/v5"
+//    "github.com/burgesQ/webfmwk/v5/handler/security"
+//  )
 //
-//   type CustomContext struct {
-//      webfmwk.Context
-//      val String
-//   }
-//
-//   func main() {
-//     var s = webfmwk.InitServer(webfmwk.WithHandlers(handler.Logging, handler.RequestID,
-//        webfmwk.HandlerFunc {
-//           return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
-//						 cc := Context{c, "val"}
-//						 return next(cc)})}))
+//  type CustomContext struct {
+//    webfmwk.Context
+//    val String
 //  }
 //
+//  func main() {
+//    var s = webfmwk.InitServer(webfmwk.WithHandlers(security.Handler,
+//      func(next Habdler) Handler {
+//        return func(c webfmwk.Context) error {
+//          cc := Context{c, "val"}
+//          return next(cc)
+//    }}))
 func WithHandlers(h ...Handler) Option {
 	return func(s *Server) {
 		s.addHandlers(h...)
@@ -202,63 +184,69 @@ func WithHandlers(h ...Handler) Option {
 	}
 }
 
-// SetReadTimeout is a timing constraint on the client http request imposed by the server from the moment
+// SetReadTimeout is a timing constraint on the client http request imposed by
+// the server from the moment
 // of initial connection up to the time the entire request body has been read.
 //
 // [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
 func SetReadTimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.ReadTimeout = val
+		s.log.Debugf("\t-- read timeout loaded")
 	}
 }
 
-// SetWriteTimeout is a time limit imposed on client connecting to the server via http from the
-// time the server has completed reading the request header up to the time it has finished writing the response.
+// SetWriteTimeout is a time limit imposed on client connecting to the server
+// via http from the
+// time the server has completed reading the request header up to the time
+// it has finished writing the response.
 //
 // [Accept] --> [TLS Handshake] --> [Request Headers] --> [Request Body] --> [Response]
 func SetWriteTimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.WriteTimeout = val
+		s.log.Debugf("\t-- write timeout loaded")
 	}
 }
 
-// SetMaxHeaderBytes set the max header bytes of both request and response
-func SetMaxHeaderBytes(val int) Option {
+// SetIDLETimeout the the server IDLE timeout AKA keepalive timeout.
+func SetIDLETimeout(val time.Duration) Option {
 	return func(s *Server) {
-		s.meta.baseServer.MaxHeaderBytes = val
+		s.meta.baseServer.IdleTimeout = val
+		s.log.Debugf("\t-- idle aka keepalive timeout loaded")
 	}
 }
 
-// SetReadHeaderTimeout set the value of the timeout on the read header process
-func SetReadHeaderTimeout(val time.Duration) Option {
+// DisableKeepAlive disable the server keep alive functions.
+func DisableKeepAlive() Option {
 	return func(s *Server) {
-		s.meta.baseServer.ReadHeaderTimeout = val
+		s.meta.disableKeepAlive = true
+		s.log.Debugf("\t-- keepalive disabled")
 	}
 }
 
 // return default cfg
 func getDefaultMeta() serverMeta {
 	return serverMeta{
-		baseServer: &http.Server{
-			ReadTimeout:       20 * time.Second,
-			ReadHeaderTimeout: 20 * time.Second,
-			WriteTimeout:      20 * time.Second,
-			MaxHeaderBytes:    1 << 20,
+		baseServer: &fasthttp.Server{
+			ReadTimeout:  20 * time.Second,
+			WriteTimeout: 20 * time.Second,
+			IdleTimeout:  1 * time.Minute,
 		},
 		routes: make(RoutesPerPrefix),
 	}
 }
 
-func (m *serverMeta) toServer(addr string) http.Server {
-	return http.Server{
-		Addr:           addr,
-		ReadTimeout:    m.baseServer.ReadTimeout,
-		WriteTimeout:   m.baseServer.WriteTimeout,
-		MaxHeaderBytes: m.baseServer.MaxHeaderBytes,
-		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
-			log.Debugf("[+] new connection")
-
-			return ctx
-		},
+func (m *serverMeta) toServer(addr string) *fasthttp.Server {
+	return &fasthttp.Server{
+		ReadTimeout:                   m.baseServer.ReadTimeout,
+		WriteTimeout:                  m.baseServer.WriteTimeout,
+		IdleTimeout:                   m.baseServer.IdleTimeout,
+		Name:                          "webfmwk " + addr,
+		DisableKeepalive:              m.disableKeepAlive,
+		DisableHeaderNamesNormalizing: true,
+		ReduceMemoryUsage:             false,
+		LogAllErrors:                  true,
+		CloseOnShutdown:               true,
 	}
 }

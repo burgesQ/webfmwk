@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v4"
-	"github.com/burgesQ/webfmwk/v4/handler"
+	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v5/handler"
 )
 
 // Handlers implement webfmwk.Handler methods
@@ -17,7 +17,7 @@ import (
 // X-Xss-Protection: 1; mode=block
 // Date: Mon, 06 Apr 2020 14:58:44 GMT
 // Content-Length: 4
-func handlers() {
+func handlers() *webfmwk.Server {
 	// init server w/ ctrl+c support and middlewares
 	var s = webfmwk.InitServer(
 		webfmwk.WithCtrlC(),
@@ -29,9 +29,5 @@ func handlers() {
 		return c.JSONOk("ok")
 	}))
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	s.WaitAndStop()
+	return s
 }

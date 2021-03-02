@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/burgesQ/gommon/log"
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
-func custom_worker() {
+func custom_worker() *webfmwk.Server {
 	var (
 		s  = webfmwk.InitServer()
 		wl = s.GetLauncher()
@@ -24,10 +24,5 @@ func custom_worker() {
 		log.Debugf("done")
 		return nil
 	})
-
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

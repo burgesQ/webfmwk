@@ -1,8 +1,9 @@
 package webfmwk
 
 import (
-	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetLauncher(t *testing.T) {
@@ -24,20 +25,6 @@ func TestGetContext(t *testing.T) {
 	}
 }
 
-func TestAddMiddleware(t *testing.T) {
-	s := InitServer(CheckIsUp())
-	defer stopServer(t, s)
-
-	s.addMiddlewares(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		})
-	})
-
-	if len(s.meta.middlewares) != 1 {
-		t.Errorf("Middleware wrongly saved : %v.", s.meta.middlewares)
-	}
-}
-
 func TestAddHandlers(t *testing.T) {
 	s := InitServer(CheckIsUp())
 	defer stopServer(t, s)
@@ -48,25 +35,11 @@ func TestAddHandlers(t *testing.T) {
 		})
 	})
 
-	if len(s.meta.handlers) != 1 {
-		t.Errorf("Middleware wrongly saved : %v.", s.meta.handlers)
-	}
+	assert.True(t, len(s.meta.handlers) == 1, "handler wrongly saved")
 }
 
-// // TODO: TestStartTLS(t *testing.T)
-// // TODO: TestStart
-// // TODO: TestShutDown
-// // TODO: TestWaitAndStop
-// // TODO: TestExitHandler
-
-func TestInitServer(t *testing.T) {
-	t.Run("simple init server", func(t *testing.T) {
-		s := InitServer(CheckIsUp())
-
-		defer stopServer(t, s)
-
-		if s.GetLauncher() == nil || s.GetContext() == nil {
-			t.Errorf("Error while creating the server entity")
-		}
-	})
-}
+// // // TODO: TestStartTLS(t *testing.T)
+// // // TODO: TestStart
+// // // TODO: TestShutDown
+// // // TODO: TestWaitAndStop
+// // // TODO: TestExitHandler

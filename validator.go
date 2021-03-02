@@ -39,24 +39,15 @@ func initValidator() {
 	}
 }
 
-// // GetValidator return a pointer to the instancied validator object
-// // see gtihub.com/go-playground/validator.v10
-// func GetValidator() *validator.Validate {
-//	// from init server - if validator is called before
-//	// the server init (which may happen pretty often)
-//	once.Do(initOnce)
-//	return validate
-// }
-
-// RegisterValidatorRule register the  validation rule param
-// see gtihub.com/go-playground/validator.v10
+// RegisterValidatorRule register the  validation rule param.
+// See https://go-playground/validator.v10 for more.
 func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) error {
 	once.Do(initOnce)
 	return validate.RegisterValidation(name, fn)
 }
 
-// RegisterCustomValidator register some validation alias
-// see gtihub.com/go-playground/validator.v10
+// RegisterCustomValidator register some validation alias.
+// See https://go-playground/validator.v10 for more.
 func RegisterValidatorAlias(name, what string) {
 	// from init server - if validator is called before
 	// the server init (which may happen pretty often)
@@ -64,8 +55,8 @@ func RegisterValidatorAlias(name, what string) {
 	validate.RegisterAlias(name, what)
 }
 
-// RegisterValidatorTrans register some validation alias
-// see gtihub.com/go-playground/validator.v10
+// RegisterValidatorTrans register some validation alias.
+// See https://go-playground/validator.v10 for more.
 func RegisterValidatorTrans(name, what string) error {
 	return validate.RegisterTranslation(name, trans,
 		func(ut ut.Translator) error {

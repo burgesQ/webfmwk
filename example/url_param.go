@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 // curl -X GET 127.0.0.1:4242/hello/world
@@ -14,8 +14,8 @@ import (
 // 404
 // curl -X GET 127.0.0.1:4242/acticles/0
 // {"content":"is is 0"}
-// for more see gorila mux doc (https://github.com/gorilla/mux#examples)
-func url_param() {
+// for more see https://pkg.go.dev/github.com/fasthttp/router
+func url_param() *webfmwk.Server {
 	// init server
 	var s = webfmwk.InitServer()
 
@@ -29,9 +29,5 @@ func url_param() {
 		return c.JSONBlob(http.StatusOK, []byte(`{ "content": "id is `+c.GetVar("id")+`" }`))
 	})
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

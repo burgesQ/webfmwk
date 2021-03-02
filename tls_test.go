@@ -4,17 +4,17 @@ import (
 	"crypto/tls"
 	"testing"
 
-	"github.com/burgesQ/gommon/assert"
+	"github.com/stretchr/testify/assert"
 )
 
-const _addr = ":4242"
+// TODO: start a tls server and assert the server
+// - 1) listen on the correct addr
+// - 2) server the correct tls files
 
 func TestLoadTLS(t *testing.T) {
 	// load keys
 	s := InitServer()
-	worker := s.meta.toServer(_addr)
-
-	// gen ssl keys
+	asserter := assert.New(t)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -22,11 +22,10 @@ func TestLoadTLS(t *testing.T) {
 		}
 	}()
 
-	s.loadTLS(&worker, TLSConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
+	tlsCfg := s.getTLSCfg(tlsConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
 
-	assert.SliceU16Equal(t, worker.TLSConfig.CipherSuites, DefaultCipher)
-	//	assert.SliceU16Equal(t, worker.TLSConfig.CurvePreferences, DefaultCurve)
-
-	assert.UInt16Equal(t, worker.TLSConfig.MinVersion, tls.VersionTLS12)
-	assert.UInt16Equal(t, worker.TLSConfig.MaxVersion, tls.VersionTLS13)
+	assert.Equal(t, tlsCfg.CipherSuites, DefaultCipher)
+	asserter.Equal(tlsCfg.CurvePreferences, DefaultCurve)
+	asserter.Equal(tlsCfg.MinVersion, uint16(tls.VersionTLS12))
+	asserter.Equal(tlsCfg.MaxVersion, uint16(tls.VersionTLS13))
 }

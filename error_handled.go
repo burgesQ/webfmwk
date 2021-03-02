@@ -7,53 +7,62 @@ import (
 )
 
 type (
-	// IErrorHandled interface implement the panic recovering
+	// ErrorHandled interface is used to ease the error processing.
 	ErrorHandled interface {
-		// error
+		// Error implelement the Error interface.
 		Error() string
-		Unwrap() error
+
+		// GetOPCode return the http status code response associated to the error.
 		GetOPCode() int
+
+		// SetStatusCode set the error associated http status code.
 		SetStatusCode(op int) ErrorHandled
+
+		// GetContent return the error http response content.
 		GetContent() interface{}
-		SetWrapped(err error) ErrorHandled
+
+		// Wrap/Unwrap ?
 	}
 
-	// ErrorHandled implement the IErrorHandled interface
 	errorHandled struct {
 		op      int
 		content interface{}
 		err     error
 	}
 
-	// Error struct is used to answer error
+	// Error struct is used to answer http error.
 	Error struct {
-		// Status hold the error code status
+		// Status hold the error code status.
 		//
 		// Example: 500
 		Status int `json:"status" validate:"required"`
 
-		// Message hold the error message
+		// Message hold the error message.
 		//
 		// Example: the impossible appened
 		Message string `json:"message" example:"no such resource" validate:"required"`
-		e       error
+
+		e error
 	}
 
-	// Response is returned in case of success
+	// Response is returned in case of success.
 	Response struct {
-		// Status hold the error code status
+		// Status hold the error code status.
 		//
 		// Example: 200
 		Status int `json:"status" example:"204" validate:"required"`
 
-		// Message hold the error message
+		// Message hold the error message.
 		//
 		// Example: action successfully completed
 		Message string `json:"content,omitempty"`
 	}
 )
 
-func HandleError(ctx Context, e error) {
+// handleError test if the error argument implement the ErrorHandled interface
+// to return a matching response. Otherwise, a 500/internal error is generated
+// from the error arguent.
+func handleError(ctx Context, e error) {
 	var eh ErrorHandled
 	if errors.As(e, &eh) {
 		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
@@ -63,21 +72,22 @@ func HandleError(ctx Context, e error) {
 	_ = ctx.JSONInternalError(NewErrorFromError(e))
 }
 
-// NewResponse generate a new json response payload
+// NewResponse generate a new Response struct.
 func NewResponse(str string) Response {
 	return Response{Message: str, Status: 200}
 }
 
+// SetStatusCode set the response status code.
 func (r *Response) SetStatusCode(op int) {
 	r.Status = op
 }
 
-// Error implement the Error interface
+// Error implement the Error interface.
 func (a Error) Error() string {
 	return a.Message
 }
 
-// NewError generate a new json error response payload
+// NewError generate a Error struct.
 func NewError(err string) Error {
 	return Error{
 		Message: err,
@@ -85,8 +95,9 @@ func NewError(err string) Error {
 	}
 }
 
-// NewAnonymousWrappedError generate a Error which wrap the err params
-func NewAnonymousWrappedError(err error, msg string) Error {
+// NewCustomWrappedError generate a Error which wrap the err parameter but
+// return the msg one.
+func NewCustomWrappedError(err error, msg string) Error {
 	return Error{
 		Message: msg,
 		e:       err,
@@ -94,7 +105,7 @@ func NewAnonymousWrappedError(err error, msg string) Error {
 	}
 }
 
-// NewAnonymousWrappedError generate a Error which wrap the err params
+// NewErrorFromError generate a Error which wrap the err parameter.
 func NewErrorFromError(err error) Error {
 	return Error{
 		Message: err.Error(),
@@ -103,39 +114,29 @@ func NewErrorFromError(err error) Error {
 	}
 }
 
-// SetStatusCode set the AE internal status code
+// SetStatusCode set the error status code.
 func (a *Error) SetStatusCode(op int) {
 	a.Status = op
 }
 
-// Error implement the Error interface
+// Error implement the Error interface.
 func (e errorHandled) Error() string {
 	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
 }
 
-// Unwrap implemtation the Error interface
-func (e errorHandled) Unwrap() error {
-	return e.err
-}
-
+// SetStatusCode implement the ErrorHandled interface.
 func (e errorHandled) SetStatusCode(op int) ErrorHandled {
 	e.op = op
 
 	return e
 }
 
-func (e errorHandled) SetWrapped(err error) ErrorHandled {
-	e.err = err
-
-	return e
-}
-
-// GetOPCode implement the IErrorHandled interface
+// GetOPCode implement the ErrorHandled interface.
 func (e errorHandled) GetOPCode() int {
 	return e.op
 }
 
-// GetContent implement the IErrorHandled interface
+// GetContent implement the ErrorHandled interface.
 func (e errorHandled) GetContent() interface{} {
 	return e.content
 }
@@ -155,67 +156,67 @@ func factory(op int, content interface{}) errorHandled {
 	return ret
 }
 
-// NewError return a new errorHandled var
+// NewError return a struct implementing ErrorHandled with the provided params.
 func NewErrorHandled(op int, content interface{}) ErrorHandled {
 	return factory(op, content)
 }
 
-// NewProcessing produce an errorHandled with the status code 102
+// NewProcessing produce an ErrorHandled struct with the status code 102.
 func NewProcessing(content interface{}) ErrorHandled {
 	return factory(http.StatusProcessing, content)
 }
 
-// NewNoContent produce an errorHandled with the status code 204
+// NewNoContent produce an ErrorHandled struct with the status code 204.
 func NewNoContent() ErrorHandled {
 	return factory(http.StatusNoContent, nil)
 }
 
-// NewBadRequest produce an errorHandled with the status code 400
+// NewBadRequest produce an errorHandled with the status code 400.
 func NewBadRequest(content interface{}) ErrorHandled {
 	return factory(http.StatusBadRequest, content)
 }
 
-// NewUnauthorized  produce an ErrorHandled with the status code 401
+// NewUnauthorized  produce an ErrorHandled with the status code 401.
 func NewUnauthorized(content interface{}) ErrorHandled {
 	return factory(http.StatusUnauthorized, content)
 }
 
-// NewUnauthorized  produce an ErrorHandled with the status code 403
+// NewForbidden  produce an ErrorHandled with the status code 403.
 func NewForbidden(content interface{}) ErrorHandled {
 	return factory(http.StatusForbidden, content)
 }
 
-// NewNotAcceptable produce an ErrorHandled with the status code 404
+// NewNotAcceptable produce an ErrorHandled with the status code 404.
 func NewNotFound(content interface{}) ErrorHandled {
 	return factory(http.StatusNotFound, content)
 }
 
-// NewNotAcceptable produce an ErrorHandled with the status code 406
+// NewNotAcceptable produce an ErrorHandled with the status code 406.
 func NewNotAcceptable(content interface{}) ErrorHandled {
 	return factory(http.StatusNotAcceptable, content)
 }
 
-// NewConflict produce an ErrorHandled with the status code 409
+// NewConflict produce an ErrorHandled with the status code 409.
 func NewConflict(content interface{}) ErrorHandled {
 	return factory(http.StatusConflict, content)
 }
 
-// NewUnprocessable produce an ErrorHandled with the status code 422
+// NewUnprocessable produce an ErrorHandled with the status code 422.
 func NewUnprocessable(content interface{}) ErrorHandled {
 	return factory(http.StatusUnprocessableEntity, content)
 }
 
-// NewServiceUnavailable produce an ErrorHandled with the status code 422
-func NewServiceUnavailable(content interface{}) ErrorHandled {
-	return factory(http.StatusServiceUnavailable, content)
-}
-
-// NewUnprocessable produce an ErrorHandled with the status code 500
+// NewInternal produce an ErrorHandled with the status code 500.
 func NewInternal(content interface{}) ErrorHandled {
 	return factory(http.StatusInternalServerError, content)
 }
 
-// NewUnprocessable produce an ErrorHandled with the status code 501
+// NewNotImplemented produce an ErrorHandled with the status code 501.
 func NewNotImplemented(content interface{}) ErrorHandled {
 	return factory(http.StatusNotImplemented, content)
+}
+
+// NewServiceUnavailable produce an ErrorHandled with the status code 503.
+func NewServiceUnavailable(content interface{}) ErrorHandled {
+	return factory(http.StatusServiceUnavailable, content)
 }

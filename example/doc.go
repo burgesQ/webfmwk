@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/burgesQ/gommon/log"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 type (
@@ -24,10 +25,31 @@ type (
 	}
 )
 
-func newCommand(fn func(), name string, description ...string) *command {
+func newCommand(fn func() *webfmwk.Server, name string, description ...string) *command {
 	c := &command{
 		fs: flag.NewFlagSet(name, flag.ContinueOnError),
-		fn: fn,
+		fn: func() {
+
+			fmt.Println("loading server ...")
+
+			s := fn()
+
+			fmt.Println("starting server ...")
+
+			defer s.WaitAndStop()
+
+			if name == "tls" {
+				// start asynchronously on :4242
+				s.StartTLS(":4242", webfmwk.TLSConfig{
+					Cert:     "/path/to/cert",
+					Key:      "/path/to/key",
+					Insecure: false,
+				})
+
+			} else {
+				s.Start(":4242")
+			}
+		},
 	}
 
 	if len(description) > 0 {
@@ -67,7 +89,6 @@ func root(args []string) error {
 		newCommand(swagger, "swagger", "generate a swagger doc"),
 		newCommand(post_content, "post_content", "post and validate content (query param, form & url)"),
 		newCommand(handlers, "handlers", "use extra handlers"),
-		newCommand(request_id, "request_id", "add a uuid to each request"),
 		newCommand(custom_context, "custom_context", "extend, register and use a custom context"),
 		newCommand(custom_worker, "custom_worker", "register extra worker"),
 		newCommand(panic_to_error, "panic_to_error", "use panic to handle some error case"),

@@ -7,27 +7,53 @@
 # to archive to file: C-c C-x C-a
 # open archive sibling: C-c C-tab
 
-* WIP v4 [7/12] [58%]
+* WIP v4 [8/15] [53%]
+DEADLINE: <2021-03-07 Sun>
 
-** IDEA logger overload
-   - [ ] allow adding of extra prefix to logger (context ID) ?
-** IDEA API generator
-   - cobra cmd
-   - json ready
-   - db interface ?
+** IDEA API generator [0/3]
+DEADLINE: <2021-04-04 Sun>
+   - [ ] cobra cmd
+   - [ ] json ready
+   - [ ] db interface ?
 ** IDEA fuzzit testing
+DEADLINE: <2021-04-04 Sun>
    - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
 ** TODO read header for translator
+DEADLINE: <2021-05-04 Tue>
 ** TODO perf profiling
+DEADLINE: <2021-03-11 Thu>
 
-** doc how'to
 
-** DONE [#A] data race on logger
-** WIP mutliple doc handler [2/4] [50%]
+** WIP coverage [1/9]
+DEADLINE: <2021-03-05 Fri>
+- [ ] test CORS
+- [ ] test DumpRoutes
+- [ ] test ctrl+c
+- [ ] test registerLogger
+- [ ] test isReady
+- [ ] test tlsempty / string
+- [ ] test tls.NewListener ?
+- [X] test runner
+- [ ] test example ?
+
+** WIP logger overload [1/2]
+DEADLINE: <2021-03-05 Fri>
+- [X] allow adding of extra prefix to logger (context ID) ?
+- [ ] display time + status code
+
+** v5 ready
+- changelog
+- readme
+- code comments / godoc
+- example ?
+
+** WIP mutliple doc handler [2/3] [66%]
+DEADLINE: <2021-03-05 Fri>
 - [X] support for redoc
 - [X] wrap doc handlers
-- [ ] update test?
 - [ ] update doc
+
+** DONE [#A] data race on logger
 ** DONE recover handler
 CLOSED: [2020-04-27 Mon 12:42]
    Allow the toggling of the the panic2error pattern

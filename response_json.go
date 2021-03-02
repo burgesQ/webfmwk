@@ -2,72 +2,87 @@ package webfmwk
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/burgesQ/gommon/pretty"
+	"github.com/segmentio/encoding/json"
 )
 
+const _contentType = "application/json; charset=UTF-8"
+
 type JSONResponse interface {
-	// JSONBlob answer the JSON content with the status code op
+	// JSONBlob answer the JSON content with the status code op.
 	JSONBlob(op int, content []byte) error
 
-	// JSON answer the JSON content with the status code op
+	// JSON answer the JSON content with the status code op.
 	JSON(op int, content interface{}) error
 
-	// JSONOk return the interface with an http.StatusOK (200)
+	// JSONOk return the interface with an http.StatusOK (200).
 	JSONOk(content interface{}) error
 
-	// JSONCreated return the interface with an http.StatusCreated (201)
+	// JSONCreated return the interface with an http.StatusCreated (201).
 	JSONCreated(content interface{}) error
 
-	// JSONAccepted return the interface with an http.StatusAccepted (202)
+	// JSONAccepted return the interface with an http.StatusAccepted (202).
 	JSONAccepted(content interface{}) error
 
-	// JSONNoContent return an empty payload an http.StatusNoContent (204)
+	// JSONNoContent return an empty payload an http.StatusNoContent (204).
 	JSONNoContent() error
 
-	// JSONBadRequest return the interface with an http.StatusBadRequest (400)
+	// JSONBadRequest return the interface with an http.StatusBadRequest (400).
 	JSONBadRequest(content interface{}) error
 
-	// JSONUnauthorized return the interface with an http.StatusUnauthorized (401)
+	// JSONUnauthorized return the interface with an http.StatusUnauthorized (401).
 	JSONUnauthorized(content interface{}) error
 
-	// JSONForbiden return the interface with an http.StatusForbidden (403)
+	// JSONForbiden return the interface with an http.StatusForbidden (403).
 	JSONForbiden(content interface{}) error
 
-	// JSONNoContent return the interface with an http.StatusNotFound (404)
+	// JSONNoContent return the interface with an http.StatusNotFound (404).
 	JSONNotFound(content interface{}) error
 
-	// JSONConflict return the interface with an http.StatusConflict (409)
+	// JSONMethodNotAllowed return the interface with an http.NotAllowed (405).
+	JSONMethodNotAllowed(content interface{}) error
+
+	// JSONConflict return the interface with an http.StatusConflict (409).
 	JSONConflict(content interface{}) error
 
-	// JSONUnauthorized return the interface with an http.StatusUnprocessableEntity (422)
+	// JSONUnauthorized return the interface with an http.StatusUnprocessableEntity (422).
 	JSONUnprocessable(content interface{}) error
 
-	// JSONInternalError return the interface with an http.StatusInternalServerError (500)
+	// JSONInternalError return the interface with an http.StatusInternalServerError (500).
 	JSONInternalError(content interface{}) error
 
-	// JSONNotImplemented return the interface with an http.StatusNotImplemented (501)
+	// JSONNotImplemented return the interface with an http.StatusNotImplemented (501).
 	JSONNotImplemented(content interface{}) error
 }
 
 // JSONBlob sent a JSON response already encoded
 func (c *icontext) JSONBlob(statusCode int, content []byte) error {
-	c.setHeaders(Header{"Accept", "application/json; charset=UTF-8"})
+	var (
+		out bytes.Buffer
+		run = func() error {
+			if c.IsPretty() {
+				return json.Indent(&out, content, "", "  ")
+			}
+			return json.Compact(&out, content)
+		}
+	)
+
+	if e := run(); e != nil {
+		c.log.Errorf("canno't pretting the content : %s", e.Error())
+	} else {
+		content = out.Bytes()
+	}
 
 	if statusCode != http.StatusNoContent {
-		c.setHeaders(Header{"Content-Type", "application/json; charset=UTF-8"},
-			Header{"Produce", "application/json; charset=UTF-8"})
+		c.SetContentType(_contentType)
+		c.SetHeader("Produce", _contentType)
 	}
 
-	pcontent, e := pretty.SimplePrettyJSON(bytes.NewReader(content), c.IsPretty())
-	if e != nil {
-		return fmt.Errorf("canno't pretting the content : %w", e)
-	}
+	c.SetHeader("Accept", _contentType)
 
-	return c.response(statusCode, []byte(pcontent))
+	return c.response(statusCode, content)
 }
 
 // JSON implement JSONResponse by returning a JSON encoded response.
@@ -118,6 +133,11 @@ func (c *icontext) JSONForbiden(content interface{}) error {
 // JSONNotFound implement JSONResponse by returning a JSON encoded 404 response.
 func (c *icontext) JSONNotFound(content interface{}) error {
 	return c.JSON(http.StatusNotFound, content)
+}
+
+// JSONMethodNotAllowed implement JSONResponse by returning a JSON encoded 405 response.
+func (c *icontext) JSONMethodNotAllowed(content interface{}) error {
+	return c.JSON(http.StatusMethodNotAllowed, content)
 }
 
 // JSONConflict implement JSONResponse by returning a JSON encoded 429 response.

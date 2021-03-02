@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 // TODO: curl with HTTPS
-func tls() {
+func tls() *webfmwk.Server {
 	// init server w/ ctrl+c support
 	var s = webfmwk.InitServer(webfmwk.WithCtrlC())
 
@@ -14,13 +14,5 @@ func tls() {
 		return c.JSONOk("ok")
 	})
 
-	// start asynchronously on :4242
-	s.StartTLS(":4242", webfmwk.TLSConfig{
-		Cert:     "/path/to/cert",
-		Key:      "/path/to/key",
-		Insecure: false,
-	})
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

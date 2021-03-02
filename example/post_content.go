@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 type (
@@ -21,7 +21,7 @@ type (
 	}
 )
 
-func post_content() {
+func post_content() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	s.POST("/post", func(c webfmwk.Context) error {
@@ -44,9 +44,5 @@ func post_content() {
 		return c.JSON(http.StatusOK, out)
 	})
 
-	// start asynchronously on :4242
-	s.Start(":4244")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

@@ -2,10 +2,10 @@ package webfmwk
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/fasthttp/router"
+	"github.com/segmentio/encoding/json"
+	"github.com/valyala/fasthttp"
 )
 
 const (
@@ -19,48 +19,98 @@ const (
 )
 
 type (
-	// HandlerSign hold the signature of a webfmwk handler (chain of middlware)
+	// HandlerFunc hold the signature of a Handler.
+	// You may return an error implementing the ErrorHandled interface
+	// to reduce the boilerplate. If the returned error doesn't implement
+	// the interface, a error 500 is by default returned.
+	//
+	//   HandlerError(c webfmwk.Context) error {
+	//     return webfmwk.NewUnauthorizedError("get me some credential !")
+	//   }
+	//
+	// Will produce a http 500 json response.
 	HandlerFunc func(c Context) error
 
-	// Handler hold the function signature of a webfmwk handler chaning (middlware)
+	// Handler hold the function signature for webfmwk Handler chaning (middlware).
+	//
+	//  import (
+	//    github.com/burgesQ/webfmwk/v5
+	//    github.com/burgesQ/webfmwk/handler/logging
+	//    github.com/burgesQ/webfmwk/handler/security
+	//  )
+	//
+	//  s := webfmwk.InitServer(
+	//    webfmwk.WithHandler(
+	//      logging.Handler,
+	//      security.Handler,
+	//    ))
 	Handler func(HandlerFunc) HandlerFunc
 
-	// DocHandler hold the required data to expose a documentation handlers
+	// DocHandler hold the required data to expose a swagger documentation handlers.
+	//
+	// Example serving a redoc one:
+	//  import (
+	//    github.com/burgesQ/webfmwk/v5
+	//    github.com/burgesQ/webfmwk/handler/redoc
+	//  )
+	//
+	//  s := webfmwk.InitServer(
+	//    webfmwk.WithDocHandler(redoc.GetHandler(
+	//      redoc.DocURI("/swagger.json")
+	//    ))
+	//
+	//  s.Get("/swagger.json", func(c webfmwk.Context) error{
+	//    return c.JSONBlob(200, `{"title": "some swagger"`)
+	//  })
 	DocHandler struct {
-		// H represent the doc handler to expose
-		H http.HandlerFunc
-		// Name is used in debug message
+		// H hold the doc Handler to expose.
+		H HandlerFunc
+
+		// Name is used in debug message.
 		Name string
-		// Path hold the URI at  which the handler is exposed.
-		// If one used, will be prefixed by the api base.
+
+		// Path hold the URI one which the handler is reachable.
+		// If a prefix is setup, the path will prefixed.
 		Path string
 	}
 
-	// Route hold the data for one route
+	// Route hold the data for one route.
 	Route struct {
-		Verbe   string      `json:"verbe"`
-		Path    string      `json:"path"`
-		Name    string      `json:"name"`
+		// Verbe hold the verbe at which the handler is reachable.
+		Verbe string `json:"verbe"`
+
+		// Path hold the uri at which the handler is reachable.
+		// If a prefix is setup, the path will be prefixed.
+		Path string `json:"path"`
+
+		// NAme is used in message.
+		Name string `json:"name"`
+
+		// Handler hold the exposed Handler method.
 		Handler HandlerFunc `json:"-"`
 	}
 
-	// Routes hold an array of route
+	// Routes hold an array of route.
 	Routes []Route
 
-	// RoutesPerPrefix hold the routes and there respectiv prefix
+	// RoutesPerPrefix hold the routes and there respectiv prefix.
 	RoutesPerPrefix map[string]Routes
+)
+
+var (
+	_pong = json.RawMessage(`{"ping": "pong"}`)
 )
 
 //
 // Routes method
 //
 
-// AddRoute add the endpoint to the server
+// AddRoute add the endpoint to the server.
 func (s *Server) AddRoutes(r ...Route) {
 	s.meta.routes[s.meta.prefix] = append(s.meta.routes[s.meta.prefix], r...)
 }
 
-// GET expose a route to the http verb GET
+// GET expose a handler to the http verb GET.
 func (s *Server) GET(path string, handler HandlerFunc) {
 	s.AddRoutes(Route{
 		Path:    path,
@@ -69,7 +119,7 @@ func (s *Server) GET(path string, handler HandlerFunc) {
 	})
 }
 
-// DELETE expose a route to the http verb DELETE
+// DELETE expose a handler to the http verb DELETE.
 func (s *Server) DELETE(path string, handler HandlerFunc) {
 	s.AddRoutes(Route{
 		Path:    path,
@@ -78,7 +128,7 @@ func (s *Server) DELETE(path string, handler HandlerFunc) {
 	})
 }
 
-// POST expose a route to the http verb POST
+// POST expose a handler to the http verb POST.
 func (s *Server) POST(path string, handler HandlerFunc) {
 	s.AddRoutes(Route{
 		Path:    path,
@@ -87,7 +137,7 @@ func (s *Server) POST(path string, handler HandlerFunc) {
 	})
 }
 
-// PUT expose a route to the http verb PUT
+// PUT expose a handler to the http verb PUT.
 func (s *Server) PUT(path string, handler HandlerFunc) {
 	s.AddRoutes(Route{
 		Path:    path,
@@ -96,7 +146,7 @@ func (s *Server) PUT(path string, handler HandlerFunc) {
 	})
 }
 
-// PATCH expose a route to the http verb PATCH
+// PATCH expose a handler to the http verb PATCH.
 func (s *Server) PATCH(path string, handler HandlerFunc) {
 	s.AddRoutes(Route{
 		Path:    path,
@@ -105,7 +155,7 @@ func (s *Server) PATCH(path string, handler HandlerFunc) {
 	})
 }
 
-// RouteApplier apply the array of RoutePerPrefix
+// RouteApplier apply the array of RoutePerPrefix.
 func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 	for _, rpp := range rpps {
 		for prefix, routes := range rpp {
@@ -129,88 +179,87 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 	}
 }
 
-// UseHanlder apply the HandlerFunc method
-func UseHanlder(next HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(c Context) error {
-		return next(c)
-	})
-}
+// GetRouter create a fasthttp/router.Router whit:
+// - registered handlers (webfmwk/v5/handler)
+// - doc handler is registered
+// - test handler (/ping) is registered
+// - registered fmwk routes
+func (s *Server) GetRouter() *router.Router {
+	var r = router.New()
 
-// SetRouter create a mux.Handler router and then :
-// register the middle wares,
-// register the user defined routes per prefix,
-// and return the routes handler
-func (s *Server) SetRouter() *mux.Router {
-	var router = mux.NewRouter().StrictSlash(true)
+	r.HandleMethodNotAllowed, r.HandleOPTIONS = true, true
+	r.RedirectTrailingSlash, r.RedirectFixedPath = false, false
 
-	router.NotFoundHandler, router.MethodNotAllowedHandler =
-		http.HandlerFunc(s.handleNotFound), http.HandlerFunc(s.handleNotAllowed)
-
-	// register http handler / mux.Middleware
-	for _, mw := range s.meta.middlewares {
-		router.Use(mw)
-	}
+	// IDEA: router.PanicHandler
+	r.NotFound, r.MethodNotAllowed =
+		s.CustomHandler(handleNotFound), s.CustomHandler(handleNotAllowed)
 
 	// register doc handler
 	if len(s.meta.docHandlers) > 0 {
 		for i := range s.meta.docHandlers {
 			h := s.meta.docHandlers[i]
 			s.log.Infof("load %q doc handler", h.Name)
-			router.HandleFunc(s.meta.prefix+h.Path, h.H)
+			r.ANY(s.meta.prefix+h.Path, s.CustomHandler(h.H))
 		}
 	}
 
 	// register test handler
 	if s.meta.checkIsUp {
-		router.HandleFunc(s.meta.prefix+_pingEndpoint, func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "pong")
-		}).Methods("GET").Name("ping endpoint")
+		r.GET(s.meta.prefix+_pingEndpoint, s.CustomHandler(func(c Context) error {
+			return c.JSONOk(_pong)
+		}))
 	}
 
 	// register routes
-	for prefix, routes := range s.meta.routes {
-		subRouter := router.PathPrefix(prefix).Subrouter()
+	for p, rs := range s.meta.routes {
+		prefix := p
+		routes := rs
+		group := r.Group(prefix)
 
-		for _, route := range routes {
-			var handler = route.Handler
+		for _, r1 := range routes {
+			route := r1
+			handler := route.Handler
 
-			// register webfmwk.Handlers
+			// register internal Habdlers
+			handler = contentIsJSON(useHandler(handler))
+
+			// register user custom Handlers
 			if s.meta.handlers != nil {
 				for _, h := range s.meta.handlers {
-					handler = h(UseHanlder(handler))
+					handler = h(useHandler(handler))
 				}
 			}
 
-			subRouter.HandleFunc(route.Path, s.CustomHandler(handler)).
-				Methods(route.Verbe).Name(route.Name)
+			group.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
 		}
 	}
 
-	return router
+	return r
 }
 
-// webfmwk main logic, return a HandlerFunc wrapper in an http handler
-func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var ctx, cancel = s.genContext(w, r)
+// useHandler apply the HandlerFunc method
+func useHandler(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c Context) error {
+		return next(c)
+	})
+}
+
+// CustomHandler return the webfmwk Handler main logic,
+// which return a HandlerFunc wrapper in an fasthttp.Handler.
+func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
+	return func(c *fasthttp.RequestCtx) {
+		var ctx, cancel = s.genContext(c)
 		defer cancel()
 
 		if e := handler(ctx); e != nil {
 			ctx.GetLogger().Errorf("catched from controller (%T) : %s", e, e.Error())
-			HandleError(ctx, e)
+			handleError(ctx, e)
 		}
 	}
 }
 
-func (s *Server) genContext(w http.ResponseWriter, r *http.Request) (Context, context.CancelFunc) {
+func (s *Server) genContext(c *fasthttp.RequestCtx) (Context, context.CancelFunc) {
 	var ctx, fn = context.WithCancel(s.ctx)
 
-	return &icontext{
-		r:     r,
-		w:     w,
-		vars:  mux.Vars(r),
-		query: r.URL.Query(),
-		log:   s.log,
-		ctx:   ctx,
-	}, fn
+	return &icontext{c, s.log, ctx}, fn
 }

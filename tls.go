@@ -2,29 +2,31 @@ package webfmwk
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"net/http"
+	"net"
 )
 
 type (
-	// ITLSConfig is used to interface the TLS implemtation.
-	ITLSConfig interface {
+	// TLSConfig is used to interface the TLS implemtation.
+	TLSConfig interface {
 		fmt.Stringer
 
-		// GetCert return the full path to the server certificate file
+		// GetCert return the full path to the server certificate file.
 		GetCert() string
-		// GetKey return the full path to the server key file
+
+		// GetKey return the full path to the server key file.
 		GetKey() string
-		// GetInsecure return true if the TLS Certificate shouldn't be checked
+
+		// GetInsecure return true if the TLS Certificate shouldn't be checked.
 		GetInsecure() bool
-		// IsEmpty return true if the config is empty
+
+		// IsEmpty return true if the config is empty.
 		Empty() bool
 	}
 
 	// TLSConfig contain the tls config passed by the config file.
-	// It implement ITLSConfig
-	TLSConfig struct {
+	// It implement TLSConfig
+	tlsConfig struct {
 		Cert     string `json:"cert" mapstructur:"cert"`
 		Key      string `json:"key" mapstructur:"key"`
 		Insecure bool   `json:"insecure" mapstructur:"insecure"`
@@ -51,53 +53,53 @@ var (
 	}
 )
 
-// GetCert implemte ITLSConfig
-func (config TLSConfig) GetCert() string {
+// GetCert implemte TLSConfig
+func (config tlsConfig) GetCert() string {
 	return config.Cert
 }
 
-// GetKey implemte ITLSConfig
-func (config TLSConfig) GetKey() string {
+// GetKey implemte TLSConfig
+func (config tlsConfig) GetKey() string {
 	return config.Key
 }
 
-// GetInsecure implemte ITLSConfig
-func (config TLSConfig) GetInsecure() bool {
+// GetInsecure implemte TLSConfig
+func (config tlsConfig) GetInsecure() bool {
 	return config.Insecure
 }
 
-// GetInsecure implemte ITLSConfig
-func (config TLSConfig) Empty() bool {
+// GetInsecure implemte TLSConfig
+func (config tlsConfig) Empty() bool {
 	return config.Cert == "" && config.Key == "" && !config.Insecure
 }
 
 // String implement Stringer interface
-func (config TLSConfig) String() string {
-	b, e := json.MarshalIndent(config, " ", "\t")
-	if e != nil {
-		return "error"
+func (config tlsConfig) String() string {
+	if config.Empty() {
+		return ""
 	}
 
-	return string(b)
+	return fmt.Sprintf("cert:\t%q\nkey:\t%q\ninsecure:\t%t\n",
+		config.Cert, config.Key, config.Insecure)
 }
 
 // StartTLS expose an server to an HTTPS address.
-func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
+func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
-		// go s.pollPingEndpoint(addr) disabled cause no tls support ATM
-		return s.internalInit(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.GetCert(), tlsStuffs.GetKey())
+		return s.internalInit(addr).Serve(s.loadTLSListener(addr, tlsStuffs))
 	})
 }
 
-func (s *Server) loadTLS(worker *http.Server, tlsCfg ITLSConfig) {
+func (s *Server) getTLSCfg(tlsCfg TLSConfig) *tls.Config {
 	cert, err := tls.LoadX509KeyPair(tlsCfg.GetCert(), tlsCfg.GetKey())
 	if err != nil {
-		s.log.Fatalf("cannot load cert [%s] and key [%s]: %v", tlsCfg.GetCert(), tlsCfg.GetKey(), err)
+		s.log.Fatalf("cannot load cert [%s] and key [%s]: %s",
+			tlsCfg.GetCert(), tlsCfg.GetKey(), err.Error())
 	}
 
 	/* #nosec */
-	worker.TLSConfig = &tls.Config{
+	return &tls.Config{
 		InsecureSkipVerify:       tlsCfg.GetInsecure(),
 		Certificates:             []tls.Certificate{cert},
 		PreferServerCipherSuites: true,
@@ -106,4 +108,15 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg ITLSConfig) {
 		MaxVersion:               tls.VersionTLS13,
 		CipherSuites:             DefaultCipher,
 	}
+}
+
+func (s *Server) loadTLSListener(addr string, tlsCfg TLSConfig) net.Listener {
+	cfg := s.getTLSCfg(tlsCfg)
+
+	tmpLn, err := net.Listen("tcp4", addr)
+	if err != nil {
+		s.log.Fatalf("cannot listen on %q: %s", addr, err.Error())
+	}
+
+	return tls.NewListener(tmpLn, cfg)
 }

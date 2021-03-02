@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 var (
@@ -33,15 +33,11 @@ var (
 // "v1 ok"
 // curl -X GET 127.0.0.1:4242/api/v2/test
 // "v2 ok"
-func routes() {
+func routes() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	// register routes object
 	s.RouteApplier(_routes)
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

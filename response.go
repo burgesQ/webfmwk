@@ -1,32 +1,30 @@
 package webfmwk
 
-import (
-	"fmt"
-	"unicode/utf8"
-)
-
 type (
+	// Header represent a header in a string key:value form.
 	Header [2]string
 
+	// SendResponse interface is used to reponde content to the client.
 	SendResponse interface {
 		JSONResponse
-		XMLResponse
 
-		// SendResponse create & send a response according to the parameters
+		// SendResponse create & send a response according to the parameters.
 		SendResponse(op int, content []byte, headers ...Header) error
 
-		// SetHeader set the header of the http response
+		// SetHeader set the header of the http response.
 		SetHeaders(headers ...Header)
 
+		// SetHeader set the k header to value v.
 		SetHeader(k, v string)
 
-		// IsPretty toggle the compact output mode
-		IsPretty() bool
-	}
+		// SetContentType set the Content-Type to v.
+		SetContentType(v string)
 
-	XMLResponse interface {
-		// JSONBlob answer the JSON content with the status code op
-		XMLBlob(op int, content []byte) error
+		// SetContentType set the Content-Type to v.
+		SetStatusCode(code int)
+
+		// IsPretty toggle the compact output mode.
+		IsPretty() bool
 	}
 )
 
@@ -42,14 +40,7 @@ func (c *icontext) SetHeader(k, v string) {
 
 // IsPretty implement Context
 func (c *icontext) IsPretty() bool {
-	return len(c.query[_prettyTag]) > 0
-}
-
-// XMLBlob sent a XML response already encoded
-func (c *icontext) XMLBlob(statusCode int, content []byte) error {
-	c.setHeaders(Header{"Content-Type", "application/xml; charset=UTF-8"},
-		Header{"Produce", "application/xml; charset=UTF-8"})
-	return c.response(statusCode, content)
+	return c.QueryArgs().Has(_prettyTag)
 }
 
 // SendResponse implement Context
@@ -68,30 +59,15 @@ func (c *icontext) setHeaders(headers ...Header) {
 			return
 		}
 
-		c.w.Header().Set(key, val)
+		c.Response.Header.Set(key, val)
 	}
 }
 
-// response generate the http.Response with the holded http.ResponseWriter
+// response answer the client
 // IDEA: add toggler `logReponse` ?
 func (c *icontext) response(statusCode int, content []byte) error {
-	var l = len(content)
-
-	c.log.Infof("[%d](%d)", statusCode, l)
-
-	if utf8.Valid(content) {
-		if l > _limitOutput {
-			c.log.Debugf(">%s<", content[:_limitOutput])
-		} else {
-			c.log.Debugf(">%s<", content)
-		}
-	}
-
-	c.w.WriteHeader(statusCode)
-
-	if _, e := c.w.Write(content); e != nil {
-		return fmt.Errorf("cannot write response : %w", e)
-	}
+	c.SetStatusCode(statusCode)
+	c.SetBody(content)
 
 	return nil
 }

@@ -2,22 +2,21 @@ package webfmwk
 
 import (
 	"context"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
-	"time"
 
-	"github.com/burgesQ/gommon/log"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/lab259/cors"
+	"github.com/valyala/fasthttp"
 )
 
 type (
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
 		ctx      context.Context
+		cancel   context.CancelFunc
 		wg       *sync.WaitGroup
 		launcher WorkerLauncher
 		log      log.Log
@@ -28,9 +27,9 @@ type (
 
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
-	poolOfServers []*http.Server
-	logger        log.Log
-	loggerMu      sync.Mutex
+	poolOfServers    []*fasthttp.Server
+	logger           log.Log
+	loggerMu, poolMu sync.Mutex
 )
 
 //
@@ -41,7 +40,7 @@ func fetchLogger() {
 	logger = log.GetLogger()
 }
 
-// GetLogger return an instance of the Log interface used
+// GetLogger return an instance of the Log interface used.
 func GetLogger() log.Log {
 	// from init server - if the logger is fetched before
 	// the server init (which happened pretty often)
@@ -50,17 +49,21 @@ func GetLogger() log.Log {
 }
 
 // Shutdown terminate all running servers.
-// Call shutdown with a context.context on each http(s) server.
-func Shutdown(ctx context.Context) {
+func Shutdown() {
+	poolMu.Lock()
+	defer poolMu.Unlock()
+
 	for _, server := range poolOfServers {
-		if e := server.Shutdown(ctx); e != nil {
+		logger.Infof("shutdowning server %s...", server.Name)
+
+		if e := server.Shutdown(); e != nil {
 			logger.Errorf("shutdowning server : %v", e)
 		}
 
-		logger.Infof("server %s down", server.Addr)
+		logger.Infof("server %s down", server.Name)
 	}
 
-	poolOfServers = []*http.Server{}
+	poolOfServers = nil
 }
 
 //
@@ -71,18 +74,19 @@ func Shutdown(ctx context.Context) {
 // Process methods
 //
 
-// Start expose an server to an HTTP endpoint
+// Start expose an server to an HTTP endpoint.
 func (s *Server) Start(addr string) {
 	s.internalHandler()
 	s.launcher.Start("http server "+addr, func() error {
 		go s.pollPingEndpoint(addr)
-		return s.internalInit(addr).ListenAndServe()
+		return s.internalInit(addr).ListenAndServe(addr)
 	})
 }
 
-// Shutdown call the framework shutdown to stop all running server
-func (s *Server) Shutdown(ctx context.Context) {
-	Shutdown(ctx)
+// Shutdown call the framework shutdown to stop all running server.
+func (s *Server) Shutdown() {
+	s.cancel()
+	Shutdown()
 }
 
 // WaitAndStop wait for all servers to terminate.
@@ -91,52 +95,48 @@ func (s *Server) WaitAndStop() {
 	s.wg.Wait()
 }
 
-// DumpRoutes dump the API endpoints using the server logger
+// DumpRoutes dump the API endpoints using the server logger.
 func (s *Server) DumpRoutes() {
-	var router = s.SetRouter()
-	if e := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		var (
-			pathTemplate, _ = route.GetPathTemplate()
-			methods, _      = route.GetMethods()
-		)
-		s.log.Infof("Methods: [%s] Path: (%s)", strings.Join(methods, ","), pathTemplate)
-		return nil
-	}); e != nil {
-		log.Errorf("can't walk trough routing : %s", e.Error())
+	all := s.GetRouter().List()
+
+	for m, p := range all {
+		for i := range p {
+			s.log.Infof("routes: [%s]%s", m, p[i])
+		}
 	}
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.
-func (s *Server) internalInit(addr string, tlsStuffs ...ITLSConfig) *http.Server {
+func (s *Server) internalInit(addr string) *fasthttp.Server {
 	var (
 		worker = s.meta.toServer(addr)
-		h      = http.TimeoutHandler(s.SetRouter(),
-			worker.WriteTimeout-(50*time.Millisecond),
-			`{"error": "timeout reached"}`)
+		router = s.GetRouter()
 	)
 
-	// register mox.CORS handler - note that it should be the first one
+	// register CORS handler - note that it should be the first one
 	if s.meta.cors {
-		h = handlers.CORS(
-			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"}),
-			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedMethods([]string{"POST", "PUT", "PATCH", "OPTIONS"}))(
-			h)
+		worker.Handler = cors.New(cors.Options{
+			AllowedOrigins:   []string{"*"},
+			AllowedHeaders:   []string{"X-Requested-With", "Content-Type"},
+			AllowedMethods:   []string{"POST", "PUT", "PATCH", "OPTIONS"},
+			AllowCredentials: true,
+			// Debug: true,
+		}).Handler(router.Handler)
+	} else {
+		worker.Handler = router.Handler
 	}
 
-	worker.Handler = h
-	worker.ErrorLog = s.log.GetErrorLogger()
-
-	// load tls for https
-	if len(tlsStuffs) == 1 {
-		s.loadTLS(&worker, tlsStuffs[0])
-	}
+	worker.Logger = s.log
 
 	// save the server
-	poolOfServers = append(poolOfServers, &worker)
+	poolMu.Lock()
+	defer poolMu.Unlock()
+
+	poolOfServers = append(poolOfServers, worker)
+
 	s.log.Debugf("[+] server %d (%s) ", len(poolOfServers), addr)
 
-	return &worker
+	return worker
 }
 
 func concatAddr(addr, prefix string) string {
@@ -153,7 +153,7 @@ func concatAddr(addr, prefix string) string {
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start("exit handler", func() error {
-			s.exitHandler(s.ctx, os.Interrupt)
+			s.exitHandler(os.Interrupt)
 			return nil
 		})
 
@@ -162,19 +162,19 @@ func (s *Server) internalHandler() {
 }
 
 // handle ctrl+c internaly
-func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
+func (s *Server) exitHandler(sig ...os.Signal) {
 	var c = make(chan os.Signal, 1)
 
 	signal.Notify(c, sig...)
 
-	defer Shutdown(ctx)
+	defer s.Shutdown()
 
-	for ctx.Err() == nil {
+	for s.ctx.Err() == nil {
 		select {
 		case si := <-c:
 			s.log.Infof("captured %v, exiting...", si)
 			return
-		case <-ctx.Done():
+		case <-s.ctx.Done():
 			return
 		}
 	}
@@ -184,30 +184,24 @@ func (s *Server) exitHandler(ctx context.Context, sig ...os.Signal) {
 // Setter/Getter
 //
 
-// GetLogger return the used Log instance
+// GetLogger return the used Log instance.
 func (s *Server) GetLogger() log.Log {
 	return s.log
 }
 
-// GetLauncher return a pointer to the internal workerLauncher
+// GetLauncher return a pointer to the internal workerLauncher.
 func (s *Server) GetLauncher() *WorkerLauncher {
 	return &s.launcher
 }
 
-// GetContext return the context.Context used
+// // GetContext return the context.Context used.
 func (s *Server) GetContext() context.Context {
 	return s.ctx
 }
 
-// IsReady return the channel on which `true` is send once the server is up
+// IsReady return the channel on which `true` is send once the server is up.
 func (s *Server) IsReady() chan bool {
 	return s.isReady
-}
-
-// AddMiddlewares register the mux.MiddlewaresFunc middlewares
-func (s *Server) addMiddlewares(mw ...mux.MiddlewareFunc) *Server {
-	s.meta.middlewares = append(s.meta.middlewares, mw...)
-	return s
 }
 
 // AddHandlers register the Handler handlers. Handler are executed from the top most.
@@ -249,10 +243,10 @@ func (s *Server) enableCORS() *Server {
 	return s
 }
 
-// EnableCheckIsUp add an /ping endpoint. Is used, cnce a server is started,
+// enableCheckIsUp add an /ping endpoint. Is used, cnce a server is started,
 // the user can check weather the server is up or not by reading the isReady channel
-// vie the IsReady() method
-func (s *Server) EnableCheckIsUp() *Server {
+// vie the IsReady() method.
+func (s *Server) enableCheckIsUp() *Server {
 	s.meta.checkIsUp = true
 	return s
 }

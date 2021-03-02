@@ -4,15 +4,15 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/burgesQ/webfmwk/v4"
-	"github.com/burgesQ/webfmwk/v4/handler"
+	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v5/handler"
 )
 
-func panic_to_error() {
+func panic_to_error() *webfmwk.Server {
 	var (
 		s = webfmwk.InitServer(
 			webfmwk.WithCtrlC(),
-			webfmwk.WithHandlers(handler.Recover, handler.Logging, handler.RequestID),
+			webfmwk.WithHandlers(handler.Recover, handler.Logging),
 		)
 	)
 	// expose /panic
@@ -23,9 +23,5 @@ func panic_to_error() {
 		return webfmwk.NewErrorHandled(500, webfmwk.NewError("error by return"))
 	})
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

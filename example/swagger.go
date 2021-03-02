@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v4"
-	"github.com/burgesQ/webfmwk/v4/docs"
+	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v5/docs"
 )
 
 // TODO: form & payload schema
@@ -32,7 +32,7 @@ func hello(c webfmwk.Context) error {
 // @contact.email quentin@frafos.com
 // @license.name GFO
 // @host localhost:4242
-func swagger() {
+func swagger() *webfmwk.Server {
 	// init server w/ ctrl+c support, prefix and APIDoc.
 	// register prefix BEFORE api doc.
 	s := webfmwk.InitServer(
@@ -45,9 +45,5 @@ func swagger() {
 	// register /test
 	s.GET("/hello", hello)
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

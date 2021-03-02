@@ -1,51 +1,33 @@
 /*
-Package webfmwk implements an minimalist Go web framework
+Package webfmwk implements a json API server ready
 
-Example:
-  package main
+Hello world example:
+	package main
 
-  import (
-    w "github.com/burgesQ/webfmwk/v4"
-  )
+	import (
+		"github.com/burgesQ/webfmwk/v5"
+	)
 
-  type Context struct {
-    webfmwk.IContext
-    content string
-  }
+	// Handler
+	func hello(c webfmwk.Context) error {
+		return c.JSONOk("Hello, world!")
+	}
 
-  // Handler
-  func hello(c w.IContext) error {
-    return c.JSONOk("Hello, World!")
-  }
+	func main() {
+		// Echo instance
+		s := webfmwk.InitServer(webfmwk.WithCtrlC())
 
-  func main() {
-    // Echo instance
-    s := w.InitServer(
-     webfmwk.EnableCheckIsUp()
-		webfmwk.WithCORS(),
-		webfmwk.WithLogger(log.GetLogger()),
-		webfmwk.WithMiddlewars(
-			middleware.Logging,
-			middleware.Security),
-		webfmwk.WithCustomContext(func(c *webfmwk.Context) webfmwk.IContext {
-			return &Context{
-				Context:  *c,
-				content: "testing",
-			}
-		}))
+		// Routes
+		s.GET("/hello", hello)
 
-    // Routes
-    s.GET("/hello", hello)
+		// ctrl+c is handled internaly
+		defer s.WaitAndStop()
 
-    // start server on :4242
-    go func() {
-      s.Start(":4242")
-    }()
+		// start server on :4242
+		s.Start(":4242")
+	}
 
-    // ctrl+c is handled internaly
-    defer s.WaitAndStop()
-  }
-
-Learn more at https://github.com/burgesQ/webfmwk
+Some extra feature are available like : tls, custom handler/logger/context, redoc support and more ...
+Find other examples at https://github.com/burgesQ/webfmwk/tree/master/example.
 */
 package webfmwk

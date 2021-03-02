@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 // QueryParam
@@ -15,12 +15,12 @@ type QueryParam struct {
 // {
 //   "pretty": [
 //     ""
-// 		],
+//		],
 //    val: 0
 // }
 // curl -i -X GET "127.0.0.1:4242/hello?prete"
 // {"pretty":false,"val":0}%
-func query_param() {
+func query_param() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	// expose /query_param
@@ -34,9 +34,5 @@ func query_param() {
 		return c.JSONOk(qp)
 	})
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

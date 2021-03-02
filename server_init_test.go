@@ -1,18 +1,13 @@
 package webfmwk
 
 import (
-	"net/http"
 	"testing"
 	"time"
 
-	"github.com/burgesQ/gommon/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
-	_emptyMiddleware = func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		})
-	}
 	_emptyHandler = func(next HandlerFunc) HandlerFunc {
 		return HandlerFunc(func(c Context) error {
 			return next(c)
@@ -21,31 +16,42 @@ var (
 )
 
 func TestServerNewInit(t *testing.T) {
+
 	var (
 		fakeswagger = DocHandler{}
 		testT       = time.Second * 42
 		s           = InitServer(
 			WithCtrlC(), CheckIsUp(), WithCORS(),
 			WithDocHandlers(fakeswagger),
-			SetMaxHeaderBytes(42), SetReadTimeout(testT),
-			SetWriteTimeout(testT), SetReadHeaderTimeout(testT),
+			//SetMaxHeaderBytes(42),
+			SetReadTimeout(testT),
+			SetWriteTimeout(testT),
+			SetIDLETimeout(testT),
+			//SetReadHeaderTimeout(testT),
 			SetPrefix("/api"),
-			WithMiddlewares(_emptyMiddleware),
+			//			WithMiddlewares(_emptyMiddleware),
 			WithHandlers(_emptyHandler))
 	)
 
-	assert.True(t, s.meta.ctrlc)
-	assert.True(t, s.meta.checkIsUp)
-	assert.True(t, s.meta.cors)
-	assert.True(t, len(s.meta.middlewares) == 1)
-	assert.True(t, len(s.meta.handlers) == 1)
+	asserter := assert.New(t)
 
-	assert.Equal(t, s.meta.baseServer.ReadTimeout, testT)
-	assert.Equal(t, s.meta.baseServer.WriteTimeout, testT)
-	assert.Equal(t, s.meta.baseServer.ReadHeaderTimeout, testT)
-	assert.Equal(t, s.meta.baseServer.MaxHeaderBytes, 42)
+	asserter.True(s.meta.ctrlc)
+	asserter.True(s.meta.checkIsUp)
+	asserter.True(s.meta.cors)
+	//assert.True(t, len(s.meta.middlewares) == 1)
+	asserter.True(len(s.meta.handlers) == 1)
 
-	assert.True(t, len(s.meta.docHandlers) == 1)
+	asserter.Equal(s.meta.baseServer.ReadTimeout, testT)
+	asserter.Equal(s.meta.baseServer.WriteTimeout, testT)
+	asserter.Equal(s.meta.baseServer.IdleTimeout, testT)
 
-	assert.Equal(t, s.meta.prefix, "/api")
+	asserter.True(len(s.meta.docHandlers) == 1)
+
+	asserter.Equal(s.meta.prefix, "/api")
+
+	ht := s.meta.toServer("testing")
+	asserter.Equal("webfmwk testing", ht.Name)
+	asserter.Equal(testT, ht.ReadTimeout)
+	asserter.Equal(testT, ht.WriteTimeout)
+	asserter.Equal(testT, ht.IdleTimeout)
 }

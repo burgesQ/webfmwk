@@ -3,13 +3,12 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v4"
+	"github.com/burgesQ/webfmwk/v5"
 )
 
 // curl -X GET 127.0.0.1:4242/hello
 // { "message": "hello world" }
-func hello_world() {
-	// create server
+func hello_world() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	// expose /hello
@@ -17,9 +16,5 @@ func hello_world() {
 		return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
 	})
 
-	// start asynchronously on :4242
-	s.Start(":4242")
-
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+	return s
 }

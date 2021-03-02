@@ -1,35 +1,72 @@
 package webfmwk
 
 import (
-	"net/http"
+	"bytes"
+
+	"github.com/segmentio/encoding/json"
+	"github.com/valyala/fasthttp"
 )
 
-func GetIPFromRequest(r *http.Request) string {
-	if ip := r.Header.Get("X-Real-Ip"); ip != "" {
-		return ip
-	} else if ip = r.Header.Get("X-Forwarded-For"); ip != "" {
-		return ip
+var (
+	ErrMissingContentType = NewNotAcceptable(NewError("Missing Content-Type header"))
+	ErrNotJSON            = NewNotAcceptable(NewError("Content-Type is not application/json"))
+
+	_prefixContentType = []byte("application/json")
+)
+
+//
+// helper method
+//
+
+// GetIPFromRequest try to extract the source IP from the
+// request headers (X-Real-IP and X-Forwareded-For).
+func GetIPFromRequest(fc *fasthttp.RequestCtx) string {
+	if ip := fc.Request.Header.Peek("X-Real-IP"); len(ip) > 0 {
+		return string(ip)
+	} else if ip = fc.Request.Header.Peek("X-Forwarded-For"); len(ip) > 0 {
+		return string(ip)
 	}
 
-	return r.RemoteAddr
+	return fc.RemoteAddr().String()
 }
 
-func (s *Server) handleNotFound(w http.ResponseWriter, r *http.Request) {
-	s.log.Infof("[!] 404 reached for [%s] %s %s", GetIPFromRequest(r), r.Method, r.RequestURI)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotFound)
+//
+// internal handler
+//
 
-	if _, e := w.Write([]byte(`{"status":404,"message":"not found"}`)); e != nil {
-		s.log.Errorf("[!] cannot write 404 ! %s", e.Error())
-	}
+func contentIsJSON(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c Context) error {
+		var (
+			fc = c.GetFastContext()
+			m  = fc.Method()
+		)
+
+		if string(m) == POST || string(m) == PUT || string(m) == PATCH {
+			if ctype := fc.Request.Header.Peek("Content-Type"); len(ctype) == 0 {
+				return ErrMissingContentType
+			} else if !bytes.HasPrefix(ctype, _prefixContentType) {
+				return ErrNotJSON
+			}
+		}
+
+		return next(c)
+	})
 }
 
-func (s *Server) handleNotAllowed(w http.ResponseWriter, r *http.Request) {
-	s.log.Infof("[!] 405 reached for [%s] %s %s", GetIPFromRequest(r), r.Method, r.RequestURI)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusMethodNotAllowed)
+func handleNotFound(c Context) error {
+	fc := c.GetFastContext()
 
-	if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
-		s.log.Errorf("cannot write 405 ! %s", e.Error())
-	}
+	c.GetLogger().Infof("[!] 404 reached for [%s] %s %s",
+		GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
+
+	return c.JSONNotFound(json.RawMessage(`{"status":404,"message":"not found"}`))
+}
+
+func handleNotAllowed(c Context) error {
+	fc := c.GetFastContext()
+
+	c.GetLogger().Infof("[!] 405 reached for [%s] %s %s",
+		GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
+
+	return c.JSONMethodNotAllowed(json.RawMessage(`{"status":405,"message":"method not allowed"}`))
 }

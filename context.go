@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/burgesQ/gommon/log"
+	"github.com/burgesQ/webfmwk/v5/log"
 	validator "github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
+	"github.com/valyala/fasthttp"
 )
 
 const (
@@ -16,59 +17,65 @@ const (
 )
 
 type (
+	// InputHandling interface introduce I/O actions.
 	InputHandling interface {
-		// FetchContent extract the content from the body
+		// FetchContent extract the json content from the body into the content interface.
 		FetchContent(content interface{}) ErrorHandled
 
-		// Validate is used to validate a content of the content params
+		// Validate is used to validate a content of the content params.
+		// See https://go-playground/validator.v10 for more.
 		Validate(content interface{}) ErrorHandled
 
-		// FetchAndValidateContent fetch the content then validate it
+		// FetchAndValidateContent fetch the content then validate it.
 		FetchAndValidateContent(content interface{}) ErrorHandled
 
-		// Decode load the query param in the content object
+		// DecodeQP load the query param in the content object.
+		// Seee https://github.com/gorilla/query for more.
 		DecodeQP(content interface{}) ErrorHandled
+
+		// DecodeAndValidateQP load the query param in the content object and then validate it.
+		DecodeAndValidateQP(content interface{}) ErrorHandled
 	}
 
+	// ContextLogger interface implement the context Logger needs.
 	ContextLogger interface {
-		// SetLogger set the logger of the ctx
+		// SetLogger set the logger of the ctx.
 		SetLogger(logger log.Log) Context
 
-		// GetLogger return the logger of the ctx
+		// GetLogger return the logger of the ctx.
 		GetLogger() log.Log
 	}
 
-	// Context Interface implement the context used in this project
+	// Context interface implement the context used in this project.
 	Context interface {
 		SendResponse
 		InputHandling
 		ContextLogger
 
-		// GetRequest return the holded http.Request object
-		GetRequest() *http.Request
+		// GetFastContext return a pointer to the internal fasthttp.RequestCtx.
+		GetFastContext() *fasthttp.RequestCtx
 
-		// GetVar return the url var parameters. Empty string for none
+		// GetContext return the request context.Context.
+		GetContext() context.Context
+
+		// GetVar return the url var parameters. An empty string for missing case.
 		GetVar(key string) (val string)
 
-		// GetQueries return the queries object
-		GetQueries() map[string][]string
+		// GetQueries return the queries into a fasthttp.Args object.
+		GetQuery() *fasthttp.Args
 
 		// GetQuery fetch the query object key
-		GetQuery(key string) (val string, ok bool)
-
-		// GetContext fetch the previously saved context object
-		GetContext() context.Context
+		// GetQuery(key string) (val string, ok bool)
 	}
 
 	// icontext implement the Context interface
 	// It hold the data used by the request
 	icontext struct {
-		r     *http.Request
-		w     http.ResponseWriter
-		vars  map[string]string
-		query map[string][]string
-		log   log.Log
-		ctx   context.Context
+		*fasthttp.RequestCtx
+		// vars  map[string]string
+		// query map[string][]string
+		log log.Log
+		ctx context.Context
 	}
 )
 
@@ -78,33 +85,30 @@ var (
 	errUnprocessablePayload = NewUnprocessable(NewError("Unprocessable payload"))
 )
 
-// GetRequest implement Context
-func (c *icontext) GetRequest() *http.Request {
-	return c.r
-}
-
 // GetVar implement Context
 func (c *icontext) GetVar(key string) string {
-	return c.vars[key]
-}
+	v, ok := c.UserValue(key).(string)
+	if !ok {
+		return ""
+	}
 
-// GetQueries implement Context
-func (c *icontext) GetQueries() map[string][]string {
-	return c.query
+	return v
 }
 
 // GetQuery implement Context
-func (c *icontext) GetQuery(key string) (string, bool) {
-	if len(c.query[key]) > 0 {
-		return c.query[key][0], true
-	}
+func (c *icontext) GetQuery() *fasthttp.Args {
+	return c.QueryArgs()
+}
 
-	return "", false
+// GetFastContext implement Context
+func (c *icontext) GetFastContext() *fasthttp.RequestCtx {
+	return c.RequestCtx
 }
 
 // SetLogger implement Context
 func (c *icontext) SetLogger(logger log.Log) Context {
 	c.log = logger
+
 	return c
 }
 
@@ -118,12 +122,12 @@ func (c *icontext) GetContext() context.Context {
 	return c.ctx
 }
 
-// FetchContent implement Context
-// It load payload in the dest interface{} using the system json library
+// FetchContent implement Context.
+// It load payload in the dest interface{} using the system json library.
 func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
-	defer c.r.Body.Close()
+	b := c.PostBody()
 
-	if e := json.NewDecoder(c.r.Body).Decode(&dest); e != nil {
+	if e := json.Unmarshal(b, &dest); e != nil {
 		c.log.Errorf("fetching payload: %s", e.Error())
 		return errUnprocessablePayload
 	}
@@ -132,7 +136,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 }
 
 // Validate implement Context
-// this implemt use validator to anotate & check struct
+// this implemtation use validator to anotate & check struct
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	if e := validate.Struct(dest); e != nil {
 		c.log.Errorf("validating : %s", e.Error())
@@ -146,6 +150,8 @@ func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	return nil
 }
 
+// FetchAndValidateContent implemt Context.
+// It sucesively call FetchContent then Validate on the dest param
 func (c *icontext) FetchAndValidateContent(dest interface{}) ErrorHandled {
 	if e := c.FetchContent(&dest); e != nil {
 		return e
@@ -155,11 +161,30 @@ func (c *icontext) FetchAndValidateContent(dest interface{}) ErrorHandled {
 }
 
 // DecodeQP implement Context
-func (c *icontext) DecodeQP(dest interface{}) (e ErrorHandled) {
-	if e := decoder.Decode(dest, c.GetQueries()); e != nil {
+func (c *icontext) DecodeQP(dest interface{}) ErrorHandled {
+	m := map[string][]string{}
+
+	c.QueryArgs().VisitAll(func(k, v []byte) {
+		key := string(k)
+		m[key] = make([]string, 1)
+		m[key][0] = string(v)
+	})
+
+	if e := decoder.Decode(dest, m); e != nil {
 		c.log.Errorf("validating qp : %s", e.Error())
 		return NewUnprocessable(NewErrorFromError(e))
 	}
 
 	return nil
+}
+
+// DecodeAndValidateQP implement Context
+func (c *icontext) DecodeAndValidateQP(qp interface{}) ErrorHandled {
+	e := c.DecodeQP(qp)
+
+	if e != nil {
+		return e
+	}
+
+	return c.Validate(qp)
 }
