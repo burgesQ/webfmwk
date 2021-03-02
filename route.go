@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -190,41 +189,17 @@ func (s *Server) SetRouter() *mux.Router {
 	return router
 }
 
-// webfmwk main logic, return a http handler wrapped by webfmwk
+// webfmwk main logic, return a HandlerFunc wrapper in an http handler
 func (s *Server) CustomHandler(handler HandlerFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ctx, cancel = s.genContext(w, r)
 		defer cancel()
 
-		if e := checkHeader(r); e != nil {
-			s.handleError(ctx, e)
-		} else if e := handler(ctx); e != nil {
+		if e := handler(ctx); e != nil {
 			ctx.GetLogger().Errorf("catched from controller (%T) : %s", e, e.Error())
-			s.handleError(ctx, e)
+			HandleError(ctx, e)
 		}
 	}
-}
-
-func GetIPFromRequest(r *http.Request) string {
-	if ip := r.Header.Get("X-Real-Ip"); ip != "" {
-		return ip
-	} else if ip = r.Header.Get("X-Forwarded-For"); ip != "" {
-		return ip
-	}
-
-	return r.RemoteAddr
-}
-
-func checkHeader(r *http.Request) ErrorHandled {
-	if !(r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH") {
-		return nil
-	} else if ctype := r.Header.Get("Content-Type"); ctype == "" {
-		return errMissingContentType
-	} else if !strings.HasPrefix(ctype, "application/json") {
-		return errNotJSON
-	}
-
-	return nil
 }
 
 func (s *Server) genContext(w http.ResponseWriter, r *http.Request) (Context, context.CancelFunc) {

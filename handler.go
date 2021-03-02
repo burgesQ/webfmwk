@@ -1,9 +1,18 @@
 package webfmwk
 
 import (
-	"errors"
 	"net/http"
 )
+
+func GetIPFromRequest(r *http.Request) string {
+	if ip := r.Header.Get("X-Real-Ip"); ip != "" {
+		return ip
+	} else if ip = r.Header.Get("X-Forwarded-For"); ip != "" {
+		return ip
+	}
+
+	return r.RemoteAddr
+}
 
 func (s *Server) handleNotFound(w http.ResponseWriter, r *http.Request) {
 	s.log.Infof("[!] 404 reached for [%s] %s %s", GetIPFromRequest(r), r.Method, r.RequestURI)
@@ -23,14 +32,4 @@ func (s *Server) handleNotAllowed(w http.ResponseWriter, r *http.Request) {
 	if _, e := w.Write([]byte(`{"status":405,"message":"method not allowed"}`)); e != nil {
 		s.log.Errorf("cannot write 405 ! %s", e.Error())
 	}
-}
-
-func (s *Server) handleError(ctx Context, e error) {
-	var eh ErrorHandled
-	if errors.As(e, &eh) {
-		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
-		return
-	}
-
-	_ = ctx.JSONInternalError(NewErrorFromError(e))
 }

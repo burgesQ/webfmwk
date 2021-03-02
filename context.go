@@ -75,8 +75,6 @@ type (
 var (
 	// decoder annotation : `schema` : gorilla
 	decoder                 = schema.NewDecoder()
-	errMissingContentType   = NewNotAcceptable(NewError("Missing Content-Type header"))
-	errNotJSON              = NewNotAcceptable(NewError("Content-Type is not application/json"))
 	errUnprocessablePayload = NewUnprocessable(NewError("Unprocessable payload"))
 )
 

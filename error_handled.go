@@ -1,6 +1,7 @@
 package webfmwk
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -51,6 +52,16 @@ type (
 		Message string `json:"content,omitempty"`
 	}
 )
+
+func HandleError(ctx Context, e error) {
+	var eh ErrorHandled
+	if errors.As(e, &eh) {
+		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
+		return
+	}
+
+	_ = ctx.JSONInternalError(NewErrorFromError(e))
+}
 
 // NewResponse generate a new json response payload
 func NewResponse(str string) Response {
