@@ -1,10 +1,9 @@
 name: GoTest
 on:
+  pull_request:
   push:
     branches:
-      - master
-    pull_request:
-      - master
+        - master
 jobs:
   build:
 
@@ -26,7 +25,7 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        go test `go list ./... | grep -v examples` -coverprofile=coverage.txt -covermode=atomic -v -short
+        go test `go list ./... | grep -v example` -coverprofile=coverage.txt -covermode=atomic -v -short
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v1
