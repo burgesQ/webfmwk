@@ -1,24 +1,39 @@
 # webfmwk
 
-[![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoBuild/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoBuild)
-[![codecov](https://codecov.io/gh/burgesQ/webfmwk/branch/master/graph/badge.svg)](https://codecov.io/gh/burgesQ/webfmwk)
+[![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoTest/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoTest)
+[![GoDoc](https://godoc.org/github.com/burgesQ/webfmwk/v4?status.svg)](http://godoc.org/github.com/burgesQ/webfmwk/v4)
 [![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk?style=flat-square)](https://goreportcard.com/report/github.com/burgesQ/webfmwk)
-[![CodeFactor](https://www.codefactor.io/repository/github/burgesq/webfmwk/badge)](https://www.codefactor.io/repository/github/burgesq/webfmwk)
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE)
+[![codecov](https://codecov.io/gh/burgesQ/webfmwk/branch/master/graph/badge.svg)](https://codecov.io/gh/burgesQ/webfmwk)
 [![Version compatibility with Go 1.13 onward using modules](https://img.shields.io/badge/compatible%20with-go1.13+-5272b4.svg)](https://github.com/burgesQ/webfmwk#run)
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/burgesQ/webfmwk)
+[![GitHub release](https://img.shields.io/github/release/burgesQ/webfmwk.svg)](https://github.com/burgesQ/webfmwk/releases)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE)
 
 ## What
 
-`webfmwk` is a go web API framework
+`webfmwk` is a go web API framework build on top of several packages :
+- [`valya/fasthttp`][1] instead of `net/http`
+- [`fasthttp/router`][2] to route API endpoints
+-  [`gorilla/schema`][3], [`go-playground/validator/v10`][4],
+[`go-playground/local`][5] and [`go-playground/local`][6] for
+structure validation and error translation
+- [`segmito/encoding`][7] instead of `encoding/json`
+
+
+[1]:github.com/valyala/fasthttp
+[2]:github.com/fasthttp/router
+[3]:github.com/gorilla/schema
+[4]:gopkg.in/go-playground/validator.v10
+[5]:gopkg.in/go-playground/universal-translator
+[6]:gopkg.in/go-playground/local
+[7]:github.com/segmentio/encoding
 
 ## Use it
 
 Import `github.com/burgesQ/webfmwk/v4`.
 
-### Important 
+### Important
 
-Go `1.13` is required. 
+Go `1.13` is required.
 
 ### Example
 
@@ -31,30 +46,30 @@ Go `1.13` is required.
 package main
 
 import (
-	"net/http"
+    "net/http"
 
-	"github.com/burgesQ/webfmwk/v4"
+    "github.com/burgesQ/webfmwk/v4"
 )
 
 // curl -X GET 127.0.0.1:4242/hello
 // { "message": "hello world" }
 func main() {
-	var s = webfmwk.InitServer()
+    var s = webfmwk.InitServer()
 
-	s.GET("/hello", func(c webfmwk.Context) error {
-		c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
-	})
+    s.GET("/hello", func(c webfmwk.Context) error {
+        c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
+    })
 
-	s.Start(":4242")
+    // ctrl+c is handled internaly
+    defer s.WaitAndStop()
 
-	// ctrl+c is handled internaly
-	defer s.WaitAndStop()
+    s.Start(":4242")
 }
 ```
 </p>
 </details>
 
-Reach the endpoint: 
+Reach the endpoint:
 
 <details><summary>curl sample</summary>
 <p>
@@ -86,11 +101,11 @@ $ cd doc
 $ go run . panic_to_error
 . panic_to_error
 running panic_to_error (use panic to handle some error case)
-- DBG  : 	-- crtl-c support enabled
-- DBG  : 	-- handlers loaded
+- DBG  :    -- crtl-c support enabled
+- DBG  :    -- handlers loaded
 - DBG  : exit handler: starting
 - DBG  : http server :4242: starting
-- DBG  : [+] server 1 (:4242) 
+- DBG  : [+] server 1 (:4242)
 - DBG  : [+] new connection
 + INFO : [+] (f2124b89-414b-4361-96ec-5f227c0e3369) : [GET]/panic
 + INFO : [-] (f2124b89-414b-4361-96ec-5f227c0e3369) : [422](27)
@@ -118,23 +133,16 @@ running panic_to_error (use panic to handle some error case)
 
 ## Test
 
-Simply run `make`
+Simply run `make`, lint is also available via `make lint`
 
 ## Contributing
 
 First of all, **thank you** for contributing hearts
 
-If you find any typo/misconfiguration/... please send me a PR or open an issue. 
+If you find any typo/misconfiguration/... please send me a PR or open an issue.
 
 Also, while creating your Pull Request on GitHub, please write a description which gives the context and/or explains why you are creating it.
 
 ## Credit
 
 Frafos GmbH :tada: where I've writted most of that code
-
-
-[1]: https://github.com/gorilla/mux
-[2]: https://github.com/gorilla/handlers
-[3]: gopkg.in/go-playground/validator.v9
-[4]: https://github.com/gorilla/schema
-[5]: https://github.com/json-iterator/go
