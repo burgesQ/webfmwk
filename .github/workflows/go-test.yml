@@ -4,6 +4,7 @@ on:
   push:
     branches:
         - master
+        - fasthttp
 jobs:
   build:
 
