@@ -3,6 +3,7 @@ package log
 // Level hold the logging level
 type Level uint8
 
+// Following contant hold the possible log levels
 const (
 	LogErr Level = iota
 	LogWarning
