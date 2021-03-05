@@ -22,8 +22,8 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 
 				default:
 					c.GetLogger().Errorf("catched %T %#v", e, e)
-					_ = c.JSONInternalError(webfmwk.NewErrorFromError(
-						fmt.Errorf("internal error: %T %v", e, e)))
+					_ = c.JSONInternalError(webfmwk.NewError(
+						fmt.Sprintf("internal error: %T %v", e, e)))
 				}
 			}
 		}()

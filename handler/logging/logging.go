@@ -14,8 +14,6 @@ const (
 	_limitOutput    = 2048
 )
 
-// TODO: check if RID in request header
-
 // Handler generate an request ID and log information about
 // the newly receive request
 // The logger is then overloaded to add the request ID to every futur log message
