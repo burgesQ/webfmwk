@@ -23,7 +23,7 @@ func TestAddress(t *testing.T) {
 	addr = &Address{
 		Addr: "Testing",
 		Name: "oops",
-		TLS: &tlsConfig{
+		TLS: &TLSConfig{
 			Cert:     "some/cert",
 			Key:      "some/key",
 			Insecure: true,

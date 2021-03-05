@@ -179,7 +179,7 @@ func assertBodyDiffere(t *testing.T, expected string, resp *http.Response) {
 
 func assertBodyContain(t *testing.T, expected string, resp *http.Response) {
 	t.Helper()
-	assert.Contains(t, fetchBody(t, resp), expected, "asserting response containes %q", expected)
+	assert.Contains(t, fetchBody(t, resp), expected, "asserting response contains %q", expected)
 }
 
 // assertStatusCode assert the status code of the response
@@ -194,7 +194,7 @@ func assertHeader(t *testing.T, key, val string, resp *http.Response) {
 	t.Helper()
 
 	// test existence
-	//"request header doesn't containes "+key, label...
+	//"request header doesn't contains "+key, label...
 
 	assert.Contains(t, resp.Header, key, "asserting header have a %q", key)
 	assert.Equal(t, val, resp.Header[key][0], "asserting header value for %q", key)

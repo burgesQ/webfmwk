@@ -15,7 +15,7 @@ import (
 // curl -X GET 127.0.0.1:4242/acticles/0
 // {"content":"is is 0"}
 // for more see https://pkg.go.dev/github.com/fasthttp/router
-func url_param() *webfmwk.Server {
+func urlParam() *webfmwk.Server {
 	// init server
 	var s = webfmwk.InitServer()
 

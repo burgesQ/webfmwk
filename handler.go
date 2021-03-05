@@ -8,8 +8,11 @@ import (
 )
 
 var (
+	// ErrMissingContentType is returned in case of missing content type header.
 	ErrMissingContentType = NewNotAcceptable(NewError("Missing Content-Type header"))
-	ErrNotJSON            = NewNotAcceptable(NewError("Content-Type is not application/json"))
+
+	// ErrNotJSON is returned when the content type isn't json
+	ErrNotJSON = NewNotAcceptable(NewError("Content-Type is not application/json"))
 
 	_prefixContentType = []byte("application/json")
 )

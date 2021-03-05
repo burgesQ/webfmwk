@@ -7,7 +7,7 @@ import (
 	"github.com/burgesQ/webfmwk/v5"
 )
 
-func custom_worker() *webfmwk.Server {
+func customWorker() *webfmwk.Server {
 	var (
 		s  = webfmwk.InitServer()
 		wl = s.GetLauncher()

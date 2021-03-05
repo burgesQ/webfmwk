@@ -11,22 +11,22 @@ import (
 )
 
 type (
-	Command interface {
+	command interface {
 		Init([]string) error
 		Run()
 		Name() string
 		Description() string
 	}
 
-	command struct {
+	cmd struct {
 		fs          *flag.FlagSet
 		fn          func()
 		description string
 	}
 )
 
-func newCommand(fn func() *webfmwk.Server, name string, description ...string) *command {
-	c := &command{
+func newCommand(fn func() *webfmwk.Server, name string, description ...string) *cmd {
+	c := &cmd{
 		fs: flag.NewFlagSet(name, flag.ContinueOnError),
 		fn: func() {
 
@@ -59,18 +59,18 @@ func newCommand(fn func() *webfmwk.Server, name string, description ...string) *
 	return c
 }
 
-func (c *command) Name() string {
+func (c *cmd) Name() string {
 	return c.fs.Name()
 }
-func (c *command) Description() string {
+func (c *cmd) Description() string {
 	return c.description
 }
 
-func (c *command) Init(args []string) error {
+func (c *cmd) Init(args []string) error {
 	return c.fs.Parse(args)
 }
 
-func (c *command) Run() {
+func (c *cmd) Run() {
 	fmt.Printf("running %s (%s)\n", c.Name(), c.Description())
 	c.fn()
 }
@@ -80,18 +80,18 @@ func root(args []string) error {
 		return errors.New("You must pass a sub-command")
 	}
 
-	cmds := []Command{
-		newCommand(hello_world, "hello_world", "hello worl :)"),
-		newCommand(url_param, "url_param", "url params"),
-		newCommand(query_param, "query_param", "extend the query param struct"),
+	cmds := []command{
+		newCommand(helloWorld, "hello_world", "hello worl :)"),
+		newCommand(urlParam, "url_param", "url params"),
+		newCommand(queryParam, "query_param", "extend the query param struct"),
 		newCommand(routes, "routes", "register routes"),
 		newCommand(tls, "tls", "boot in tls mode"),
 		newCommand(swagger, "swagger", "generate a swagger doc"),
-		newCommand(post_content, "post_content", "post and validate content (query param, form & url)"),
+		newCommand(postContent, "post_content", "post and validate content (query param, form & url)"),
 		newCommand(handlers, "handlers", "use extra handlers"),
-		newCommand(custom_context, "custom_context", "extend, register and use a custom context"),
-		newCommand(custom_worker, "custom_worker", "register extra worker"),
-		newCommand(panic_to_error, "panic_to_error", "use panic to handle some error case"),
+		newCommand(customContext, "custom_context", "extend, register and use a custom context"),
+		newCommand(customWorker, "custom_worker", "register extra worker"),
+		newCommand(panicToError, "panic_to_error", "use panic to handle some error case"),
 	}
 
 	subcommand := os.Args[1]

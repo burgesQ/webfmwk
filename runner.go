@@ -11,7 +11,7 @@ type (
 		GetAddr() string
 
 		// GetTLS return a pointer to an TLSConfig if present, nil otherwise.
-		GetTLS() TLSConfig
+		GetTLS() ITLSConfig
 
 		// GetName return the name of the address, for debug purpose.
 		GetName() string
@@ -26,7 +26,7 @@ type (
 		Name string `json:"name"`
 
 		// TLS implement IAddress, tlsConfig  implement the TLSConfig interface.
-		TLS *tlsConfig `json:"tls,omitempty" mapstructure:"tls,omitempty"`
+		TLS *TLSConfig `json:"tls,omitempty" mapstructure:"tls,omitempty"`
 	}
 )
 
@@ -44,13 +44,13 @@ func (a Address) IsOk() bool {
 	return a.Addr != ""
 }
 
-// GetAddress implement the IAddress interface
+// GetAddr implement the IAddress interface
 func (a Address) GetAddr() string {
 	return a.Addr
 }
 
 // GetTLS implement the IAddress interface
-func (a Address) GetTLS() TLSConfig {
+func (a Address) GetTLS() ITLSConfig {
 	if a.TLS == nil {
 		return nil
 	}

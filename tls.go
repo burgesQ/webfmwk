@@ -7,8 +7,8 @@ import (
 )
 
 type (
-	// TLSConfig is used to interface the TLS implemtation.
-	TLSConfig interface {
+	// ITLSConfig is used to interface the TLS implemtation.
+	ITLSConfig interface {
 		fmt.Stringer
 
 		// GetCert return the full path to the server certificate file.
@@ -26,7 +26,7 @@ type (
 
 	// TLSConfig contain the tls config passed by the config file.
 	// It implement TLSConfig
-	tlsConfig struct {
+	TLSConfig struct {
 		Cert     string `json:"cert" mapstructur:"cert"`
 		Key      string `json:"key" mapstructur:"key"`
 		Insecure bool   `json:"insecure" mapstructur:"insecure"`
@@ -54,27 +54,27 @@ var (
 )
 
 // GetCert implemte TLSConfig
-func (config tlsConfig) GetCert() string {
+func (config TLSConfig) GetCert() string {
 	return config.Cert
 }
 
 // GetKey implemte TLSConfig
-func (config tlsConfig) GetKey() string {
+func (config TLSConfig) GetKey() string {
 	return config.Key
 }
 
 // GetInsecure implemte TLSConfig
-func (config tlsConfig) GetInsecure() bool {
+func (config TLSConfig) GetInsecure() bool {
 	return config.Insecure
 }
 
 // GetInsecure implemte TLSConfig
-func (config tlsConfig) Empty() bool {
+func (config TLSConfig) Empty() bool {
 	return config.Cert == "" && config.Key == "" && !config.Insecure
 }
 
 // String implement Stringer interface
-func (config tlsConfig) String() string {
+func (config TLSConfig) String() string {
 	if config.Empty() {
 		return ""
 	}
@@ -84,14 +84,14 @@ func (config tlsConfig) String() string {
 }
 
 // StartTLS expose an server to an HTTPS address.
-func (s *Server) StartTLS(addr string, tlsStuffs TLSConfig) {
+func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
 		return s.internalInit(addr).Serve(s.loadTLSListener(addr, tlsStuffs))
 	})
 }
 
-func (s *Server) getTLSCfg(tlsCfg TLSConfig) *tls.Config {
+func (s *Server) getTLSCfg(tlsCfg ITLSConfig) *tls.Config {
 	cert, err := tls.LoadX509KeyPair(tlsCfg.GetCert(), tlsCfg.GetKey())
 	if err != nil {
 		s.log.Fatalf("cannot load cert [%s] and key [%s]: %s",
@@ -110,7 +110,7 @@ func (s *Server) getTLSCfg(tlsCfg TLSConfig) *tls.Config {
 	}
 }
 
-func (s *Server) loadTLSListener(addr string, tlsCfg TLSConfig) net.Listener {
+func (s *Server) loadTLSListener(addr string, tlsCfg ITLSConfig) net.Listener {
 	cfg := s.getTLSCfg(tlsCfg)
 
 	tmpLn, err := net.Listen("tcp4", addr)

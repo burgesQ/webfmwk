@@ -22,7 +22,7 @@ func TestLoadTLS(t *testing.T) {
 		}
 	}()
 
-	tlsCfg := s.getTLSCfg(tlsConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
+	tlsCfg := s.getTLSCfg(TLSConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
 
 	assert.Equal(t, tlsCfg.CipherSuites, DefaultCipher)
 	asserter.Equal(tlsCfg.CurvePreferences, DefaultCurve)

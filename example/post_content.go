@@ -21,7 +21,7 @@ type (
 	}
 )
 
-func post_content() *webfmwk.Server {
+func postContent() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	s.POST("/post", func(c webfmwk.Context) error {

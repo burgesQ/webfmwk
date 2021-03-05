@@ -21,7 +21,7 @@ func loadContext(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 //
 // curl -X GET 127.0.0.1:4242/test
 // {"content":"42"}
-func custom_context() *webfmwk.Server {
+func customContext() *webfmwk.Server {
 	// init server w/ ctrl+c support and custom context options
 	var s = webfmwk.InitServer(
 		webfmwk.WithCtrlC(),

@@ -37,7 +37,7 @@ func TestJSONResponse(t *testing.T) {
 				return c.JSONUnauthorized(ret)
 			}},
 			"forbiden": {http.StatusForbidden, func(c Context, ret interface{}) error {
-				return c.JSONForbiden(ret)
+				return c.JSONForbidden(ret)
 			}},
 			"notFound": {http.StatusNotFound, func(c Context, ret interface{}) error {
 				return c.JSONNotFound(ret)

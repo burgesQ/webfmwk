@@ -2,7 +2,8 @@ package main
 
 import (
 	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/handler"
+	"github.com/burgesQ/webfmwk/v5/handler/logging"
+	"github.com/burgesQ/webfmwk/v5/handler/security"
 )
 
 // Handlers implement webfmwk.Handler methods
@@ -21,11 +22,11 @@ func handlers() *webfmwk.Server {
 	// init server w/ ctrl+c support and middlewares
 	var s = webfmwk.InitServer(
 		webfmwk.WithCtrlC(),
-		webfmwk.WithHandlers(handler.Logging),
+		webfmwk.WithHandlers(logging.Handler),
 	)
 
 	// expose /test
-	s.GET("/test", handler.Security(func(c webfmwk.Context) error {
+	s.GET("/test", security.Handler(func(c webfmwk.Context) error {
 		return c.JSONOk("ok")
 	}))
 

@@ -10,6 +10,7 @@ import (
 
 const _contentType = "application/json; charset=UTF-8"
 
+// JSONResponse interface is used to answer JSON content to the client.
 type JSONResponse interface {
 	// JSONBlob answer the JSON content with the status code op.
 	JSONBlob(op int, content []byte) error
@@ -36,7 +37,7 @@ type JSONResponse interface {
 	JSONUnauthorized(content interface{}) error
 
 	// JSONForbiden return the interface with an http.StatusForbidden (403).
-	JSONForbiden(content interface{}) error
+	JSONForbidden(content interface{}) error
 
 	// JSONNoContent return the interface with an http.StatusNotFound (404).
 	JSONNotFound(content interface{}) error
@@ -125,8 +126,8 @@ func (c *icontext) JSONUnauthorized(content interface{}) error {
 	return c.JSON(http.StatusUnauthorized, content)
 }
 
-// JSONForbiden implement JSONResponse by returning a JSON encoded 403 response.
-func (c *icontext) JSONForbiden(content interface{}) error {
+// JSONForbidden implement JSONResponse by returning a JSON encoded 403 response.
+func (c *icontext) JSONForbidden(content interface{}) error {
 	return c.JSON(http.StatusForbidden, content)
 }
 

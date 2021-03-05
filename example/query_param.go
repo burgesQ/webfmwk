@@ -20,7 +20,7 @@ type QueryParam struct {
 // }
 // curl -i -X GET "127.0.0.1:4242/hello?prete"
 // {"pretty":false,"val":0}%
-func query_param() *webfmwk.Server {
+func queryParam() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	// expose /query_param

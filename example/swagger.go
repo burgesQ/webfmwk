@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/docs"
+	"github.com/burgesQ/webfmwk/v5/handler/redoc"
 )
 
 // TODO: form & payload schema
@@ -38,7 +38,7 @@ func swagger() *webfmwk.Server {
 	s := webfmwk.InitServer(
 		webfmwk.SetPrefix("/api"),
 		// webfmwk.WithDocHandlers(httpSwagger.WrapHandler),
-		webfmwk.WithDocHandlers(docs.GetRedocHandler(nil)),
+		webfmwk.WithDocHandlers(redoc.GetHandler(nil)),
 
 		webfmwk.WithCtrlC())
 

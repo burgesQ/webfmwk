@@ -5,14 +5,15 @@ import (
 	"math/big"
 
 	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/handler"
+	"github.com/burgesQ/webfmwk/v5/handler/logging"
+	"github.com/burgesQ/webfmwk/v5/handler/recover"
 )
 
-func panic_to_error() *webfmwk.Server {
+func panicToError() *webfmwk.Server {
 	var (
 		s = webfmwk.InitServer(
 			webfmwk.WithCtrlC(),
-			webfmwk.WithHandlers(handler.Recover, handler.Logging),
+			webfmwk.WithHandlers(recover.Handler, logging.Handler),
 		)
 	)
 	// expose /panic

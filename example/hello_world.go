@@ -8,7 +8,7 @@ import (
 
 // curl -X GET 127.0.0.1:4242/hello
 // { "message": "hello world" }
-func hello_world() *webfmwk.Server {
+func helloWorld() *webfmwk.Server {
 	var s = webfmwk.InitServer()
 
 	// expose /hello
