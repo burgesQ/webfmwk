@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoTest/badge.svg)]
 (https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoTest)
-[![GoDoc](https://godoc.org/github.com/burgesQ/webfmwk/v4?status.svg)]
+[![GoDoc](https://godoc.org/github.com/burgesQ/webfmwk/v5?status.svg)]
 (http://godoc.org/github.com/burgesQ/webfmwk/v5)
 [![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk?style=flat-square)]
 (https://goreportcard.com/report/github.com/burgesQ/webfmwk)

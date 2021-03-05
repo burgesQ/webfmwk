@@ -9,9 +9,12 @@ import (
 )
 
 const (
+	// HeaderRequestID hold the header name to which the RIP is attached
 	HeaderRequestID = "X-Request-Id"
 	_limitOutput    = 2048
 )
+
+// TODO: check if RID in request header
 
 // Handler generate an request ID and log information about
 // the newly receive request
@@ -21,8 +24,8 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 		var (
 			start = time.Now()
 			lg    = c.GetLogger()
-			rid   = uuid.New().String()
 			fc    = c.GetFastContext()
+			rid   = uuid.New().String()
 		)
 
 		c.SetHeader(HeaderRequestID, rid)

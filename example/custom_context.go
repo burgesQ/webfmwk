@@ -3,14 +3,14 @@ package main
 import "github.com/burgesQ/webfmwk/v5"
 
 // customContext extend the webfmwk.Context
-type Context struct {
+type ctx struct {
 	webfmwk.Context
 	val string
 }
 
 func loadContext(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 	return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
-		cc := Context{c, "val"}
+		cc := ctx{c, "val"}
 		return next(cc)
 	})
 }
@@ -30,7 +30,7 @@ func customContext() *webfmwk.Server {
 
 	// expose /test
 	s.GET("/test", func(c webfmwk.Context) error {
-		return c.JSONOk(webfmwk.NewResponse(c.(*Context).val))
+		return c.JSONOk(webfmwk.NewResponse(c.(*ctx).val))
 	})
 
 	return s

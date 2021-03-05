@@ -9,10 +9,15 @@ import (
 )
 
 const (
-	GET    = "GET"
-	POST   = "POST"
-	PATCH  = "PATCH"
-	PUT    = "PUT"
+	// GET http verbe
+	GET = "GET"
+	// POST http verbe
+	POST = "POST"
+	// PATCH http verbe
+	PATCH = "PATCH"
+	// PUT http verbe
+	PUT = "PUT"
+	// DELETE http verbe
 	DELETE = "DELETE"
 
 	_pingEndpoint = "/ping"

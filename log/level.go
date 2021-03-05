@@ -1,6 +1,6 @@
 package log
 
-// LogLevel
+// Level hold the logging level
 type Level uint8
 
 const (
@@ -32,6 +32,7 @@ func (l Level) String() string {
 	return _l2s[l]
 }
 
+// SetLogLevel set the global logger log level
 func SetLogLevel(level Level) (ok bool) {
 	if level >= LogErr && level <= LogDebug {
 		_lg.level = level

@@ -6,7 +6,7 @@ import (
 
 // QueryParam
 // see post_content.go for validation
-type QueryParam struct {
+type qp struct {
 	Pretty bool `json:"pretty" schema:"pretty"`
 	Val    int  `schema:"val" json:"val" validate:"gte=1"`
 }
@@ -25,7 +25,7 @@ func queryParam() *webfmwk.Server {
 
 	// expose /query_param
 	s.GET("/hello", func(c webfmwk.Context) error {
-		qp := &QueryParam{}
+		qp := &qp{}
 
 		if e := c.DecodeQP(qp); e != nil {
 			return e
