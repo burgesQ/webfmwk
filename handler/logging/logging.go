@@ -25,9 +25,12 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 			start = time.Now()
 			lg    = c.GetLogger()
 			fc    = c.GetFastContext()
-			rid   = uuid.New().String()
+			rid   = string(fc.Request.Header.Peek(HeaderRequestID))
 		)
 
+		if rid == "" {
+			rid = uuid.New().String()
+		}
 		c.SetHeader(HeaderRequestID, rid)
 
 		lg.Infof("[%s] --> %q [%s]%s ", rid, webfmwk.GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
