@@ -27,7 +27,6 @@ type (
 	errorHandled struct {
 		op      int
 		content interface{}
-		err     error
 	}
 
 	// Error struct is used to answer http error.

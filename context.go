@@ -11,10 +11,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-const (
-	_prettyTag   = "pretty"
-	_limitOutput = 2048
-)
+const _prettyTag = "pretty"
 
 type (
 	// InputHandling interface introduce I/O actions.

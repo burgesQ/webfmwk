@@ -32,8 +32,8 @@ type (
 
 // String implement the fmt.Stringer interface
 func (a Address) String() string {
-	if a.TLS != nil && !(*a.TLS).Empty() {
-		return fmt.Sprintf("name: %q\naddr: %q\ntls: %s", a.Name, a.Addr, (*a.TLS).String())
+	if a.TLS != nil && !a.TLS.Empty() {
+		return fmt.Sprintf("name: %q\naddr: %q\ntls: %s", a.Name, a.Addr, a.TLS.String())
 	}
 
 	return fmt.Sprintf("name: %q\naddr: %q", a.Name, a.Addr)
