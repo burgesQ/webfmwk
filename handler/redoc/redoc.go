@@ -13,8 +13,7 @@ const (
 	_defURI  = "/doc/redoc"
 )
 
-// RedocParam hold the required metadata to expose the
-// redoc handler
+// Param hold the required metadata to expose the redoc handler.
 type Param struct {
 	// Path hold the value on which is exposed the handler
 	Path string
@@ -29,12 +28,14 @@ var (
 	}
 )
 
+// Path set the redoc handler path.
 func Path(path string) func(*Param) {
 	return func(rp *Param) {
 		rp.Path = path
 	}
 }
 
+// DocURI set the redoc handle source swagger url.
 func DocURI(uri string) func(*Param) {
 	return func(rp *Param) {
 		rp.DocURI = uri

@@ -68,7 +68,7 @@ func (config TLSConfig) GetInsecure() bool {
 	return config.Insecure
 }
 
-// GetInsecure implemte TLSConfig
+// Empty implemte TLSConfig
 func (config TLSConfig) Empty() bool {
 	return config.Cert == "" && config.Key == "" && !config.Insecure
 }

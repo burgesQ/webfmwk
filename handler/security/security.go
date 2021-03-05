@@ -3,21 +3,21 @@ package security
 import "github.com/burgesQ/webfmwk/v5"
 
 const (
-	HeaderProtection = "X-Xss-Protection"
-	HeaderOption     = "X-Content-Type-Options"
-	HeaderSecu       = "Strict-Transport-Security"
+	headerProtection = "X-Xss-Protection"
+	headerOption     = "X-Content-Type-Options"
+	headerSecu       = "Strict-Transport-Security"
 
-	HeaderProtectionV = "1; mode=block"
-	HeaderOptionV     = "nosniff"
-	HeaderSecuV       = "max-age=3600; includesubDomains"
+	headerProtectionV = "1; mode=block"
+	headerOptionV     = "nosniff"
+	headerSecuV       = "max-age=3600; includesubDomains"
 )
 
 // Handler append few security headers
 func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 	return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
-		c.SetHeaders(webfmwk.Header{HeaderProtection, HeaderProtectionV},
-			webfmwk.Header{HeaderOption, HeaderOptionV},
-			webfmwk.Header{HeaderSecu, HeaderSecuV})
+		c.SetHeaders(webfmwk.Header{headerProtection, headerProtectionV},
+			webfmwk.Header{headerOption, headerOptionV},
+			webfmwk.Header{headerSecu, headerSecuV})
 
 		return next(c)
 	})

@@ -194,7 +194,7 @@ func (s *Server) GetLauncher() *WorkerLauncher {
 	return &s.launcher
 }
 
-// // GetContext return the context.Context used.
+// GetContext return the context.Context used.
 func (s *Server) GetContext() context.Context {
 	return s.ctx
 }

@@ -155,7 +155,7 @@ func factory(op int, content interface{}) errorHandled {
 	return ret
 }
 
-// NewError return a struct implementing ErrorHandled with the provided params.
+// NewErrorHandled return a struct implementing ErrorHandled with the provided params.
 func NewErrorHandled(op int, content interface{}) ErrorHandled {
 	return factory(op, content)
 }
@@ -185,7 +185,7 @@ func NewForbidden(content interface{}) ErrorHandled {
 	return factory(http.StatusForbidden, content)
 }
 
-// NewNotAcceptable produce an ErrorHandled with the status code 404.
+// NewNotFound produce an ErrorHandled with the status code 404.
 func NewNotFound(content interface{}) ErrorHandled {
 	return factory(http.StatusNotFound, content)
 }

@@ -50,9 +50,9 @@ func TestHandler(t *testing.T) {
 	defer resp.Body.Close()
 
 	for _, h := range [][2]string{
-		{HeaderProtection, HeaderProtectionV},
-		{HeaderSecu, HeaderSecuV},
-		{HeaderOption, HeaderOptionV},
+		{headerProtection, headerProtectionV},
+		{headerSecu, headerSecuV},
+		{headerOption, headerOptionV},
 	} {
 		key := h[0]
 		val := h[1]

@@ -46,7 +46,7 @@ func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) e
 	return validate.RegisterValidation(name, fn)
 }
 
-// RegisterCustomValidator register some validation alias.
+// RegisterValidatorAlias register some validation alias.
 // See https://go-playground/validator.v10 for more.
 func RegisterValidatorAlias(name, what string) {
 	// from init server - if validator is called before

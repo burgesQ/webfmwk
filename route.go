@@ -105,7 +105,7 @@ var (
 // Routes method
 //
 
-// AddRoute add the endpoint to the server.
+// AddRoutes add the endpoint to the server.
 func (s *Server) AddRoutes(r ...Route) {
 	s.meta.routes[s.meta.prefix] = append(s.meta.routes[s.meta.prefix], r...)
 }
