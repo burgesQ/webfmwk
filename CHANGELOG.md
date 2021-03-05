@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2021-03-05
+
+### Added
+- `GetFastContext() fasthttp.RequestCtx` to the `Context` interface
+- `DecodeAndValidateQP` which is a successive call to `DecodQP` then `Validate`
+- go-test github action
+- logging.Handler prepend a request_id
+
+### Changed
+- `valaya/fasthttp` in favor of `net/http`
+- `segmentio/encoding` in favor of `encoding/json`
+- `fasthttp/router` in favor of `gorilla/mux`
+- handler now live in `/webfmwk/v5/handler/{logger,recover,redoc,security}`
+- updated the test to reflect the changes
+- `GetQuery` signature return some `*fasthttp.Args`
+- use testify for assertion
+
+### Fixed
+
+### Removed
+- `handler.RequestID` (handled by the logger one)
+- `webfmwktest` is obsolete
+- dependency to burgesQ/gommon/log and burgesQ/gommon/pretty
+- go-build github action
+
 ## [4.2.4] - 2020-15-12
 
 ### Changed
