@@ -258,7 +258,7 @@ func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
 
 		if e := handler(ctx); e != nil {
 			ctx.GetLogger().Errorf("catched from controller (%T) : %s", e, e.Error())
-			handleError(ctx, e)
+			HandleError(ctx, e)
 		}
 	}
 }

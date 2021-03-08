@@ -58,10 +58,10 @@ type (
 	}
 )
 
-// handleError test if the error argument implement the ErrorHandled interface
+// HandleError test if the error argument implement the ErrorHandled interface
 // to return a matching response. Otherwise, a 500/internal error is generated
 // from the error arguent.
-func handleError(ctx Context, e error) {
+func HandleError(ctx Context, e error) {
 	var eh ErrorHandled
 	if errors.As(e, &eh) {
 		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())

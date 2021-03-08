@@ -13,12 +13,8 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 		defer func() {
 			if r := recover(); r != nil {
 				switch e := r.(type) {
-				case webfmwk.ErrorHandled:
-					_ = c.JSON(e.GetOPCode(), e.GetContent())
-
 				case error:
-					c.GetLogger().Errorf("catched %T %#v", e, e)
-					_ = c.JSONInternalError(webfmwk.NewErrorFromError(e))
+					webfmwk.HandleError(c, e)
 
 				default:
 					c.GetLogger().Errorf("catched %T %#v", e, e)
