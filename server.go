@@ -96,7 +96,7 @@ func (s *Server) WaitAndStop() {
 }
 
 // DumpRoutes dump the API endpoints using the server logger.
-func (s *Server) DumpRoutes() {
+func (s *Server) DumpRoutes() map[string][]string {
 	all := s.GetRouter().List()
 
 	for m, p := range all {
@@ -104,6 +104,8 @@ func (s *Server) DumpRoutes() {
 			s.log.Infof("routes: [%s]%s", m, p[i])
 		}
 	}
+
+	return all
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.
