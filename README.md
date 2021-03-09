@@ -2,10 +2,10 @@
 
 [![Build Status](https://github.com/burgesQ/webfmwk/workflows/GoTest/badge.svg)](https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoTest)
 [![GoDoc](https://godoc.org/github.com/burgesQ/webfmwk/v5?status.svg)](http://godoc.org/github.com/burgesQ/webfmwk/v5)
-[![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk?style=flat-square)](https://goreportcard.com/report/github.com/burgesQ/webfmwk)
 [![codecov](https://codecov.io/gh/burgesQ/webfmwk/branch/master/graph/badge.svg)](https://codecov.io/gh/burgesQ/webfmwk)
+[![Go Report Card](https://goreportcard.com/badge/github.com/burgesQ/webfmwk)](https://goreportcard.com/report/github.com/burgesQ/webfmwk)
 [![Version compatibility with Go 1.13 onward using modules](https://img.shields.io/badge/compatible%20with-go1.13+-5272b4.svg)](https://github.com/burgesQ/webfmwk#run)
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE)
+[![License](http://img.shields.io/badge/license-mit-blue.svg)](https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE)
 
 ## What
 
