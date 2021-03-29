@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -181,12 +182,38 @@ func (s *Server) SetRouter() *mux.Router {
 				}
 			}
 
+			if route.Verbe == POST || route.Verbe == PATCH ||
+				route.Verbe == PUT {
+				handler = contentIsJSON(handler)
+			}
+
 			subRouter.HandleFunc(route.Path, s.CustomHandler(handler)).
 				Methods(route.Verbe).Name(route.Name)
 		}
 	}
 
 	return router
+}
+
+var (
+	ErrMissingContentType = NewNotAcceptable(NewError("Missing Content-Type header"))
+	ErrNotJSON            = NewNotAcceptable(NewError("Content-Type is not application/json"))
+)
+
+func contentIsJSON(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c Context) error {
+		var r = c.GetRequest()
+
+		// if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
+		if ctype := r.Header.Get("Content-Type"); ctype == "" {
+			return ErrMissingContentType
+		} else if !strings.HasPrefix(ctype, "application/json") {
+			return ErrNotJSON
+		}
+		//}
+
+		return next(c)
+	})
 }
 
 // webfmwk main logic, return a HandlerFunc wrapper in an http handler
