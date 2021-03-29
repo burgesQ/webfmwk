@@ -22,7 +22,12 @@ func TestLoadTLS(t *testing.T) {
 		}
 	}()
 
-	s.loadTLS(&worker, TLSConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
+	s.loadTLS(&worker, TLSConfig{
+		Key:      "./example/server.key",
+		Cert:     "./example/server.cert",
+		Insecure: true,
+		// TODO: cert ca cert pool
+	})
 
 	assert.SliceU16Equal(t, worker.TLSConfig.CipherSuites, DefaultCipher)
 	//	assert.SliceU16Equal(t, worker.TLSConfig.CurvePreferences, DefaultCurve)

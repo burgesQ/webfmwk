@@ -2,8 +2,10 @@ package webfmwk
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -16,8 +18,12 @@ type (
 		GetCert() string
 		// GetKey return the full path to the server key file
 		GetKey() string
+		// GetCa return the full path to the server ca cert file
+		GetCa() string
+
 		// GetInsecure return true if the TLS Certificate shouldn't be checked
 		GetInsecure() bool
+
 		// IsEmpty return true if the config is empty
 		Empty() bool
 	}
@@ -27,6 +33,7 @@ type (
 	TLSConfig struct {
 		Cert     string `json:"cert" mapstructur:"cert"`
 		Key      string `json:"key" mapstructur:"key"`
+		Ca       string `json:"ca" mapstructur:"ca"`
 		Insecure bool   `json:"insecure" mapstructur:"insecure"`
 	}
 )
@@ -56,6 +63,11 @@ func (config TLSConfig) GetCert() string {
 	return config.Cert
 }
 
+// GetCert implemte ITLSConfig
+func (config TLSConfig) GetCa() string {
+	return config.Ca
+}
+
 // GetKey implemte ITLSConfig
 func (config TLSConfig) GetKey() string {
 	return config.Key
@@ -68,7 +80,7 @@ func (config TLSConfig) GetInsecure() bool {
 
 // GetInsecure implemte ITLSConfig
 func (config TLSConfig) Empty() bool {
-	return config.Cert == "" && config.Key == "" && !config.Insecure
+	return config.Cert == "" && config.Key == ""
 }
 
 // String implement Stringer interface
@@ -86,7 +98,7 @@ func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
 		// go s.pollPingEndpoint(addr) disabled cause no tls support ATM
-		return s.internalInit(addr, tlsStuffs).ListenAndServeTLS(tlsStuffs.GetCert(), tlsStuffs.GetKey())
+		return s.internalInit(addr, tlsStuffs).ListenAndServeTLS("", "")
 	})
 }
 
@@ -98,7 +110,6 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg ITLSConfig) {
 
 	/* #nosec */
 	worker.TLSConfig = &tls.Config{
-		InsecureSkipVerify:       tlsCfg.GetInsecure(),
 		Certificates:             []tls.Certificate{cert},
 		PreferServerCipherSuites: true,
 		CurvePreferences:         DefaultCurve,
@@ -106,4 +117,28 @@ func (s *Server) loadTLS(worker *http.Server, tlsCfg ITLSConfig) {
 		MaxVersion:               tls.VersionTLS13,
 		CipherSuites:             DefaultCipher,
 	}
+
+	// in the way of HTTP/2 ?
+	worker.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+
+	if !tlsCfg.GetInsecure() {
+		s.loadCa(worker, tlsCfg)
+	}
+}
+
+// register ca cert pool and toggle cert requirement
+func (s *Server) loadCa(worker *http.Server, tlsCfg ITLSConfig) {
+	caCertPEM, e := ioutil.ReadFile(tlsCfg.GetCa())
+	if e != nil {
+		s.log.Fatalf("cannot load ca cert pool %q: %s", tlsCfg.GetCa(), e.Error())
+	}
+
+	roots := x509.NewCertPool()
+	if !roots.AppendCertsFromPEM(caCertPEM) {
+		s.log.Fatalf("failed to parse root certificate")
+	}
+
+	// :smirk:
+	worker.TLSConfig.ClientCAs = roots
+	worker.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 }
