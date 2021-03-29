@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TODO: test tls
@@ -13,12 +13,13 @@ import (
 func TestAddress(t *testing.T) {
 	addr := new(Address)
 
-	asserter := assert.New(t)
+	//	asserter := assert.New(t)
+	requirer := require.New(t)
 
-	asserter.Implements((*IAddress)(nil), addr)
-	asserter.False(addr.IsOk())
+	requirer.Implements((*IAddress)(nil), addr)
+	requirer.False(addr.IsOk())
 
-	asserter.Equal("name: \"\"\naddr: \"\"", addr.String())
+	requirer.Equal("name: \"\"\naddr: \"\"", addr.String())
 
 	addr = &Address{
 		Addr: "Testing",
@@ -29,12 +30,12 @@ func TestAddress(t *testing.T) {
 			Insecure: true,
 		}}
 
-	asserter.Equal("Testing", addr.GetAddr())
-	asserter.Equal("oops", addr.GetName())
-	asserter.True(addr.IsOk())
+	requirer.Equal("Testing", addr.GetAddr())
+	requirer.Equal("oops", addr.GetName())
+	requirer.True(addr.IsOk())
 
-	asserter.Equal(
-		"name: \"oops\"\naddr: \"Testing\"\ntls: cert:\t\"some/cert\"\nkey:\t\"some/key\"\ninsecure:\ttrue\n",
+	requirer.Equal(
+		"\nname: \"oops\"\naddr: \"Testing\"\ntls:\n\tcert:\t\"some/cert\"\n\tkey:\t\"some/key\"\n\tca:\t\"\",\n\tinsecure:\ttrue\n",
 		addr.String())
 }
 

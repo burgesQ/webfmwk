@@ -2,7 +2,9 @@ package webfmwk
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"net"
 )
 
@@ -17,6 +19,9 @@ type (
 		// GetKey return the full path to the server key file.
 		GetKey() string
 
+		// GetCa return the full path to the server ca cert file.
+		GetCa() string
+
 		// GetInsecure return true if the TLS Certificate shouldn't be checked.
 		GetInsecure() bool
 
@@ -29,6 +34,7 @@ type (
 	TLSConfig struct {
 		Cert     string `json:"cert" mapstructur:"cert"`
 		Key      string `json:"key" mapstructur:"key"`
+		Ca       string `json:"ca" mapstructur:"ca"`
 		Insecure bool   `json:"insecure" mapstructur:"insecure"`
 	}
 )
@@ -53,37 +59,42 @@ var (
 	}
 )
 
-// GetCert implemte TLSConfig
+// GetCert implemte TLSConfig.
 func (config TLSConfig) GetCert() string {
 	return config.Cert
 }
 
-// GetKey implemte TLSConfig
+// GetKey implemte TLSConfig.
 func (config TLSConfig) GetKey() string {
 	return config.Key
 }
 
-// GetInsecure implemte TLSConfig
+// GetKey implemte TLSConfig.
+func (config TLSConfig) GetCa() string {
+	return config.Ca
+}
+
+// GetInsecure implemte TLSConfig.
 func (config TLSConfig) GetInsecure() bool {
 	return config.Insecure
 }
 
-// Empty implemte TLSConfig
+// Empty implemte TLSConfig.
 func (config TLSConfig) Empty() bool {
-	return config.Cert == "" && config.Key == "" && !config.Insecure
+	return config.Cert == "" && config.Key == ""
 }
 
-// String implement Stringer interface
+// String implement Stringer interface.
 func (config TLSConfig) String() string {
 	if config.Empty() {
 		return ""
 	}
 
-	return fmt.Sprintf("cert:\t%q\nkey:\t%q\ninsecure:\t%t\n",
-		config.Cert, config.Key, config.Insecure)
+	return fmt.Sprintf("\tcert:\t%q\n\tkey:\t%q\n\tca:\t%q,\n\tinsecure:\t%t\n",
+		config.Cert, config.Key, config.Ca, config.Insecure)
 }
 
-// StartTLS expose an server to an HTTPS address.
+// StartTLS expose an server to an HTTPS address..
 func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
 	s.internalHandler()
 	s.launcher.Start("https server "+addr, func() error {
@@ -100,7 +111,6 @@ func (s *Server) getTLSCfg(tlsCfg ITLSConfig) *tls.Config {
 
 	/* #nosec */
 	return &tls.Config{
-		InsecureSkipVerify:       tlsCfg.GetInsecure(),
 		Certificates:             []tls.Certificate{cert},
 		PreferServerCipherSuites: true,
 		CurvePreferences:         DefaultCurve,
@@ -110,13 +120,36 @@ func (s *Server) getTLSCfg(tlsCfg ITLSConfig) *tls.Config {
 	}
 }
 
-func (s *Server) loadTLSListener(addr string, tlsCfg ITLSConfig) net.Listener {
-	cfg := s.getTLSCfg(tlsCfg)
+// register ca cert pool and toggle cert requirement
+func (s *Server) loadCa(cfg *tls.Config, tlsCfg ITLSConfig) *tls.Config {
+	if tlsCfg.GetInsecure() {
+		return cfg
+	}
 
-	tmpLn, err := net.Listen("tcp4", addr)
+	caCertPEM, e := ioutil.ReadFile(tlsCfg.GetCa())
+	if e != nil {
+		s.log.Fatalf("cannot load ca cert pool %q: %s", tlsCfg.GetCa(), e.Error())
+	}
+
+	roots := x509.NewCertPool()
+	if !roots.AppendCertsFromPEM(caCertPEM) {
+		s.log.Fatalf("failed to parse root certificate")
+	}
+
+	// :smirk:
+	cfg.ClientCAs = roots
+	cfg.ClientAuth = tls.RequireAndVerifyClientCert
+
+	return cfg
+}
+
+func (s *Server) loadTLSListener(addr string, tlsCfg ITLSConfig) net.Listener {
+	cfg := s.loadCa(s.getTLSCfg(tlsCfg), tlsCfg)
+
+	listner, err := net.Listen("tcp4", addr)
 	if err != nil {
 		s.log.Fatalf("cannot listen on %q: %s", addr, err.Error())
 	}
 
-	return tls.NewListener(tmpLn, cfg)
+	return tls.NewListener(listner, cfg)
 }
