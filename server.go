@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/burgesQ/webfmwk/v5/log"
 	"github.com/lab259/cors"
@@ -155,7 +156,7 @@ func concatAddr(addr, prefix string) string {
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start("exit handler", func() error {
-			s.exitHandler(os.Interrupt)
+			s.exitHandler(os.Interrupt, syscall.SIGHUP)
 			return nil
 		})
 

@@ -7,11 +7,11 @@
 # to archive to file: C-c C-x C-a
 # open archive sibling: C-c C-tab
 
-* WIP v4 [8/15] [53%]
-DEADLINE: <2021-03-07 Sun>
+* WIP v4 [9/15] [60%]
+DEADLINE: <2021-04-06 Tue>
 
 ** IDEA API generator [0/3]
-DEADLINE: <2021-04-04 Sun>
+DEADLINE: <2021-04-30 Fri>
    - [ ] cobra cmd
    - [ ] json ready
    - [ ] db interface ?
@@ -21,11 +21,11 @@ DEADLINE: <2021-04-04 Sun>
 ** TODO read header for translator
 DEADLINE: <2021-05-04 Tue>
 ** TODO perf profiling
-DEADLINE: <2021-03-11 Thu>
+DEADLINE: <2021-06-30 Wed>
 
 
 ** WIP coverage [1/9]
-DEADLINE: <2021-03-05 Fri>
+DEADLINE: <2021-04-06 Tue>
 - [ ] test CORS
 - [ ] test DumpRoutes
 - [ ] test ctrl+c
@@ -37,7 +37,7 @@ DEADLINE: <2021-03-05 Fri>
 - [ ] test example ?
 
 ** WIP logger overload [1/2]
-DEADLINE: <2021-03-05 Fri>
+DEADLINE: <2021-04-30 Fri>
 - [X] allow adding of extra prefix to logger (context ID) ?
 - [ ] display time + status code
 
@@ -47,8 +47,8 @@ DEADLINE: <2021-03-05 Fri>
 - code comments / godoc
 - example ?
 
-** WIP mutliple doc handler [2/3] [66%]
-DEADLINE: <2021-03-05 Fri>
+** DONE mutliple doc handler [2/3] [66%]
+CLOSED: [2021-03-30 Tue 09:10] DEADLINE: <2021-03-05 Fri>
 - [X] support for redoc
 - [X] wrap doc handlers
 - [ ] update doc
