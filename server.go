@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/burgesQ/gommon/log"
@@ -153,7 +154,7 @@ func concatAddr(addr, prefix string) string {
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start("exit handler", func() error {
-			s.exitHandler(s.ctx, os.Interrupt)
+			s.exitHandler(s.ctx, os.Interrupt, syscall.SIGHUP)
 			return nil
 		})
 
