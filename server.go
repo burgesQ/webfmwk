@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/burgesQ/gommon/log"
@@ -174,7 +175,7 @@ func (s *Server) pollPingEndpoint(addr string) {
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start("exit handler", func() error {
-			s.exitHandler(s.ctx, os.Interrupt)
+			s.exitHandler(s.ctx, os.Interrupt, syscall.SIGHUP)
 			return nil
 		})
 		time.Sleep(1 * time.Millisecond)
