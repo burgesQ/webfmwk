@@ -70,7 +70,7 @@ func TestRegisterLogger(t *testing.T) {
 func TestGetLauncher(t *testing.T) {
 	s := InitServer(CheckIsUp())
 
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
 	}
@@ -79,7 +79,7 @@ func TestGetLauncher(t *testing.T) {
 func TestGetContext(t *testing.T) {
 	s := InitServer(CheckIsUp())
 
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 
 	if s.GetContext() == nil {
 		t.Errorf("Context wrongly created : %v.", s.ctx)
@@ -88,7 +88,7 @@ func TestGetContext(t *testing.T) {
 
 func TestAddHandlers(t *testing.T) {
 	s := InitServer(CheckIsUp())
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 
 	s.addHandlers(func(next HandlerFunc) HandlerFunc {
 		return HandlerFunc(func(c Context) error {

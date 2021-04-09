@@ -57,7 +57,7 @@ func TestJSONResponse(t *testing.T) {
 		}
 	)
 
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 
 	// load custom endpoints
 	for n, t := range tests {

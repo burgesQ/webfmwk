@@ -25,12 +25,11 @@ type (
 
 func stopServer(t *testing.T, s *Server) {
 	var ctx = s.GetContext()
-	t.Log("closing server ...")
+
 	ctx.Done()
 	s.Shutdown()
 	s.WaitAndStop()
 	Shutdown()
-	t.Log("server closed")
 }
 
 func wrapperPost(t *testing.T, route, routeReq string,
@@ -40,13 +39,11 @@ func wrapperPost(t *testing.T, route, routeReq string,
 
 	var s = InitServer(CheckIsUp(), DisableKeepAlive())
 
-	t.Log("init server...")
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 
 	s.POST(route, handlerRoute)
 	go s.Start(_testPort)
 	<-s.isReady
-	t.Log("server inited")
 
 	pushAndTestAPI(t, _testAddr+routeReq, content, handlerTest)
 }
@@ -57,13 +54,11 @@ func wrapperGet(t *testing.T, route, routeReq string,
 
 	var s = InitServer(CheckIsUp(), DisableKeepAlive())
 
-	t.Log("init server...")
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 
 	s.GET(route, handlerRoute)
 	go s.Start(_testPort)
 	<-s.isReady
-	t.Log("server inited")
 
 	requestAndTestAPI(t, _testAddr+routeReq, handlerTest)
 }

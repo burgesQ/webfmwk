@@ -33,16 +33,13 @@ func TestGetHandler(t *testing.T) {
 		)
 	)
 
-	t.Log("init server...")
-	defer func() {
+	t.Cleanup(func() {
 		var ctx = s.GetContext()
-		t.Log("closing server ...")
 		ctx.Done()
 		s.Shutdown()
 		s.WaitAndStop()
 		webfmwk.Shutdown()
-		t.Log("server closed")
-	}()
+	})
 
 	s.GET("/source", func(c webfmwk.Context) error {
 		return c.JSONOk(json.RawMessage(`{}`))
@@ -50,7 +47,6 @@ func TestGetHandler(t *testing.T) {
 
 	go s.Start(_testPort)
 	<-s.IsReady()
-	t.Log("server inited")
 
 	resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/another")
 	if err != nil {

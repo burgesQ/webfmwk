@@ -21,16 +21,16 @@ func TestHandler(t *testing.T) {
 		)
 	)
 
-	t.Log("init server...")
-	defer func() {
+	// t.Log("init server...")
+	t.Cleanup(func() {
 		var ctx = s.GetContext()
-		t.Log("closing server ...")
+		// t.Log("closing server ...")
 		ctx.Done()
 		s.Shutdown()
 		s.WaitAndStop()
 		webfmwk.Shutdown()
-		t.Log("server closed")
-	}()
+		// t.Log("server closed")
+	})
 
 	s.GET("/testing/string", func(c webfmwk.Context) error {
 		panic("some fatal")
@@ -46,7 +46,7 @@ func TestHandler(t *testing.T) {
 
 	go s.Start(_testPort)
 	<-s.IsReady()
-	t.Log("server inited")
+	// t.Log("server inited")
 
 	t.Run("testing panic over string ", func(t *testing.T) {
 		resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/testing/string")

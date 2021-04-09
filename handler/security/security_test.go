@@ -22,16 +22,14 @@ func TestHandler(t *testing.T) {
 		)
 	)
 
-	t.Log("init server...")
-	defer func() {
+	t.Cleanup(func() {
 		var ctx = s.GetContext()
-		t.Log("closing server ...")
+
 		ctx.Done()
 		s.Shutdown()
 		s.WaitAndStop()
 		webfmwk.Shutdown()
-		t.Log("server closed")
-	}()
+	})
 
 	s.GET("/testing", func(c webfmwk.Context) error {
 		// never reach
@@ -40,7 +38,6 @@ func TestHandler(t *testing.T) {
 
 	go s.Start(_testPort)
 	<-s.IsReady()
-	t.Log("server inited")
 
 	// req
 	resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/testing")

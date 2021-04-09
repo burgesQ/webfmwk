@@ -13,7 +13,6 @@ import (
 func TestAddress(t *testing.T) {
 	addr := new(Address)
 
-	//	asserter := assert.New(t)
 	requirer := require.New(t)
 
 	requirer.Implements((*IAddress)(nil), addr)
@@ -40,11 +39,9 @@ func TestAddress(t *testing.T) {
 }
 
 func TestRunner(t *testing.T) {
-
 	var s = InitServer(CheckIsUp(), DisableKeepAlive())
 
-	t.Log("init server...")
-	defer stopServer(t, s)
+	t.Cleanup(func() { stopServer(t, s) })
 
 	s.GET("/test", func(c Context) error {
 		return c.JSONOk(json.RawMessage(`{"value":"test"}`))
@@ -53,7 +50,6 @@ func TestRunner(t *testing.T) {
 	go s.Run(Address{Addr: ":6661"}, Address{Addr: ":6662"})
 
 	<-s.isReady
-	t.Log("server inited")
 
 	requestAndTestAPI(t, "http://127.0.0.1:6661/test",
 		func(t *testing.T, resp *http.Response) {
