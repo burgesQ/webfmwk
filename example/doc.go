@@ -29,7 +29,6 @@ func newCommand(fn func() *webfmwk.Server, name string, description ...string) *
 	c := &cmd{
 		fs: flag.NewFlagSet(name, flag.ContinueOnError),
 		fn: func() {
-
 			fmt.Println("loading server ...")
 
 			s := fn()
@@ -77,7 +76,7 @@ func (c *cmd) Run() {
 
 func root(args []string) error {
 	if len(args) < 1 {
-		return errors.New("You must pass a sub-command")
+		return errors.New("You must pass a sub-command (matching a file name)")
 	}
 
 	cmds := []command{
@@ -102,6 +101,7 @@ func root(args []string) error {
 		if cmd.Name() == subcommand {
 			cmd.Init(os.Args[2:])
 			cmd.Run()
+
 			return nil
 		}
 	}

@@ -1,6 +1,6 @@
 module example
 
-go 1.13
+go 1.15
 
 require (
 	github.com/burgesQ/gommon v1.1.3

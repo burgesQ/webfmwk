@@ -16,8 +16,8 @@ type (
 	// Payload hold the output of the endpoint
 	// QueryParam is imported from query_param.go file
 	Payload struct {
-		Content    Content    `json:"content"`
-		QueryParam QueryParam `json:"query_param"`
+		Content    Content `json:"content"`
+		QueryParam qp      `json:"query_param"`
 	}
 )
 

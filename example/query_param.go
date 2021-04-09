@@ -7,8 +7,9 @@ import (
 // QueryParam
 // see post_content.go for validation
 type qp struct {
-	Pretty bool `json:"pretty" schema:"pretty"`
-	Val    int  `schema:"val" json:"val" validate:"gte=1"`
+	Pretty bool   `json:"pretty" schema:"pretty"`
+	Val    int    `schema:"val" json:"val" validate:"gte=1"`
+	Smth   string `schema:"else" json:"else"`
 }
 
 // curl -i -X GET "127.0.0.1:4242/hello?pretty"
