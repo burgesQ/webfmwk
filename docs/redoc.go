@@ -24,18 +24,6 @@ var (
 	}
 )
 
-func Path(path string) func(*RedocParam) {
-	return func(rp *RedocParam) {
-		rp.Path = path
-	}
-}
-
-func DocURI(uri string) func(*RedocParam) {
-	return func(rp *RedocParam) {
-		rp.DocURI = uri
-	}
-}
-
 // Return a DocHandler settup for redoc
 // use of template, params expect the DocURI string
 func GetRedocHandler(opt ...func(*RedocParam)) webfmwk.DocHandler {
@@ -61,30 +49,44 @@ func GetRedocHandler(opt ...func(*RedocParam)) webfmwk.DocHandler {
 	}
 }
 
+// Path set the redoc access path
+func Path(path string) func(*RedocParam) {
+	return func(rp *RedocParam) {
+		rp.Path = path
+	}
+}
+
+// DocURI set the swagger.json sourceing URI
+func DocURI(uri string) func(*RedocParam) {
+	return func(rp *RedocParam) {
+		rp.DocURI = uri
+	}
+}
+
 const (
 	_redocTmpl = `
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>ReDoc</title>
-    <!-- needed for adaptive design -->
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+	<head>
+		<title>ReDoc</title>
+		<!-- needed for adaptive design -->
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
 
-    <!--
-        ReDoc doesn't change outer page styles
-      -->
-    <style>
-      body {
-      margin: 0;
-      padding: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <redoc spec-url={{ .DocURI }}></redoc>
-    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
-  </body>
+		<!--
+				ReDoc doesn't change outer page styles
+			-->
+		<style>
+			body {
+			margin: 0;
+			padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<redoc spec-url={{ .DocURI }}></redoc>
+		<script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
+	</body>
 </html>`
 )
