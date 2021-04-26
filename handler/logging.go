@@ -26,7 +26,7 @@ func Logging(next HandlerFunc) HandlerFunc {
 
 		c.GetLogger().Infof(" >%s< --> %q [%s]%s ", rid, GetIPFromRequest(r), r.Method, r.RequestURI)
 		e := next(c)
-		c.GetLogger().Infof(" >%s< <-- [STATUS_CODE]: took %s", rid, time.Since(start))
+		c.GetLogger().Infof(" >%s< <--: took %s", rid, time.Since(start))
 
 		return e
 	})
