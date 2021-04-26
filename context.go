@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/burgesQ/gommon/log"
+	"github.com/burgesQ/webfmwk/v4/log"
 	validator "github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
 )

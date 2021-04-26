@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/assert"
-	"github.com/burgesQ/gommon/log"
+	"github.com/burgesQ/webfmwk/v4/log"
 )
 
 var (

@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/burgesQ/gommon/log"
+	"github.com/burgesQ/webfmwk/v4/log"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
