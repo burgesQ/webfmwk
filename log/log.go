@@ -35,6 +35,7 @@ func GetLogger() Log {
 
 func (l *logger) logContentf(level Level, format string, v ...interface{}) {
 	if level <= l.level || level == LogPrint {
+		//nolint: forbidigo
 		fmt.Printf("%s"+format+"\n", append([]interface{}{
 			_out[level],
 		}, v...)...)

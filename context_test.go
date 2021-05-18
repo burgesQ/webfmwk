@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,8 +24,8 @@ func TestParam(t *testing.T) {
 
 		return c.JSONOk(id)
 	}, func(t *testing.T, resp *http.Response) {
-		assertBody(t, `"tutu"`, resp)
-		assertStatusCode(t, http.StatusOK, resp)
+		webtest.Body(t, `"tutu"`, resp)
+		webtest.StatusCode(t, http.StatusOK, resp)
 	})
 }
 
@@ -79,11 +80,11 @@ func TestFetchContent(t *testing.T) {
 				switch test.t {
 
 				case _ok:
-					assertBody(t, `{"first_name":"tutu"}`, resp)
-					assertStatusCode(t, http.StatusCreated, resp)
+					webtest.Body(t, `{"first_name":"tutu"}`, resp)
+					webtest.StatusCode(t, http.StatusCreated, resp)
 
 				case _unprocessable:
-					assertStatusCode(t, http.StatusUnprocessableEntity, resp)
+					webtest.StatusCode(t, http.StatusUnprocessableEntity, resp)
 				}
 			})
 		})
@@ -94,7 +95,7 @@ func TestJSONBlobPretty(t *testing.T) {
 	wrapperGet(t, "/test", "/test?pretty", func(c Context) error {
 		return c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
-		assertBodyDiffere(t, hBody, resp)
-		assertStatusCode(t, http.StatusOK, resp)
+		webtest.BodyDiffere(t, hBody, resp)
+		webtest.StatusCode(t, http.StatusOK, resp)
 	})
 }

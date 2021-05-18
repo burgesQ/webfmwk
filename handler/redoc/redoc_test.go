@@ -2,10 +2,10 @@ package redoc
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +25,6 @@ func TestRedocParam(t *testing.T) {
 func TestGetHandler(t *testing.T) {
 	var (
 		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.DisableKeepAlive(),
 			webfmwk.SetPrefix("/api"),
 			webfmwk.WithDocHandlers(
 				GetHandler(Path("/another"), DocURI("/source")),
@@ -48,15 +47,8 @@ func TestGetHandler(t *testing.T) {
 	go s.Start(_testPort)
 	<-s.IsReady()
 
-	resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/another")
-	if err != nil {
-		t.Fatalf("error requesting the api : %s", err.Error())
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("reading body: " + err.Error())
-	}
-
-	assert.Contains(t, string(bodyBytes), "/source")
+	webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/another",
+		func(t *testing.T, resp *http.Response) {
+			webtest.BodyContains(t, "/source", resp)
+		})
 }

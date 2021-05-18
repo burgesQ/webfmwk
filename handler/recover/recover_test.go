@@ -1,13 +1,13 @@
+//nolint: predeclared
 package recover
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const _testPort = ":6671"
@@ -15,7 +15,6 @@ const _testPort = ":6671"
 func TestHandler(t *testing.T) {
 	var (
 		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.DisableKeepAlive(),
 			webfmwk.SetPrefix("/api"),
 			webfmwk.WithHandlers(Handler),
 		)
@@ -34,14 +33,10 @@ func TestHandler(t *testing.T) {
 
 	s.GET("/testing/string", func(c webfmwk.Context) error {
 		panic("some fatal")
-		// never reached
-		return c.JSONOk(json.RawMessage(`{}`))
 	})
 
 	s.GET("/testing/error", func(c webfmwk.Context) error {
 		panic(webfmwk.NewForbidden(webfmwk.NewError("some fatal error")))
-		// never reached
-		return c.JSONOk(json.RawMessage(`{}`))
 	})
 
 	go s.Start(_testPort)
@@ -49,36 +44,22 @@ func TestHandler(t *testing.T) {
 	// t.Log("server inited")
 
 	t.Run("testing panic over string ", func(t *testing.T) {
-		resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/testing/string")
-		if err != nil {
-			t.Errorf("error requesting the api : %s", err.Error())
-		}
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("reading body: " + err.Error())
-		}
-
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Contains(t, string(body), "some fatal")
-		assert.Contains(t, string(body), "status\":500")
+		webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing/string",
+			func(t *testing.T, resp *http.Response) {
+				webtest.StatusCode(t, http.StatusInternalServerError, resp)
+				body := webtest.FetchBody(t, resp)
+				require.Contains(t, body, "some fatal")
+				require.Contains(t, body, "status\":500")
+			})
 	})
 
 	t.Run("testing panic over error hanlded", func(t *testing.T) {
-		resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/testing/error")
-		if err != nil {
-			t.Errorf("error requesting the api : %s", err.Error())
-		}
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("reading body: " + err.Error())
-		}
-
-		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-		assert.Contains(t, string(body), "some fatal error")
-		assert.Contains(t, string(body), "status\":403")
+		webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing/error",
+			func(t *testing.T, resp *http.Response) {
+				webtest.StatusCode(t, http.StatusForbidden, resp)
+				body := webtest.FetchBody(t, resp)
+				require.Contains(t, body, "some fatal")
+				require.Contains(t, body, "status\":403")
+			})
 	})
 }

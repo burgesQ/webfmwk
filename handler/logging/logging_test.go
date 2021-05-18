@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,6 @@ const _testPort = ":6670"
 func TestHandler(t *testing.T) {
 	var (
 		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.DisableKeepAlive(),
 			webfmwk.SetPrefix("/api"),
 			webfmwk.WithHandlers(Handler),
 		)
@@ -37,12 +37,8 @@ func TestHandler(t *testing.T) {
 	go s.Start(_testPort)
 	<-s.IsReady()
 
-	// req
-	resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/testing")
-	if err != nil {
-		t.Errorf("error requesting the api : %s", err.Error())
-	}
-	defer resp.Body.Close()
-
-	assert.Contains(t, resp.Header, HeaderRequestID)
+	webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing",
+		func(t *testing.T, resp *http.Response) {
+			assert.Contains(t, resp.Header, HeaderRequestID)
+		})
 }

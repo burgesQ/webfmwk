@@ -32,16 +32,16 @@ type (
 	Options []Option
 
 	serverMeta struct {
-		ctrlc            bool
-		checkIsUp        bool
-		ctrlcStarted     bool
-		cors             bool
-		disableKeepAlive bool
-		handlers         []Handler
-		docHandlers      []DocHandler
-		baseServer       *fasthttp.Server
-		prefix           string
-		routes           RoutesPerPrefix
+		ctrlc           bool
+		checkIsUp       bool
+		ctrlcStarted    bool
+		cors            bool
+		enableKeepAlive bool
+		handlers        []Handler
+		docHandlers     []DocHandler
+		baseServer      *fasthttp.Server
+		prefix          string
+		routes          RoutesPerPrefix
 	}
 )
 
@@ -52,15 +52,15 @@ func initOnce() {
 	initValidator()
 }
 
-// useOption apply the param o option to the params s server
-func useOption(s *Server, o Option) {
+// UseOption apply the param o option to the params s server
+func UseOption(s *Server, o Option) {
 	o(s)
 }
 
 // useOptions apply the params opts option to the param s server
 func useOptions(s *Server, opts ...Option) {
 	for _, o := range opts {
-		useOption(s, o)
+		UseOption(s, o)
 	}
 }
 
@@ -68,7 +68,7 @@ func useOptions(s *Server, opts ...Option) {
 // It may take some server options as parameters.
 // List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
 // WithHandlers, WithDocHandler, SetReadTimeout, SetWriteTimeout, SetIdleTimeout,
-// DisableKeepAlive.
+// EnableKeepAlive.
 func InitServer(opts ...Option) *Server {
 	once.Do(initOnce)
 
@@ -217,10 +217,10 @@ func SetIDLETimeout(val time.Duration) Option {
 	}
 }
 
-// DisableKeepAlive disable the server keep alive functions.
-func DisableKeepAlive() Option {
+// EnableKeepAlive disable the server keep alive functions.
+func EnableKeepAlive() Option {
 	return func(s *Server) {
-		s.meta.disableKeepAlive = true
+		s.meta.enableKeepAlive = true
 		s.log.Debugf("\t-- keepalive disabled")
 	}
 }
@@ -243,7 +243,7 @@ func (m *serverMeta) toServer(addr string) *fasthttp.Server {
 		WriteTimeout:                  m.baseServer.WriteTimeout,
 		IdleTimeout:                   m.baseServer.IdleTimeout,
 		Name:                          "webfmwk " + addr,
-		DisableKeepalive:              m.disableKeepAlive,
+		DisableKeepalive:              !m.enableKeepAlive,
 		DisableHeaderNamesNormalizing: true,
 		ReduceMemoryUsage:             false,
 		LogAllErrors:                  true,

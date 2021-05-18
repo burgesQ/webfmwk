@@ -34,11 +34,11 @@ func TestDumpRoutes(t *testing.T) {
 	t.Log(all)
 
 	expected := map[string][]string{
-		"DELETE": []string{"/api/delete"},
-		"GET":    []string{"/api/ping", "/api/get"},
-		"PATCH":  []string{"/api/patch"},
-		"POST":   []string{"/api/post"},
-		"PUT":    []string{"/api/put"},
+		"DELETE": {"/api/delete"},
+		"GET":    {"/api/ping", "/api/get"},
+		"PATCH":  {"/api/patch"},
+		"POST":   {"/api/post"},
+		"PUT":    {"/api/put"},
 	}
 
 	assert.Equal(t, expected, all)
@@ -70,7 +70,7 @@ func TestRegisterLogger(t *testing.T) {
 func TestGetLauncher(t *testing.T) {
 	s := InitServer(CheckIsUp())
 
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
 	}
@@ -79,7 +79,7 @@ func TestGetLauncher(t *testing.T) {
 func TestGetContext(t *testing.T) {
 	s := InitServer(CheckIsUp())
 
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 
 	if s.GetContext() == nil {
 		t.Errorf("Context wrongly created : %v.", s.ctx)
@@ -88,7 +88,7 @@ func TestGetContext(t *testing.T) {
 
 func TestAddHandlers(t *testing.T) {
 	s := InitServer(CheckIsUp())
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 
 	s.addHandlers(func(next HandlerFunc) HandlerFunc {
 		return HandlerFunc(func(c Context) error {

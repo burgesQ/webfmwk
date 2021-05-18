@@ -3,11 +3,13 @@ package webfmwk
 import (
 	"net/http"
 	"testing"
+
+	"github.com/burgesQ/gommon/webtest"
 )
 
 func TestJSONResponse(t *testing.T) {
 	var (
-		s   = InitServer(CheckIsUp(), DisableKeepAlive())
+		s   = InitServer(CheckIsUp())
 		ret = struct {
 			Message string `json:"message"`
 		}{"nul"}
@@ -57,7 +59,7 @@ func TestJSONResponse(t *testing.T) {
 		}
 	)
 
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 
 	// load custom endpoints
 	for n, t := range tests {
@@ -72,14 +74,13 @@ func TestJSONResponse(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-
-			requestAndTestAPI(t, _testAddr+"/"+name, func(t *testing.T, resp *http.Response) {
-				if test.expectedOP != http.StatusNoContent {
-					assertBody(t, hBody, resp)
-				}
-
-				assertStatusCode(t, test.expectedOP, resp)
-			})
+			webtest.RequestAndTestAPI(t, _testAddr+"/"+name,
+				func(t *testing.T, resp *http.Response) {
+					if test.expectedOP != http.StatusNoContent {
+						webtest.Body(t, hBody, resp)
+					}
+					webtest.StatusCode(t, test.expectedOP, resp)
+				})
 		})
 	}
 }

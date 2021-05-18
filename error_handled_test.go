@@ -42,19 +42,20 @@ func TestResponse(t *testing.T) {
 	assert.Equal(t, "test", NewResponse("test").Message)
 }
 
+var errTest = errors.New("test")
+
 func TestError(t *testing.T) {
-	var err = errors.New("test")
 
 	asserter := assert.New(t)
 
 	e := NewError("testing")
 	asserter.True(e.Message == "testing")
-	e = NewCustomWrappedError(err, "testing")
-	asserter.True(e.e == err)
+	e = NewCustomWrappedError(errTest, "testing")
+	asserter.True(errors.Is(e.e, errTest))
 	asserter.Equal("testing", e.Message)
-	e = NewErrorFromError(err)
+	e = NewErrorFromError(errTest)
 	asserter.Equal("test", e.Message)
-	asserter.True(e.e == err)
+	asserter.True(errors.Is(e.e, errTest))
 	asserter.Equal("test", e.Message)
 	asserter.Equal("test", e.Error())
 }

@@ -24,7 +24,7 @@ var _emptyController = func(c Context) error {
 
 func TestSetPrefix(t *testing.T) {
 	var s = InitServer(CheckIsUp(), SetPrefix(_testPrefix))
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 
 	s.GET(_testURL, _emptyController)
 
@@ -36,7 +36,7 @@ func TestSetPrefix(t *testing.T) {
 
 func TestAddRoutes(t *testing.T) {
 	var s = InitServer(CheckIsUp())
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 
 	asserter := assert.New(t)
 
@@ -95,8 +95,8 @@ func TestRouteMethod(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			var s = InitServer(CheckIsUp(), DisableKeepAlive())
-			t.Cleanup(func() { stopServer(t, s) })
+			var s = InitServer(CheckIsUp())
+			t.Cleanup(func() { stopServer(s) })
 
 			testVerb := ""
 			switch test.reqType {

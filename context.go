@@ -3,6 +3,7 @@ package webfmwk
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/burgesQ/webfmwk/v5/log"
@@ -138,9 +139,13 @@ func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	if e := validate.Struct(dest); e != nil {
 		c.log.Errorf("validating : %s", e.Error())
 
+		var ev validator.ValidationErrors
+
+		errors.As(e, &ev)
+
 		return NewUnprocessable(ValidationError{
 			Status: http.StatusUnprocessableEntity,
-			Error:  e.(validator.ValidationErrors).Translate(trans),
+			Error:  ev.Translate(trans),
 		})
 	}
 
@@ -177,9 +182,7 @@ func (c *icontext) DecodeQP(dest interface{}) ErrorHandled {
 
 // DecodeAndValidateQP implement Context
 func (c *icontext) DecodeAndValidateQP(qp interface{}) ErrorHandled {
-	e := c.DecodeQP(qp)
-
-	if e != nil {
+	if e := c.DecodeQP(qp); e != nil {
 		return e
 	}
 

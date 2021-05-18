@@ -1,5 +1,7 @@
 github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
+github.com/burgesQ/gommon v1.2.3 h1:vqqgxa8Q+g85ez6GQMJoisu3BLuxrX4bZ2hEbiuKdko=
+github.com/burgesQ/gommon v1.2.3/go.mod h1:JXuiXVcuwJ/gxtjb9Lnpp0zDIdCDASVW0uv6cWy0COs=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fasthttp/router v1.3.9 h1:/V71/6mBpH8oohAaR/DtBB4el6EETbNsBPBoCJZc4gc=

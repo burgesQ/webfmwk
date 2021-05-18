@@ -3,6 +3,7 @@ module github.com/burgesQ/webfmwk/v5
 go 1.15
 
 require (
+	github.com/burgesQ/gommon v1.2.3
 	github.com/fasthttp/router v1.3.9
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0

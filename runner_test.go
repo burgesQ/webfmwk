@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,9 +40,9 @@ func TestAddress(t *testing.T) {
 }
 
 func TestRunner(t *testing.T) {
-	var s = InitServer(CheckIsUp(), DisableKeepAlive())
+	var s = InitServer(CheckIsUp())
 
-	t.Cleanup(func() { stopServer(t, s) })
+	t.Cleanup(func() { stopServer(s) })
 
 	s.GET("/test", func(c Context) error {
 		return c.JSONOk(json.RawMessage(`{"value":"test"}`))
@@ -51,13 +52,13 @@ func TestRunner(t *testing.T) {
 
 	<-s.isReady
 
-	requestAndTestAPI(t, "http://127.0.0.1:6661/test",
+	webtest.RequestAndTestAPI(t, "http://127.0.0.1:6661/test",
 		func(t *testing.T, resp *http.Response) {
-			assertStatusCode(t, http.StatusOK, resp)
+			webtest.StatusCode(t, http.StatusOK, resp)
 		})
 
-	requestAndTestAPI(t, "http://127.0.0.1:6662/test",
+	webtest.RequestAndTestAPI(t, "http://127.0.0.1:6662/test",
 		func(t *testing.T, resp *http.Response) {
-			assertStatusCode(t, http.StatusOK, resp)
+			webtest.StatusCode(t, http.StatusOK, resp)
 		})
 }

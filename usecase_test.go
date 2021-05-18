@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	validator "github.com/go-playground/validator/v10"
+	"github.com/stretchr/testify/require"
 )
 
 type customContext struct {
@@ -26,10 +28,10 @@ type queryParam struct {
 	Some   *int `json:"some,omitempty" schema:"some" validate:"omitempty,min=-1"`
 }
 
-func TestUseCase(t *testing.T) {
+func initUseCaseServer() *Server {
 	var (
 		s = InitServer(
-			CheckIsUp(), SetPrefix("/api"), DisableKeepAlive(),
+			CheckIsUp(), SetPrefix("/api"),
 			WithHandlers(func(next HandlerFunc) HandlerFunc {
 				return HandlerFunc(func(c Context) error {
 					cc := customContext{c, "turlu"}
@@ -91,13 +93,19 @@ func TestUseCase(t *testing.T) {
 
 	s.RouteApplier(routes)
 
-	RegisterValidatorRule("custom", func(fi validator.FieldLevel) bool {
+	return s
+}
+
+func TestUseCase(t *testing.T) {
+	var s = initUseCaseServer()
+
+	require.Nil(t, RegisterValidatorRule("custom", func(fi validator.FieldLevel) bool {
 		return fi.Field().String() != "fail"
-	})
-	RegisterValidatorTrans("custom", "'{0} is invalid :)")
+	}))
+	require.Nil(t, RegisterValidatorTrans("custom", "'{0} is invalid :)"))
 	//RegisterValidatorAlias("alpha", "letters")
 
-	defer stopServer(t, s)
+	defer stopServer(s)
 	go s.Start(_testPort)
 	<-s.isReady
 
@@ -117,7 +125,7 @@ func TestUseCase(t *testing.T) {
 		url         string
 		body        string
 		code        int
-		headers     []Header
+		headers     [][2]string
 		pushContent []byte
 	}{
 		"hello world": {
@@ -181,7 +189,7 @@ func TestUseCase(t *testing.T) {
 
 		"push_wrong_header": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{"first_name":"jean", "last_name":"claude"}`),
-			headers: []Header{{"Content-Type", "plain-text"}},
+			headers: [][2]string{{"Content-Type", "plain-text"}},
 			body:    `{"status":406,"message":"Content-Type is not application/json"}`, code: http.StatusNotAcceptable,
 		},
 
@@ -213,45 +221,46 @@ func TestUseCase(t *testing.T) {
 			switch test.action {
 
 			case _reqNTest:
-				requestAndTestAPI(t, _testAddr+test.url, func(t *testing.T, resp *http.Response) {
-
-					if test.header {
-						for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
-							assertHeader(t, testVal, jsonEncode, resp)
+				webtest.RequestAndTestAPI(t, _testAddr+test.url,
+					func(t *testing.T, resp *http.Response) {
+						if test.header {
+							for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
+								webtest.Header(t, testVal, jsonEncode, resp)
+							}
 						}
-					}
 
-					if test.bodyDiffer {
-						assertBodyDiffere(t, test.body, resp)
-					} else {
-						assertBody(t, test.body, resp)
-					}
-					assertStatusCode(t, test.code, resp)
-				})
+						if test.bodyDiffer {
+							webtest.BodyDiffere(t, test.body, resp)
+						} else {
+							webtest.Body(t, test.body, resp)
+						}
+						webtest.StatusCode(t, test.code, resp)
+					})
 
 			case _deleteNTest:
-				deleteAndTestAPI(t, _testAddr+test.url, func(t *testing.T, resp *http.Response) {
-					assertBody(t, test.body, resp)
-					assertStatusCode(t, test.code, resp)
-				})
+				webtest.DeleteAndTestAPI(t, _testAddr+test.url,
+					func(t *testing.T, resp *http.Response) {
+						webtest.Body(t, test.body, resp)
+						webtest.StatusCode(t, test.code, resp)
+					})
 
 			case _pushNTest:
-				pushAndTestAPI(t, _testAddr+test.url, test.pushContent,
+				webtest.PushAndTestAPI(t, _testAddr+test.url, test.pushContent,
 					func(t *testing.T, resp *http.Response) {
 						if test.bodyDiffer {
-							assertBodyDiffere(t, test.body, resp)
+							webtest.BodyDiffere(t, test.body, resp)
 						} else {
-							assertBody(t, test.body, resp)
+							webtest.Body(t, test.body, resp)
 						}
 
-						assertStatusCode(t, test.code, resp)
+						webtest.StatusCode(t, test.code, resp)
 					}, test.headers...)
 
 			case _pushNTestContain:
-				pushAndTestAPI(t, _testAddr+test.url, test.pushContent,
+				webtest.PushAndTestAPI(t, _testAddr+test.url, test.pushContent,
 					func(t *testing.T, resp *http.Response) {
-						assertBodyContain(t, test.body, resp)
-						assertStatusCode(t, test.code, resp)
+						webtest.BodyContains(t, test.body, resp)
+						webtest.StatusCode(t, test.code, resp)
 					}, test.headers...)
 
 			}

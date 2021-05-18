@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -16,7 +16,6 @@ const (
 func TestHandler(t *testing.T) {
 	var (
 		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.DisableKeepAlive(),
 			webfmwk.SetPrefix("/api"),
 			webfmwk.WithHandlers(Handler),
 		)
@@ -39,22 +38,11 @@ func TestHandler(t *testing.T) {
 	go s.Start(_testPort)
 	<-s.IsReady()
 
-	// req
-	resp, err := http.Get("http://127.0.0.1" + _testPort + "/api/testing")
-	if err != nil {
-		t.Errorf("error requesting the api : %s", err.Error())
-	}
-	defer resp.Body.Close()
-
-	for _, h := range [][2]string{
-		{headerProtection, headerProtectionV},
-		{headerSecu, headerSecuV},
-		{headerOption, headerOptionV},
-	} {
-		key := h[0]
-		val := h[1]
-		assert.Contains(t, resp.Header, key, "asserting header %q is present", key)
-		assert.Equal(t, val, resp.Header[key][0], "asserting security header %q value is %q", key, val)
-	}
-
+	webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing",
+		func(t *testing.T, resp *http.Response) {
+			webtest.Headers(t, resp,
+				[2]string{headerProtection, headerProtectionV},
+				[2]string{headerSecu, headerSecuV},
+				[2]string{headerOption, headerOptionV})
+		})
 }

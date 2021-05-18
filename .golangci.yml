@@ -9,8 +9,6 @@ linters-settings:
       - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
   dupl:
     threshold: 100
-  exhaustive:
-    default-signifies-exhaustive: false
   funlen:
     lines: 100
     statements: 50
@@ -26,12 +24,12 @@ linters-settings:
       - opinionated
       - performance
       - style
+      # - ifElseChain
+      # - octalLiteral
+      # - wrapperFunc
     disabled-checks:
       - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
       - whyNoLint
-      - wrapperFunc
   gocyclo:
     min-complexity: 15
   goimports:
@@ -45,15 +43,18 @@ linters-settings:
         checks: argument,case,condition,return
   govet:
     check-shadowing: true
+    # enable:
+    #   - fieldalignment
     settings:
       printf:
         funcs:
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+          - (gitlab.frafos.com/gommon/golib).Infof
+          - (gitlab.frafos.com/gommon/golib).Warnf
+          - (gitlab.frafos.com/gommon/golib).Errorf
+          - (gitlab.frafos.com/gommon/golib).Fatalf
+
   lll:
-    line-length: 150
+    line-length: 140
   maligned:
     suggest-new: true
   misspell:
@@ -63,11 +64,6 @@ linters-settings:
     allow-unused: false # report any unused nolint directives
     require-explanation: false # don't require an explanation for nolint directives
     require-specific: false # don't require nolint directives to be specific about which linter is being skipped
-
-  errcheck:
-    # path to a file containing a list of functions to exclude from checking
-    # see https://github.com/kisielk/errcheck#excluding-functions for details
-    exclude: ./.errcheck.txt
 
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
@@ -80,6 +76,7 @@ linters:
     - dogsled
     - dupl
     - errcheck
+    - exportloopref
     - exhaustive
     - funlen
     - gochecknoinits
@@ -95,14 +92,12 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    # - lll
+    - lll
     - misspell
     - nakedret
     - noctx
     - nolintlint
     - rowserrcheck
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -112,19 +107,39 @@ linters:
     - unused
     - varcheck
     - whitespace
-
-    # don't enable:
     - asciicheck
-    # - gochecknoglobals
     - gocognit
-    # - godot
     - godox
     - goerr113
-    - maligned
     - nestif
     - prealloc
-    - testpackage
+    - revive
     - wsl
+    - durationcheck
+    - forbidigo
+    - wastedassign
+    - sqlclosecheck
+    - predeclared
+    - nilerr
+    - makezero
+    - ifshort
+    - gomoddirectives
+    - goheader
+    - gci
+    # - godot
+    - errorlint
+    - forcetypeassert
+
+    ### don't enable:
+    # - interfacer
+    # - maligned
+    # - cyclop
+    # - scopelint
+    # - gochecknoglobals
+    # - testpackage
+    # - exhaustivestruct
+    # - paralleltest
+    # - nlreturn
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
@@ -132,23 +147,18 @@ issues:
     - path: _test\.go
       linters:
         - gomnd
+        - gocritic
+        - wsl
+        - whitespace
+        - gosec
+        - godox
+        - funlen
 
     # https://github.com/go-critic/go-critic/issues/926
     - linters:
         - gocritic
       text: "unnecessaryDefer:"
 
-run:
-  tests: false
-  skip-dirs:
-    - test/testdata_etc
-    - internal/cache
-    - internal/renameio
-    - internal/robustio
-
-# golangci.com configuration
-# https://github.com/golangci/golangci/wiki/Configuration
-service:
-  golangci-lint-version: 1.23.x # use the fixed version to not introduce new linters unexpectedly
-  prepare:
-    - echo "here I can run custom commands, but no preparation needed for this repo"
+# run:
+#   skip-dirs:
+#     - test/testdata_etc
