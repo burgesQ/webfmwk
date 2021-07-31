@@ -7,25 +7,16 @@
 # to archive to file: C-c C-x C-a
 # open archive sibling: C-c C-tab
 
-* WIP v4 [9/15] [60%]
-DEADLINE: <2021-04-06 Tue>
+* v5 [0/5] [0%]
 
-** IDEA API generator [0/3]
-DEADLINE: <2021-04-30 Fri>
-   - [ ] cobra cmd
-   - [ ] json ready
-   - [ ] db interface ?
-** IDEA fuzzit testing
-DEADLINE: <2021-04-04 Sun>
-   - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
+** IDEA logger don't support returned error
+** TODO fields translations
 ** TODO read header for translator
-DEADLINE: <2021-05-04 Tue>
+DEADLINE: <2021-07-31 Sat>
 ** TODO perf profiling
-DEADLINE: <2021-06-30 Wed>
-
-
+DEADLINE: <2021-08-28 Sat>
 ** WIP coverage [1/9]
-DEADLINE: <2021-04-06 Tue>
+DEADLINE: <2021-06-14 Mon>
 - [ ] test CORS
 - [ ] test DumpRoutes
 - [ ] test ctrl+c
@@ -35,57 +26,6 @@ DEADLINE: <2021-04-06 Tue>
 - [ ] test tls.NewListener ?
 - [X] test runner
 - [ ] test example ?
-
-** WIP logger overload [1/2]
-DEADLINE: <2021-04-30 Fri>
-- [X] allow adding of extra prefix to logger (context ID) ?
-- [ ] display time + status code
-
-** v5 ready
-- changelog
-- readme
-- code comments / godoc
-- example ?
-
-** DONE mutliple doc handler [2/3] [66%]
-CLOSED: [2021-03-30 Tue 09:10] DEADLINE: <2021-03-05 Fri>
-- [X] support for redoc
-- [X] wrap doc handlers
-- [ ] update doc
-
-** DONE [#A] data race on logger
-** DONE recover handler
-CLOSED: [2020-04-27 Mon 12:42]
-   Allow the toggling of the the panic2error pattern
-
-** DONE cleaner doc [3/3] [100%]
-CLOSED: [2020-04-27 Mon 12:42]
-    - [X] up to date example
-    - [X] in code comment and example when needed
-    - [X] full readme [4/4] [100%]
-      - [X] miss http error handling
-      - [X] schema / validate
-      - [X] workerConfig
-      - [X] pretty
-
-** DONE lighter package
-   CLOSED: [2020-04-08 Wed 13:03]
-   - log can became internal ..? just an interface
-   - testing could be on my own git
-   - same for pretty ?
-
-** DONE test via httptest
-   CLOSED: [2020-04-07 Tue 18:16]
-** DONE proper jwt [3/3] [100%]
-   CLOSED: [2020-04-07 Tue 18:16]
-   - [X] handler and middlewares
-   - [X] fully compilent integrations
-   - [X] it's been extranlized :)
-** DONE fix test
-   CLOSED: [2020-04-06 Mon 20:40]
-** DONE IContext middlewares
-   CLOSED: [2020-04-06 Mon 17:25]
-   - [X] what for webfmwk's middlewares
 
 
 * Archive                                                           :ARCHIVE:
@@ -189,3 +129,72 @@ CLOSED: [2020-04-27 Mon 12:42]
 *** DONE PING endrpojnt should be optional
    CLOSED: [2020-04-06 Mon 17:25]
    - done
+
+
+
+                         Made with   by the community
+** DONE v4 [13/13] [100%]
+CLOSED: [2021-08-04 Wed 13:20] DEADLINE: <2021-12-28 Tue>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-08-04 Wed 13:20
+:END:
+
+*** CANCELED [#A] API generator [0/3]
+CLOSED: [2021-05-31 Mon 11:29] DEADLINE: <2021-04-30 Fri>
+   - [ ] cobra cmd
+   - [ ] json ready
+   - [ ] db interface ?
+*** CANCELED fuzzit testing
+CLOSED: [2021-05-31 Mon 11:28] DEADLINE: <2021-04-04 Sun>
+   - https://app.fuzzit.dev/orgs/burgesq-gh/tutorial
+*** CANCELED logger overload [1/2]
+CLOSED: [2021-05-31 Mon 11:29] DEADLINE: <2021-04-30 Fri>
+- [X] allow adding of extra prefix to logger (context ID) ?
+- [ ] display time + status code
+
+*** DONE v5 ready
+CLOSED: [2021-08-04 Wed 13:20]
+- changelog
+- readme
+- code comments / godoc
+- example ?
+
+*** DONE mutliple doc handler [2/3] [66%]
+CLOSED: [2021-03-30 Tue 09:10] DEADLINE: <2021-03-05 Fri>
+- [X] support for redoc
+- [X] wrap doc handlers
+- [ ] update doc
+
+*** DONE [#A] data race on logger
+*** DONE recover handler
+CLOSED: [2020-04-27 Mon 12:42]
+   Allow the toggling of the the panic2error pattern
+
+*** DONE cleaner doc [3/3] [100%]
+CLOSED: [2020-04-27 Mon 12:42]
+    - [X] up to date example
+    - [X] in code comment and example when needed
+    - [X] full readme [4/4] [100%]
+      - [X] miss http error handling
+      - [X] schema / validate
+      - [X] workerConfig
+      - [X] pretty
+
+*** DONE lighter package
+   CLOSED: [2020-04-08 Wed 13:03]
+   - log can became internal ..? just an interface
+   - testing could be on my own git
+   - same for pretty ?
+
+*** DONE test via httptest
+   CLOSED: [2020-04-07 Tue 18:16]
+*** DONE proper jwt [3/3] [100%]
+   CLOSED: [2020-04-07 Tue 18:16]
+   - [X] handler and middlewares
+   - [X] fully compilent integrations
+   - [X] it's been extranlized :)
+*** DONE fix test
+   CLOSED: [2020-04-06 Mon 20:40]
+*** DONE IContext middlewares
+   CLOSED: [2020-04-06 Mon 17:25]
+   - [X] what for webfmwk's middlewares
