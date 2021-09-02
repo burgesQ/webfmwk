@@ -54,6 +54,7 @@ func initValidator() {
 
 // Trnaslate the errs array of validation error and use the actual filed name
 // instad of the full struct namepsace one.
+// src: https://blog.depa.do/post/gin-validation-errors-handling#toc_8
 func TranslateAndUseFieldName(errs validator.ValidationErrors) ErrorValidation {
 	es := ErrorValidation{}
 
@@ -68,6 +69,7 @@ func TranslateAndUseFieldName(errs validator.ValidationErrors) ErrorValidation {
 // src: https://github.com/go-playground/validator/blob/9a5bce32538f319bf69aebb3aca90d394bc6d0cb/_examples/struct-level/main.go#L37
 func useJSONFieldName() {
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		//nolint: gomnd
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 		if name == "-" {
 			return ""
