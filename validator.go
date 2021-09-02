@@ -14,9 +14,12 @@ type (
 	// ValidationError is returned in case of form / query validation error
 	// see gtihub.com/go-playground/validator.v10
 	ValidationError struct {
-		Status int                                    `json:"status"`
-		Error  validator.ValidationErrorsTranslations `json:"message"`
+		Status int             `json:"status"`
+		Error  ErrorValidation `json:"message"`
 	}
+
+	// ErrorsValidation is a map of translated errors
+	ErrorValidation map[string]string
 )
 
 var (
@@ -47,6 +50,18 @@ func initValidator() {
 	}
 
 	useJSONFieldName()
+}
+
+// Trnaslate the errs array of validation error and use the actual filed name
+// instad of the full struct namepsace one.
+func TranslateAndUseFieldName(errs validator.ValidationErrors) ErrorValidation {
+	es := ErrorValidation{}
+
+	for _, f := range errs {
+		es[f.Field()] = f.Translate(trans)
+	}
+
+	return es
 }
 
 // Use the struct json field name for validation errors
