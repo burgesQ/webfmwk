@@ -162,7 +162,7 @@ func TestUseCase(t *testing.T) {
 		},
 		"query to struct invalide value": {
 			action: _reqNTest, url: "/api/test/queryToStruct?some=-5",
-			body: `{"status":422,"message":{"queryParam.Some":"Some must be -1 or greater"}}`, code: http.StatusUnprocessableEntity,
+			body: `{"status":422,"message":{"some":"some must be -1 or greater"}}`, code: http.StatusUnprocessableEntity,
 		},
 		"query to struct invalide field": {
 			action: _reqNTest, url: "/api/test/queryToStruct?else=true",
@@ -195,7 +195,7 @@ func TestUseCase(t *testing.T) {
 
 		"push_form_miss_field": {
 			action: _pushNTestContain, url: "/api/world", pushContent: []byte(`{"first_name":"jean"}`),
-			body: `Lastname is a required field`, code: http.StatusUnprocessableEntity,
+			body: `last_name is a required field`, code: http.StatusUnprocessableEntity,
 		},
 		"push_invalid_empty": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{}`), bodyDiffer: true,
@@ -209,7 +209,7 @@ func TestUseCase(t *testing.T) {
 
 		"push_custom": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{"first_name":"uno", "last_name":"fail"}`),
-			body: `{"status":422,"message":{"userForm.Lastname":"'Lastname is invalid :)"}}`, code: http.StatusUnprocessableEntity,
+			body: `{"status":422,"message":{"last_name":"'last_name is invalid :)"}}`, code: http.StatusUnprocessableEntity,
 		},
 
 		// TODO: test GET/DELETE/PATCH/PUT ?

@@ -226,12 +226,12 @@ func (s *Server) GetRouter() *router.Router {
 			handler := route.Handler
 
 			// register internal Habdlers
-			handler = contentIsJSON(useHandler(handler))
+			handler = contentIsJSON(handleHandlerError(handler))
 
 			// register user custom Handlers
 			if s.meta.handlers != nil {
 				for _, h := range s.meta.handlers {
-					handler = h(useHandler(handler))
+					handler = h(handleHandlerError(handler))
 				}
 			}
 
@@ -242,13 +242,6 @@ func (s *Server) GetRouter() *router.Router {
 	return r
 }
 
-// useHandler apply the HandlerFunc method
-func useHandler(next HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(c Context) error {
-		return next(c)
-	})
-}
-
 // CustomHandler return the webfmwk Handler main logic,
 // which return a HandlerFunc wrapper in an fasthttp.Handler.
 func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
@@ -256,10 +249,8 @@ func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
 		var ctx, cancel = s.genContext(c)
 		defer cancel()
 
-		if e := handler(ctx); e != nil {
-			ctx.GetLogger().Errorf("catched from controller (%T) : %s", e, e.Error())
-			HandleError(ctx, e)
-		}
+		// we skip verification as it's done in the useHandler
+		_ = handler(ctx)
 	}
 }
 

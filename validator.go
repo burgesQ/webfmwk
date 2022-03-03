@@ -1,6 +1,9 @@
 package webfmwk
 
 import (
+	"reflect"
+	"strings"
+
 	en_translator "github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	validator "github.com/go-playground/validator/v10"
@@ -11,9 +14,12 @@ type (
 	// ValidationError is returned in case of form / query validation error
 	// see gtihub.com/go-playground/validator.v10
 	ValidationError struct {
-		Status int                                    `json:"status"`
-		Error  validator.ValidationErrorsTranslations `json:"message"`
+		Status int             `json:"status"`
+		Error  ErrorValidation `json:"message"`
 	}
+
+	// ErrorsValidation is a map of translated errors
+	ErrorValidation map[string]string
 )
 
 var (
@@ -28,15 +34,49 @@ var (
 )
 
 func initValidator() {
-	var en = en_translator.New()
-	uni = ut.New(en, en)
+	var (
+		en = en_translator.New()
+		ok bool
+	)
 
-	trans, _ = uni.GetTranslator("en") // we know that en exist
+	uni = ut.New(en, en)
+	if trans, ok = uni.GetTranslator("en"); !ok {
+		logger.Fatalf("cannot get en translator")
+	}
 
 	validate = validator.New()
 	if e := en_translations.RegisterDefaultTranslations(validate, trans); e != nil {
 		logger.Fatalf("cannot init translations : %s", e.Error())
 	}
+
+	useJSONFieldName()
+}
+
+// Trnaslate the errs array of validation error and use the actual filed name
+// instad of the full struct namepsace one.
+// src: https://blog.depa.do/post/gin-validation-errors-handling#toc_8
+func TranslateAndUseFieldName(errs validator.ValidationErrors) ErrorValidation {
+	es := ErrorValidation{}
+
+	for _, f := range errs {
+		es[f.Field()] = f.Translate(trans)
+	}
+
+	return es
+}
+
+// Use the struct json field name for validation errors
+// src: https://github.com/go-playground/validator/blob/9a5bce32538f319bf69aebb3aca90d394bc6d0cb/_examples/struct-level/main.go#L37
+func useJSONFieldName() {
+	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		//nolint: gomnd
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+
+		return name
+	})
 }
 
 // RegisterValidatorRule register the  validation rule param.

@@ -37,6 +37,18 @@ func GetIPFromRequest(fc *fasthttp.RequestCtx) string {
 // internal handler
 //
 
+func handleHandlerError(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c Context) error {
+		if e := next(c); e != nil {
+			c.GetLogger().Errorf("catched from handler (%T) : %s", e, e.Error())
+			HandleError(c, e)
+		}
+
+		// always return nul to not propagte same error twice
+		return nil
+	})
+}
+
 func contentIsJSON(next HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(c Context) error {
 		var (
