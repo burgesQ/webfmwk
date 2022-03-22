@@ -13,5 +13,5 @@ require (
 	github.com/lab259/cors v0.2.0
 	github.com/segmentio/encoding v0.2.7
 	github.com/stretchr/testify v1.7.0
-	github.com/valyala/fasthttp v1.22.0
+	github.com/valyala/fasthttp v1.34.0
 )
