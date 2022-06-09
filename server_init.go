@@ -225,13 +225,21 @@ func EnableKeepAlive() Option {
 	}
 }
 
+func MaxRequestBodySize(size int) Option {
+	return func(s *Server) {
+		s.meta.baseServer.MaxRequestBodySize = size
+		s.log.Debugf("\t-- request max body size set to %d", size)
+	}
+}
+
 // return default cfg
 func getDefaultMeta() serverMeta {
 	return serverMeta{
 		baseServer: &fasthttp.Server{
-			ReadTimeout:  20 * time.Second,
-			WriteTimeout: 20 * time.Second,
-			IdleTimeout:  1 * time.Minute,
+			ReadTimeout:        20 * time.Second,
+			WriteTimeout:       20 * time.Second,
+			IdleTimeout:        1 * time.Minute,
+			MaxRequestBodySize: fasthttp.DefaultMaxRequestBodySize,
 		},
 		routes: make(RoutesPerPrefix),
 	}
@@ -242,6 +250,7 @@ func (m *serverMeta) toServer(addr string) *fasthttp.Server {
 		ReadTimeout:                   m.baseServer.ReadTimeout,
 		WriteTimeout:                  m.baseServer.WriteTimeout,
 		IdleTimeout:                   m.baseServer.IdleTimeout,
+		MaxRequestBodySize:            m.baseServer.MaxRequestBodySize,
 		Name:                          "webfmwk " + addr,
 		DisableKeepalive:              !m.enableKeepAlive,
 		DisableHeaderNamesNormalizing: true,
