@@ -33,6 +33,31 @@ var (
 	loggerMu, poolMu sync.Mutex
 )
 
+// Run allow to launch multiple server from a single call.
+// It take an va arg list of Address as argument.
+// The method wait for the server to end via a call to WaitAndStop.
+func (s *Server) Run(addrs ...Address) {
+	defer s.WaitAndStop()
+
+	for i := range addrs {
+		addr := addrs[i]
+		if !addr.IsOk() {
+			s.GetLogger().Errorf("invalid address format : %s", addr)
+			continue
+		}
+
+		if tls := addr.GetTLS(); tls != nil && !tls.Empty() {
+			s.GetLogger().Infof("starting %s on https://%s", addr.GetName(), addr.GetAddr())
+			s.StartTLS(addr.GetAddr(), tls)
+
+			continue
+		}
+
+		s.GetLogger().Infof("starting %s on http://%s", addr.GetName(), addr.GetAddr())
+		s.Start(addr.GetAddr())
+	}
+}
+
 //
 // Global methods
 //
@@ -200,6 +225,11 @@ func (s *Server) GetLauncher() *WorkerLauncher {
 // GetContext return the context.Context used.
 func (s *Server) GetContext() context.Context {
 	return s.ctx
+}
+
+// GetContext return the server' context cancel func.
+func (s *Server) GetCancel() context.CancelFunc {
+	return s.cancel
 }
 
 // IsReady return the channel on which `true` is send once the server is up.

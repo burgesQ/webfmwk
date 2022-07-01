@@ -1,6 +1,9 @@
 package webfmwk
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type (
 	// IAddress interface hold an api server listing configuration
@@ -28,7 +31,19 @@ type (
 		// TLS implement IAddress, tlsConfig  implement the TLSConfig interface.
 		TLS *TLSConfig `json:"tls,omitempty" mapstructure:"tls,omitempty"`
 	}
+
+	Addresses []Address
 )
+
+func (a Addresses) String() (ret string) {
+	ret = "number of address(es): " + strconv.Itoa(len(a))
+
+	for i := range a {
+		ret += "\n" + a[i].String()
+	}
+
+	return
+}
 
 // String implement the fmt.Stringer interface
 func (a Address) String() string {
@@ -61,29 +76,4 @@ func (a Address) GetTLS() ITLSConfig {
 // GetName implement the IAddress interface
 func (a Address) GetName() string {
 	return a.Name
-}
-
-// Run allow to launch multiple server from a single call.
-// It take an va arg list of Address as argument.
-// The method wait for the server to end via a call to WaitAndStop.
-func (s *Server) Run(addrs ...Address) {
-	defer s.WaitAndStop()
-
-	for i := range addrs {
-		addr := addrs[i]
-		if !addr.IsOk() {
-			s.GetLogger().Errorf("invalid address format : %s", addr)
-			continue
-		}
-
-		if tls := addr.GetTLS(); tls != nil && !tls.Empty() {
-			s.GetLogger().Infof("starting %s on https://%s", addr.GetName(), addr.GetAddr())
-			s.StartTLS(addr.GetAddr(), tls)
-
-			continue
-		}
-
-		s.GetLogger().Infof("starting %s on http://%s", addr.GetName(), addr.GetAddr())
-		s.Start(addr.GetAddr())
-	}
 }

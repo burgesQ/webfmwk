@@ -5,7 +5,7 @@ GO_CC				= go
 COVER_FILE  = .coverage.out
 COVER_VALUE = -cover -coverprofile=$(COVER_FILE) -covermode=atomic
 TEST_COVER  = $(COVER_VALUE)
-TEST_ARGS   = -v -short
+TEST_ARGS   = -v
 TEST_FILTER = #-run <pattern>
 app_name		= github.com/burgesQ/$(NAME)
 TEST_FILES  = `go list ./...`
