@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.7] - 2022-06-09
+
+### Added
+- more unit test
+- support for sighup
+- new logger to reduce external deps
+- swagger handler
+- fields validation error now use json fields name
+- max body size parameter
+
+### Changed
+- tls check for ca pool
+- fasthttp updated
+
+### Fixed
+
+### Removed
+- old logger
 ## [5.0.0] - 2021-03-05
 
 ### Added
