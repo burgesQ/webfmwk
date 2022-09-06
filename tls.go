@@ -126,14 +126,15 @@ func (s *Server) loadCa(cfg *tls.Config, tlsCfg ITLSConfig) *tls.Config {
 		return cfg
 	}
 
-	caCertPEM, e := ioutil.ReadFile(tlsCfg.GetCa())
-	if e != nil {
-		s.log.Fatalf("cannot load ca cert pool %q: %s", tlsCfg.GetCa(), e.Error())
-	}
+	var roots = x509.NewCertPool()
 
-	roots := x509.NewCertPool()
-	if !roots.AppendCertsFromPEM(caCertPEM) {
-		s.log.Fatalf("failed to parse root certificate")
+	if caPath := tlsCfg.GetCa(); caPath != "" {
+		if caCertPEM, e := ioutil.ReadFile(caPath); e != nil {
+			s.log.Fatalf("cannot load ca cert pool | %s", tlsCfg.GetCa(), e.Error())
+		} else if !roots.AppendCertsFromPEM(caCertPEM) {
+			s.log.Fatalf("failed to parse root certificate")
+		}
+
 	}
 
 	// :smirk:
