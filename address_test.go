@@ -32,14 +32,19 @@ func TestAddress(t *testing.T) {
 	requirer.True(addr.IsOk())
 
 	requirer.Equal(
-		"\nname: \"oops\"\naddr: \"Testing\"\ntls:\n\tcert:\t\"some/cert\"\n"+
-			"\tkey:\t\"some/key\"\n\tca:\t\"\",\n\tinsecure:\ttrue\n",
+		"\n\t -!- name: \"oops\"\n\t -!- addr: \"Testing\"\n"+
+			"\t -!- tls:\n\t ~!~ cert:\t\"some/cert\"\n"+
+			"\t ~!~ key:\t\"some/key\"\n\t ~!~ ca:\t\"\",\n"+
+			"\t ~!~ insecure:\ttrue\n",
 		addr.String())
 
 	requirer.Equal(
-		"number of address(es): 2\n\nname: \"oops\"\naddr: \"Testing\"\ntls:\n"+
-			"\tcert:\t\"some/cert\"\n\tkey:\t\"some/key\"\n\tca:\t\"\",\n"+
-			"\tinsecure:\ttrue\n\nname: \"smth\"\naddr: \"Testing_2\"",
+
+		"\t --- number of address(es): 2\n\n\t -!- name: \"oops\"\n"+
+			"\t -!- addr: \"Testing\"\n\t -!- tls:\n"+
+			"\t ~!~ cert:\t\"some/cert\"\n\t ~!~ key:\t\"some/key\"\n"+
+			"\t ~!~ ca:\t\"\",\n\t ~!~ insecure:\ttrue\n"+
+			"\nname: \"smth\"\naddr: \"Testing_2\"\n\t --- end address",
 		Addresses{
 			*addr,
 			Address{
