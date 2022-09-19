@@ -14,8 +14,8 @@ type (
 	// ValidationError is returned in case of form / query validation error
 	// see gtihub.com/go-playground/validator.v10
 	ValidationError struct {
-		Status int             `json:"status"`
 		Error  ErrorValidation `json:"message"`
+		Status int             `json:"status"`
 	}
 
 	// ErrorsValidation is a map of translated errors
@@ -104,6 +104,7 @@ func RegisterValidatorTrans(name, what string) error {
 		},
 		func(ut ut.Translator, fe validator.FieldError) string {
 			t, _ := ut.T(name, fe.Field())
+
 			return t
 		})
 }

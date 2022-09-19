@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Server) getResp(uri string) (r *http.Response, e error) {
-	req, err := http.NewRequestWithContext(s.ctx, "GET", uri, nil)
+	req, err := http.NewRequestWithContext(s.ctx, "GET", uri, http.NoBody)
 	if err != nil {
 		return r, err
 	}
@@ -44,9 +44,11 @@ func (s *Server) pollPingEndpoint(addr string) {
 			/* #nosec  */
 			if resp, e := s.getResp(uri); e != nil {
 				s.log.Infof("server not up (%q) ... %s", uri, e.Error())
+
 				continue
 			} else if e = resp.Body.Close(); e != nil || resp.StatusCode != http.StatusOK {
 				s.log.Infof("unexpected status code, %s : %v", resp.StatusCode, e)
+
 				continue
 			}
 

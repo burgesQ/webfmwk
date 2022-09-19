@@ -127,6 +127,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 
 	if e := json.Unmarshal(b, &dest); e != nil {
 		c.log.Errorf("fetching payload: %s", e.Error())
+
 		return errUnprocessablePayload
 	}
 
@@ -174,6 +175,7 @@ func (c *icontext) DecodeQP(dest interface{}) ErrorHandled {
 
 	if e := decoder.Decode(dest, m); e != nil {
 		c.log.Errorf("validating qp : %s", e.Error())
+
 		return NewUnprocessable(NewErrorFromError(e))
 	}
 

@@ -43,6 +43,7 @@ func (s *Server) Run(addrs ...Address) {
 		addr := addrs[i]
 		if !addr.IsOk() {
 			s.GetLogger().Errorf("invalid address format : %s", addr)
+
 			continue
 		}
 
@@ -71,6 +72,7 @@ func GetLogger() log.Log {
 	// from init server - if the logger is fetched before
 	// the server init (which happened pretty often)
 	once.Do(initOnce)
+
 	return logger
 }
 
@@ -105,6 +107,7 @@ func (s *Server) Start(addr string) {
 	s.internalHandler()
 	s.launcher.Start("http server "+addr, func() error {
 		go s.pollPingEndpoint(addr)
+
 		return s.internalInit(addr).ListenAndServe(addr)
 	})
 }
@@ -182,6 +185,7 @@ func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start("exit handler", func() error {
 			s.exitHandler(os.Interrupt, syscall.SIGHUP)
+
 			return nil
 		})
 
@@ -201,6 +205,7 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 		select {
 		case si := <-c:
 			s.log.Infof("captured %v, exiting...", si)
+
 			return
 		case <-s.ctx.Done():
 			return
@@ -246,18 +251,21 @@ func (s *Server) IsReady() chan bool {
 //nolint: unparam
 func (s *Server) addHandlers(h ...Handler) *Server {
 	s.meta.handlers = append(s.meta.handlers, h...)
+
 	return s
 }
 
 // RegisterDocHandler is used to register an swagger doc handler
 func (s *Server) addDocHandlers(h ...DocHandler) *Server {
 	s.meta.docHandlers = append(s.meta.docHandlers, h...)
+
 	return s
 }
 
 // SetPrefix save a custom context so it can be fetched in the controllers
 func (s *Server) setPrefix(prefix string) *Server {
 	s.meta.prefix = prefix
+
 	return s
 }
 
@@ -274,6 +282,7 @@ func (s *Server) registerLogger(lg log.Log) *Server {
 // EnableCORS enable CORS verification
 func (s *Server) enableCORS() *Server {
 	s.meta.cors = true
+
 	return s
 }
 
@@ -282,6 +291,7 @@ func (s *Server) enableCORS() *Server {
 // vie the IsReady() method.
 func (s *Server) enableCheckIsUp() *Server {
 	s.meta.checkIsUp = true
+
 	return s
 }
 
@@ -289,5 +299,6 @@ func (s *Server) enableCheckIsUp() *Server {
 // worker to the interuption pool, please use the `GetLauncher` method
 func (s *Server) enableCtrlC() *Server {
 	s.meta.ctrlc = true
+
 	return s
 }

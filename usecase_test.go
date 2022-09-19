@@ -162,11 +162,11 @@ func TestUseCase(t *testing.T) {
 		},
 		"query to struct invalide value": {
 			action: _reqNTest, url: "/api/test/queryToStruct?some=-5",
-			body: `{"status":422,"message":{"some":"some must be -1 or greater"}}`, code: http.StatusUnprocessableEntity,
+			body: `{"message":{"some":"some must be -1 or greater"},"status":422}`, code: http.StatusUnprocessableEntity,
 		},
 		"query to struct invalide field": {
 			action: _reqNTest, url: "/api/test/queryToStruct?else=true",
-			body: `{"status":422,"message":"schema: invalid path \"else\""}`, code: http.StatusUnprocessableEntity,
+			body: `{"message":"schema: invalid path \"else\"","status":422}`, code: http.StatusUnprocessableEntity,
 		},
 		"query to struct filled": {
 			action: _reqNTest, url: "/api/test/queryToStruct?some=10&pretty",
@@ -190,7 +190,7 @@ func TestUseCase(t *testing.T) {
 		"push_wrong_header": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{"first_name":"jean", "last_name":"claude"}`),
 			headers: [][2]string{{"Content-Type", "plain-text"}},
-			body:    `{"status":406,"message":"Content-Type is not application/json"}`, code: http.StatusNotAcceptable,
+			body:    `{"message":"Content-Type is not application/json","status":406}`, code: http.StatusNotAcceptable,
 		},
 
 		"push_form_miss_field": {
@@ -204,12 +204,12 @@ func TestUseCase(t *testing.T) {
 
 		"push_invalid_wrong": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{`),
-			body: `{"status":422,"message":"Unprocessable payload"}`, code: http.StatusUnprocessableEntity,
+			body: `{"message":"Unprocessable payload","status":422}`, code: http.StatusUnprocessableEntity,
 		},
 
 		"push_custom": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{"first_name":"uno", "last_name":"fail"}`),
-			body: `{"status":422,"message":{"last_name":"'last_name is invalid :)"}}`, code: http.StatusUnprocessableEntity,
+			body: `{"message":{"last_name":"'last_name is invalid :)"},"status":422}`, code: http.StatusUnprocessableEntity,
 		},
 
 		// TODO: test GET/DELETE/PATCH/PUT ?

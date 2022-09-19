@@ -81,6 +81,9 @@ type (
 
 	// Route hold the data for one route.
 	Route struct {
+		// Handler hold the exposed Handler method.
+		Handler HandlerFunc `json:"-"`
+
 		// Verbe hold the verbe at which the handler is reachable.
 		Verbe string `json:"verbe"`
 
@@ -90,9 +93,6 @@ type (
 
 		// NAme is used in message.
 		Name string `json:"name"`
-
-		// Handler hold the exposed Handler method.
-		Handler HandlerFunc `json:"-"`
 	}
 
 	// Routes hold an array of route.

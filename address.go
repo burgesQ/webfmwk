@@ -25,11 +25,10 @@ type (
 
 	// Address implement the IAddress interface
 	Address struct {
-		Addr string `json:"addr"`
-		Name string `json:"name"`
-
 		// TLS implement IAddress, tlsConfig  implement the TLSConfig interface.
-		TLS *TLSConfig `json:"tls,omitempty" mapstructure:"tls,omitempty"`
+		TLS  *TLSConfig `json:"tls,omitempty" mapstructure:"tls,omitempty"`
+		Addr string     `json:"addr"`
+		Name string     `json:"name"`
 	}
 
 	Addresses []Address

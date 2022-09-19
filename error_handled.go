@@ -25,36 +25,36 @@ type (
 	}
 
 	errorHandled struct {
-		op      int
 		content interface{}
+		op      int
 	}
 
 	// Error struct is used to answer http error.
 	Error struct {
-		// Status hold the error code status.
-		//
-		// Example: 500
-		Status int `json:"status" validate:"required"`
+		e error
 
 		// Message hold the error message.
 		//
 		// Example: the impossible appened
 		Message string `json:"message" example:"no such resource" validate:"required"`
 
-		e error
+		// Status hold the error code status.
+		//
+		// Example: 500
+		Status int `json:"status" validate:"required"`
 	}
 
 	// Response is returned in case of success.
 	Response struct {
-		// Status hold the error code status.
-		//
-		// Example: 200
-		Status int `json:"status" example:"204" validate:"required"`
-
 		// Message hold the error message.
 		//
 		// Example: action successfully completed
 		Message string `json:"content,omitempty"`
+
+		// Status hold the error code status.
+		//
+		// Example: 200
+		Status int `json:"status" example:"204" validate:"required"`
 	}
 )
 
@@ -65,6 +65,7 @@ func HandleError(ctx Context, e error) {
 	var eh ErrorHandled
 	if errors.As(e, &eh) {
 		_ = ctx.JSON(eh.GetOPCode(), eh.GetContent())
+
 		return
 	}
 
@@ -73,7 +74,7 @@ func HandleError(ctx Context, e error) {
 
 // NewResponse generate a new Response struct.
 func NewResponse(str string) Response {
-	return Response{Message: str, Status: 200}
+	return Response{Message: str, Status: http.StatusOK}
 }
 
 // SetStatusCode set the response status code.
@@ -90,7 +91,7 @@ func (a Error) Error() string {
 func NewError(err string) Error {
 	return Error{
 		Message: err,
-		Status:  500,
+		Status:  http.StatusInternalServerError,
 	}
 }
 
@@ -100,7 +101,7 @@ func NewCustomWrappedError(err error, msg string) Error {
 	return Error{
 		Message: msg,
 		e:       err,
-		Status:  500,
+		Status:  http.StatusInternalServerError,
 	}
 }
 
@@ -109,7 +110,7 @@ func NewErrorFromError(err error) Error {
 	return Error{
 		Message: err.Error(),
 		e:       err,
-		Status:  500,
+		Status:  http.StatusInternalServerError,
 	}
 }
 

@@ -12,7 +12,7 @@ TEST_FILES  = `go list ./...`
 
 TEST        = $(GO_CC) test $(TEST_COVER) $(TEST_ARGS) $(TEST_FILES) $(TEST_FILTER)
 
-LINT				= golangci-lint run
+LINT				= golangci-lint run --max-same-issues 50
 
 VET					= $(GO_CC) vet .
 

@@ -63,6 +63,9 @@ var (
 		/* unaproved ? */
 		tls.TLS_RSA_WITH_AES_256_GCM_SHA384, // ECDH-RSA-AES256-SHA384
 	}
+
+	// Returned in case of invalid ca cert path.
+	ErrParseUserCA = errors.New("failed to parse root certificate")
 )
 
 // GetCert implemte TLSConfig.
@@ -163,10 +166,11 @@ func loadCA(caPath string, cfg *tls.Config) error {
 	}
 
 	pool := x509.NewCertPool()
+
 	if caCertPEM, e := ioutil.ReadFile(caPath); e != nil {
 		return fmt.Errorf("cannot load ca cert %q in pool: %w", caPath, e)
 	} else if !pool.AppendCertsFromPEM(caCertPEM) {
-		return errors.New("failed to parse root certificate")
+		return ErrParseUserCA
 	}
 
 	cfg.ClientCAs = pool
@@ -188,8 +192,7 @@ func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
 func wrapVerifyPerrCertificate(caCert *x509.CertPool, remoteAddr string) func(
 	[][]byte, [][]*x509.Certificate) error {
 	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
-		//copied from the default options in src/crypto/tls/handshake_server.go, 680 (go 1.11)
-		//but added DNSName
+		// from src/crypto/tls/handshake_server.go:680 (go 1.11) + DNSName check
 		var opts = x509.VerifyOptions{
 			Roots:         caCert,
 			CurrentTime:   time.Now(),
