@@ -36,11 +36,13 @@ type (
 )
 
 func (a Addresses) String() (ret string) {
-	ret = "number of address(es): " + strconv.Itoa(len(a))
+	ret = "\t --- number of address(es): " + strconv.Itoa(len(a))
 
 	for i := range a {
 		ret += "\n" + a[i].String()
 	}
+
+	ret += "\n\t --- end address"
 
 	return
 }
@@ -48,7 +50,7 @@ func (a Addresses) String() (ret string) {
 // String implement the fmt.Stringer interface
 func (a Address) String() string {
 	if a.TLS != nil && !a.TLS.Empty() {
-		return fmt.Sprintf("\nname: %q\naddr: %q\ntls:\n%s", a.Name, a.Addr, a.TLS.String())
+		return fmt.Sprintf("\n\t -!- name: %q\n\t -!- addr: %q\n\t -!- tls:\n%s", a.Name, a.Addr, a.TLS.String())
 	}
 
 	return fmt.Sprintf("name: %q\naddr: %q", a.Name, a.Addr)
