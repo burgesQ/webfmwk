@@ -46,6 +46,7 @@ func (c *icontext) IsPretty() bool {
 // SendResponse implement Context
 func (c *icontext) SendResponse(statusCode int, content []byte, headers ...Header) error {
 	c.setHeaders(headers...)
+
 	return c.response(statusCode, content)
 }
 

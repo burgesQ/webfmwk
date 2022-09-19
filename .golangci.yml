@@ -1,12 +1,15 @@
 linters-settings:
-  depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      - github.com/sirupsen/logrus
-    packages-with-error-message:
-      - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
+  # depguard:
+  #   list-type: blacklist
+  #   packages:
+  #     # logging is allowed only by gommon/golib/v2/log
+  #     - github.com/sirupsen/logrus
+  #     - log
+  #     - gommon/golib/log
+  #   packages-with-error-message:
+  #     - log: "logging is allowed only by golib/v2/log"
+  #     - github.com/sirupsen/logrus: "logging is allowed only by golib/v2/log"
+  #     - gommon/golib/log: "logging is allowed only by golib/v2/log"
   dupl:
     threshold: 100
   funlen:
@@ -30,12 +33,27 @@ linters-settings:
     disabled-checks:
       - dupImport # https://github.com/go-critic/go-critic/issues/845
       - whyNoLint
+      - ioutilDeprecated
   gocyclo:
     min-complexity: 15
   goimports:
     local-prefixes: github.com/golangci/golangci-lint
-  golint:
-    min-confidence: 0
+  # golint:
+  #   min-confidence: 0
+  # see https://github.com/mgechev/revive#available-rules for details.
+  revive:
+    ignore-generated-header: true
+    severity: warning
+    rules:
+      - name: indent-error-flow
+        severity: warning
+      - name: add-constant
+        severity: warning
+        arguments:
+          - maxLitCount: "3"
+            allowStrs: '""'
+            allowInts: "0,1,2"
+            # allowFloats: "0.0,0.,1.0,1.,2.0,2."
   gomnd:
     settings:
       mnd:
@@ -43,15 +61,15 @@ linters-settings:
         checks: argument,case,condition,return
   govet:
     check-shadowing: true
-    # enable:
-    #   - fieldalignment
+    enable:
+      - fieldalignment
     settings:
-      printf:
-        funcs:
-          - (gitlab.frafos.com/gommon/golib).Infof
-          - (gitlab.frafos.com/gommon/golib).Warnf
-          - (gitlab.frafos.com/gommon/golib).Errorf
-          - (gitlab.frafos.com/gommon/golib).Fatalf
+      # printf:
+      #   funcs:
+      #     - (gitlab.frafos.com/gommon/golib).Infof
+      #     - (gitlab.frafos.com/gommon/golib).Warnf
+      #     - (gitlab.frafos.com/gommon/golib).Errorf
+      #     - (gitlab.frafos.com/gommon/golib).Fatalf
 
   lll:
     line-length: 140
@@ -71,7 +89,7 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
+    # - deadcode
     - depguard
     - dogsled
     - dupl
@@ -83,14 +101,12 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    - gofmt
+    # - gofmt
     - goimports
-    - golint
     - gomnd
     - goprintffuncname
     - gosec
     - gosimple
-    - govet
     - ineffassign
     - lll
     - misspell
@@ -99,17 +115,15 @@ linters:
     - nolintlint
     - rowserrcheck
     - staticcheck
-    - structcheck
+    # - structcheck
     - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
+    # - varcheck
     - whitespace
     - asciicheck
     - gocognit
-    - godox
     - goerr113
     - nestif
     - prealloc
@@ -126,38 +140,45 @@ linters:
     - gomoddirectives
     - goheader
     - gci
-    # - godot
     - errorlint
     - forcetypeassert
+    - nlreturn
+    - govet
+    - typecheck
+    - cyclop
+    # - godox
+    # - godot
+    - interfacer ## archived
+
+    # obsolet
+    # - golint ## obsolete, pls use revive instead
+
+    # - maligned ## use fieldalignment
+    # - scopelint ## exportloopref
 
     ### don't enable:
-    # - interfacer
-    # - maligned
-    # - cyclop
-    # - scopelint
     # - gochecknoglobals
     # - testpackage
     # - exhaustivestruct
     # - paralleltest
-    # - nlreturn
+
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
     - path: _test\.go
       linters:
-        - gomnd
+        - funlen
+        - gosec
         - gocritic
+        - revive
         - wsl
         - whitespace
-        - gosec
-        - godox
-        - funlen
-
+        - govet
     # https://github.com/go-critic/go-critic/issues/926
-    - linters:
-        - gocritic
-      text: "unnecessaryDefer:"
+    # - linters:
+    #     - gocritic
+    #   text: "unnecessaryDefer:"
 
 # run:
 #   skip-dirs:

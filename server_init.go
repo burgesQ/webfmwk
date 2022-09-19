@@ -32,16 +32,16 @@ type (
 	Options []Option
 
 	serverMeta struct {
-		ctrlc           bool
+		baseServer      *fasthttp.Server
+		handlers        []Handler       // 24
+		docHandlers     []DocHandler    // 24
+		routes          RoutesPerPrefix // 8
+		prefix          string          // 16
+		ctrlc           bool            // 1 * 5
 		checkIsUp       bool
 		ctrlcStarted    bool
 		cors            bool
 		enableKeepAlive bool
-		handlers        []Handler
-		docHandlers     []DocHandler
-		baseServer      *fasthttp.Server
-		prefix          string
-		routes          RoutesPerPrefix
 	}
 )
 

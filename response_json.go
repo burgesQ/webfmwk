@@ -66,6 +66,7 @@ func (c *icontext) JSONBlob(statusCode int, content []byte) error {
 			if c.IsPretty() {
 				return json.Indent(&out, content, "", "  ")
 			}
+
 			return json.Compact(&out, content)
 		}
 	)
