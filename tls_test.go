@@ -8,12 +8,9 @@ import (
 )
 
 // TODO: start a tls server and assert the server
-// - 1) listen on the correct addr
-// - 2) server the correct tls files
-
+// TODO: test listener
+// TODO: test mTLS settings
 func TestLoadTLS(t *testing.T) {
-	// load keys
-	s := InitServer()
 	asserter := assert.New(t)
 
 	defer func() {
@@ -22,8 +19,9 @@ func TestLoadTLS(t *testing.T) {
 		}
 	}()
 
-	tlsCfg := s.getTLSCfg(TLSConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
+	tlsCfg, err := GetTLSCfg(TLSConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
 
+	assert.Nil(t, err)
 	assert.Equal(t, tlsCfg.CipherSuites, DefaultCipher)
 	asserter.Equal(tlsCfg.CurvePreferences, DefaultCurve)
 	asserter.Equal(tlsCfg.MinVersion, uint16(tls.VersionTLS12))
