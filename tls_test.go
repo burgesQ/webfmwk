@@ -8,24 +8,31 @@ import (
 )
 
 // TODO: start a tls server and assert the server
-// - 1) listen on the correct addr
-// - 2) server the correct tls files
-
+// TODO: test listener
+// TODO: test mTLS settings
 func TestLoadTLS(t *testing.T) {
-	// load keys
-	s := InitServer()
 	asserter := assert.New(t)
 
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("catched : %v", r)
-		}
-	}()
+	t.Log("insecure config")
+	{
+		tlsCfg, err := GetTLSCfg(TLSConfig{
+			Key:      "./example/server.key",
+			Cert:     "./example/server.cert",
+			Ca:       "./example/cacert.pem",
+			Insecure: true,
+		})
 
-	tlsCfg := s.getTLSCfg(TLSConfig{Key: "./example/server.key", Cert: "./example/server.cert"})
+		asserter.Nil(err)
+		asserter.Equal(DefaultCipher, tlsCfg.CipherSuites)
+		asserter.Equal(DefaultCurve, tlsCfg.CurvePreferences)
+		asserter.Equal(uint16(tls.VersionTLS12), tlsCfg.MinVersion)
+		asserter.Equal(uint16(tls.VersionTLS13), tlsCfg.MaxVersion)
+		// TODO: test loaded certs ?
+		asserter.Equal(tlsCfg.ClientAuth, tls.NoClientCert)
+	}
 
-	assert.Equal(t, tlsCfg.CipherSuites, DefaultCipher)
-	asserter.Equal(tlsCfg.CurvePreferences, DefaultCurve)
-	asserter.Equal(tlsCfg.MinVersion, uint16(tls.VersionTLS12))
-	asserter.Equal(tlsCfg.MaxVersion, uint16(tls.VersionTLS13))
+	t.Log("secured mTLS config")
+	{
+		/* TODO */
+	}
 }

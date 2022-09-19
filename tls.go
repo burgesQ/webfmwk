@@ -3,9 +3,12 @@ package webfmwk
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
+	"strings"
+	"time"
 )
 
 type (
@@ -44,6 +47,9 @@ var (
 	DefaultCurve = []tls.CurveID{
 		tls.CurveP256,
 		tls.X25519,
+		// tls.CurveP384
+		// tls.CurveP521
+
 	}
 	// DefaultCipher accepted
 	DefaultCipher = []uint16{
@@ -90,67 +96,123 @@ func (config TLSConfig) String() string {
 		return ""
 	}
 
-	return fmt.Sprintf("\tcert:\t%q\n\tkey:\t%q\n\tca:\t%q,\n\tinsecure:\t%t\n",
+	return fmt.Sprintf("\t ~!~ cert:\t%q\n\t ~!~ key:\t%q\n\t ~!~ ca:\t%q,\n\t ~!~ insecure:\t%t\n",
 		config.Cert, config.Key, config.Ca, config.Insecure)
 }
 
 // StartTLS expose an server to an HTTPS address..
-func (s *Server) StartTLS(addr string, tlsStuffs ITLSConfig) {
+func (s *Server) StartTLS(addr string, tlsCfg ITLSConfig) {
 	s.internalHandler()
+
+	listener, err := LoadTLSListener(addr, tlsCfg)
+	if err != nil {
+		s.GetLogger().Fatalf("loading tls: %s", err.Error())
+	}
+
 	s.launcher.Start("https server "+addr, func() error {
-		return s.internalInit(addr).Serve(s.loadTLSListener(addr, tlsStuffs))
+		return s.internalInit(addr).Serve(listener)
 	})
 }
 
-func (s *Server) getTLSCfg(tlsCfg ITLSConfig) *tls.Config {
-	cert, err := tls.LoadX509KeyPair(tlsCfg.GetCert(), tlsCfg.GetKey())
+// LoadTLSListener return a tls listner ready for mTLS.
+func LoadTLSListener(addr string, tlsCfg ITLSConfig) (net.Listener, error) {
+	var cfg, e = GetTLSCfg(tlsCfg)
+	if e != nil {
+		return nil, e
+	}
+
+	listner, e := net.Listen("tcp4", addr)
+	if e != nil {
+		return nil, e
+	}
+
+	return tls.NewListener(listner, cfg), nil
+}
+
+// GetTLSCfg return a tls config ready for mTLS.
+// thx to https://dev.to/living_syn/validating-client-certificate-sans-in-go-i5p
+func GetTLSCfg(tlsCfg ITLSConfig) (*tls.Config, error) {
+	var cert, err = tls.LoadX509KeyPair(tlsCfg.GetCert(), tlsCfg.GetKey())
 	if err != nil {
-		s.log.Fatalf("cannot load cert [%s] and key [%s]: %s",
-			tlsCfg.GetCert(), tlsCfg.GetKey(), err.Error())
+		return nil, fmt.Errorf("cannot load cert [%s] and key [%s]: %w",
+			tlsCfg.GetCert(), tlsCfg.GetKey(), err)
 	}
 
 	/* #nosec */
+	cfg := getBaseTLSCfg(&cert)
+
+	if tlsCfg.GetInsecure() {
+		cfg.ClientAuth = tls.NoClientCert
+
+		return cfg, nil
+	}
+
+	cfg.ClientAuth = tls.RequireAndVerifyClientCert
+	if e := loadCA(tlsCfg.GetCa(), cfg); e != nil {
+		return cfg, e
+	}
+
+	cfg.GetConfigForClient = wrapGetConfigForClient(&cert, cfg.ClientCAs)
+
+	return cfg, nil
+}
+
+func loadCA(caPath string, cfg *tls.Config) error {
+	if caPath == "" {
+		return nil
+	}
+
+	pool := x509.NewCertPool()
+	if caCertPEM, e := ioutil.ReadFile(caPath); e != nil {
+		return fmt.Errorf("cannot load ca cert %q in pool: %w", caPath, e)
+	} else if !pool.AppendCertsFromPEM(caCertPEM) {
+		return errors.New("failed to parse root certificate")
+	}
+
+	cfg.ClientCAs = pool
+
+	return nil
+}
+
+func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
 	return &tls.Config{
-		Certificates:             []tls.Certificate{cert},
+		Certificates:             []tls.Certificate{*cert},
 		PreferServerCipherSuites: true,
 		CurvePreferences:         DefaultCurve,
 		MinVersion:               tls.VersionTLS12,
-		MaxVersion:               tls.VersionTLS13,
+		MaxVersion:               tls.VersionTLS13, // tls.VersionTLS12 ?
 		CipherSuites:             DefaultCipher,
 	}
 }
 
-// register ca cert pool and toggle cert requirement
-func (s *Server) loadCa(cfg *tls.Config, tlsCfg ITLSConfig) *tls.Config {
-	if tlsCfg.GetInsecure() {
-		return cfg
-	}
-
-	var roots = x509.NewCertPool()
-
-	if caPath := tlsCfg.GetCa(); caPath != "" {
-		if caCertPEM, e := ioutil.ReadFile(caPath); e != nil {
-			s.log.Fatalf("cannot load ca cert pool | %s", tlsCfg.GetCa(), e.Error())
-		} else if !roots.AppendCertsFromPEM(caCertPEM) {
-			s.log.Fatalf("failed to parse root certificate")
+func wrapVerifyPerrCertificate(caCert *x509.CertPool, remoteAddr string) func(
+	[][]byte, [][]*x509.Certificate) error {
+	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+		//copied from the default options in src/crypto/tls/handshake_server.go, 680 (go 1.11)
+		//but added DNSName
+		var opts = x509.VerifyOptions{
+			Roots:         caCert,
+			CurrentTime:   time.Now(),
+			Intermediates: x509.NewCertPool(),
+			KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+			DNSName:       strings.Split(remoteAddr, ":")[0],
 		}
 
+		_, err := verifiedChains[0][0].Verify(opts)
+
+		return err
 	}
-
-	// :smirk:
-	cfg.ClientCAs = roots
-	cfg.ClientAuth = tls.RequireAndVerifyClientCert
-
-	return cfg
 }
 
-func (s *Server) loadTLSListener(addr string, tlsCfg ITLSConfig) net.Listener {
-	cfg := s.loadCa(s.getTLSCfg(tlsCfg), tlsCfg)
+func wrapGetConfigForClient(cert *tls.Certificate, caCert *x509.CertPool) func(
+	*tls.ClientHelloInfo) (*tls.Config, error) {
+	return func(hi *tls.ClientHelloInfo) (*tls.Config, error) {
+		var cfg = getBaseTLSCfg(cert)
 
-	listner, err := net.Listen("tcp4", addr)
-	if err != nil {
-		s.log.Fatalf("cannot listen on %q: %s", addr, err.Error())
+		cfg.ClientAuth, cfg.ClientCAs = tls.RequireAndVerifyClientCert, caCert
+		cfg.VerifyPeerCertificate = wrapVerifyPerrCertificate(caCert,
+			hi.Conn.RemoteAddr().String())
+
+		return cfg, nil
 	}
-
-	return tls.NewListener(listner, cfg)
 }
