@@ -6,8 +6,15 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 
 ## [5.1.1]
 
-### Added 
+### Added
 - paramtrize TLS level
+- tls get it own pacakge 
+- new GetLevel method to the IConfig interface
+
+### Remove 
+- webfmwk.tls doens't exist anymore - please use webfmwk/v5/tls.(I)Config
+- webfmwk.LoadTLSListener -> webfmwk/v5/tls.LoadListener
+- webfmwk.GetTLSLCfg -> webfmwk/v5/tls.GetCfg
 
 ## [5.1.0] - 2020-19-09
 

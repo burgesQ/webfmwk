@@ -54,12 +54,18 @@ func GetTLSCfg(icfg IConfig) (*tls.Config, error) {
 		return cfg, nil
 	}
 
-	cfg.ClientAuth = tls.RequireAndVerifyClientCert
+	// .RequireAndVerifyClientCert
+	lvl := icfg.GetLevel()
+	if lvl == tls.NoClientCert {
+		lvl = tls.RequestClientCert
+	}
+
+	cfg.ClientAuth = lvl
 	if e := loadCA(icfg.GetCa(), cfg); e != nil {
 		return cfg, e
 	}
 
-	cfg.GetConfigForClient = wrapGetConfigForClient(&cert, cfg.ClientCAs)
+	cfg.GetConfigForClient = wrapGetConfigForClient(&cert, cfg.ClientCAs, lvl)
 
 	return cfg, nil
 }
@@ -93,6 +99,24 @@ func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
 	}
 }
 
+func wrapGetConfigForClient(
+	cert *tls.Certificate,
+	caCert *x509.CertPool,
+	level tls.ClientAuthType) func(
+	*tls.ClientHelloInfo) (*tls.Config, error) {
+	return func(hi *tls.ClientHelloInfo) (*tls.Config, error) {
+		var cfg = getBaseTLSCfg(cert)
+
+		cfg.ClientAuth, cfg.ClientCAs = level, caCert
+		if level == tls.RequireAndVerifyClientCert {
+			cfg.VerifyPeerCertificate = wrapVerifyPerrCertificate(caCert,
+				hi.Conn.RemoteAddr().String())
+		}
+
+		return cfg, nil
+	}
+}
+
 func wrapVerifyPerrCertificate(caCert *x509.CertPool, remoteAddr string) func(
 	[][]byte, [][]*x509.Certificate) error {
 	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
@@ -108,18 +132,5 @@ func wrapVerifyPerrCertificate(caCert *x509.CertPool, remoteAddr string) func(
 		_, err := verifiedChains[0][0].Verify(opts)
 
 		return err
-	}
-}
-
-func wrapGetConfigForClient(cert *tls.Certificate, caCert *x509.CertPool) func(
-	*tls.ClientHelloInfo) (*tls.Config, error) {
-	return func(hi *tls.ClientHelloInfo) (*tls.Config, error) {
-		var cfg = getBaseTLSCfg(cert)
-
-		cfg.ClientAuth, cfg.ClientCAs = tls.RequireAndVerifyClientCert, caCert
-		cfg.VerifyPeerCertificate = wrapVerifyPerrCertificate(caCert,
-			hi.Conn.RemoteAddr().String())
-
-		return cfg, nil
 	}
 }
