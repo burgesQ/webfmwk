@@ -8,7 +8,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 
 ### Added
 - paramtrize TLS level
-- tls get it own pacakge 
+- tls get it own pacakge
 - new GetLevel method to the IConfig interface
 
 ### Remove 

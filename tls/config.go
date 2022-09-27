@@ -32,11 +32,11 @@ type (
 	// Config contain the tls config passed by the config file.
 	// It implement Config
 	Config struct {
-		Cert     string `json:"cert" mapstructur:"cert"`
-		Key      string `json:"key" mapstructur:"key"`
-		Ca       string `json:"ca" mapstructur:"ca"`
-		Insecure bool   `json:"insecure" mapstructur:"insecure"`
-		Level    Level  `json:"level" mapstructur:"level"`
+		Cert     string `json:"cert"     mapstructure:"cert"`
+		Key      string `json:"key"      mapstructure:"key"`
+		Ca       string `json:"ca"       mapstructure:"ca"`
+		Insecure bool   `json:"insecure" mapstructure:"insecure"`
+		Level    Level  `json:"level"    mapstructure:"level"`
 	}
 )
 
