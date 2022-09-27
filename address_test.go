@@ -36,7 +36,7 @@ func TestAddress(t *testing.T) {
 		"\n\t -!- name: \"oops\"\n\t -!- addr: \"Testing\"\n"+
 			"\t -!- tls:\n\t ~!~ cert:\t\"some/cert\"\n"+
 			"\t ~!~ key:\t\"some/key\"\n\t ~!~ ca:\t\"\",\n"+
-			"\t ~!~ insecure:\ttrue\n",
+			"\t ~!~ insecure:\ttrue\n\t ~!~ level:\tnever\n",
 		addr.String())
 
 	requirer.Equal(
@@ -45,6 +45,7 @@ func TestAddress(t *testing.T) {
 			"\t -!- addr: \"Testing\"\n\t -!- tls:\n"+
 			"\t ~!~ cert:\t\"some/cert\"\n\t ~!~ key:\t\"some/key\"\n"+
 			"\t ~!~ ca:\t\"\",\n\t ~!~ insecure:\ttrue\n"+
+			"\t ~!~ level:\tnever\n"+
 			"\nname: \"smth\"\naddr: \"Testing_2\"\n\t --- end address",
 		Addresses{
 			*addr,

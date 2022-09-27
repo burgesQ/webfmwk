@@ -1,6 +1,9 @@
 package tls
 
-import "fmt"
+import (
+	"crypto/tls"
+	"fmt"
+)
 
 type (
 	// IConfig is used to interface the TLS implemtation.
@@ -19,6 +22,9 @@ type (
 		// GetInsecure return true if the TLS Certificate shouldn't be checked.
 		GetInsecure() bool
 
+		// GetLevel return
+		GetLevel() tls.ClientAuthType
+
 		// IsEmpty return true if the config is empty.
 		Empty() bool
 	}
@@ -30,40 +36,45 @@ type (
 		Key      string `json:"key" mapstructur:"key"`
 		Ca       string `json:"ca" mapstructur:"ca"`
 		Insecure bool   `json:"insecure" mapstructur:"insecure"`
+		Level    Level  `json:"level" mapstructur:"level"`
 	}
 )
 
 // GetCert implemte Config.
-func (config Config) GetCert() string {
-	return config.Cert
+func (cfg Config) GetCert() string {
+	return cfg.Cert
 }
 
 // GetKey implemte Config.
-func (config Config) GetKey() string {
-	return config.Key
+func (cfg Config) GetKey() string {
+	return cfg.Key
 }
 
 // GetKey implemte Config.
-func (config Config) GetCa() string {
-	return config.Ca
+func (cfg Config) GetCa() string {
+	return cfg.Ca
 }
 
 // GetInsecure implemte Config.
-func (config Config) GetInsecure() bool {
-	return config.Insecure
+func (cfg Config) GetInsecure() bool {
+	return cfg.Insecure
+}
+
+func (cfg Config) GetLevel() tls.ClientAuthType {
+	return cfg.Level.STD()
 }
 
 // Empty implemte Config.
-func (config Config) Empty() bool {
-	return config.Cert == "" && config.Key == ""
+func (cfg Config) Empty() bool {
+	return cfg.Cert == "" && cfg.Key == ""
 }
 
 // String implement Stringer interface.
-func (config Config) String() string {
-	if config.Empty() {
+func (cfg Config) String() string {
+	if cfg.Empty() {
 		return ""
 	}
 
-	return fmt.Sprintf("\t ~!~ cert:\t%q\n\t ~!~ key:\t%q\n\t ~!~ ca:\t%q,\n\t ~!~ insecure:\t%t\n",
-		config.Cert, config.Key, config.Ca, config.Insecure)
+	return fmt.Sprintf("\t ~!~ cert:\t%q\n\t ~!~ key:\t%q\n\t ~!~ ca:\t%q,\n\t ~!~ insecure:\t%t\n\t ~!~ level:\t%s\n",
+		cfg.Cert, cfg.Key, cfg.Ca, cfg.Insecure, cfg.Level)
 }

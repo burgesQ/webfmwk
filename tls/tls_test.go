@@ -15,12 +15,13 @@ func TestLoadTLS(t *testing.T) {
 
 	t.Log("insecure config")
 	{
-		cfg, err := GetTLSCfg(Config{
+		icfg := Config{
 			Key:      "../example/server.key",
 			Cert:     "../example/server.cert",
 			Ca:       "../example/cacert.pem",
 			Insecure: true,
-		})
+		}
+		cfg, err := GetTLSCfg(icfg)
 
 		asserter.Nil(err)
 		asserter.Equal(DefaultCipher, cfg.CipherSuites)
@@ -29,6 +30,10 @@ func TestLoadTLS(t *testing.T) {
 		asserter.Equal(uint16(tls.VersionTLS13), cfg.MaxVersion)
 		// TODO: test loaded certs ?
 		asserter.Equal(tls.NoClientCert, cfg.ClientAuth)
+
+		asserter.Equal("\t ~!~ cert:\t\"../example/server.cert\"\n\t ~!~ key:\t\"../example/server.key\"\n"+
+			"\t ~!~ ca:\t\"../example/cacert.pem\",\n\t ~!~ insecure:\ttrue\n\t ~!~ level:\tnever\n", icfg.String())
+
 	}
 
 	t.Log("secured mTLS config")
