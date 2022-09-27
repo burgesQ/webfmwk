@@ -3,6 +3,8 @@ package webfmwk
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/burgesQ/webfmwk/v5/tls"
 )
 
 type (
@@ -14,7 +16,7 @@ type (
 		GetAddr() string
 
 		// GetTLS return a pointer to an TLSConfig if present, nil otherwise.
-		GetTLS() ITLSConfig
+		GetTLS() tls.IConfig
 
 		// GetName return the name of the address, for debug purpose.
 		GetName() string
@@ -26,9 +28,9 @@ type (
 	// Address implement the IAddress interface
 	Address struct {
 		// TLS implement IAddress, tlsConfig  implement the TLSConfig interface.
-		TLS  *TLSConfig `json:"tls,omitempty" mapstructure:"tls,omitempty"`
-		Addr string     `json:"addr"`
-		Name string     `json:"name"`
+		TLS  *tls.Config `json:"tls,omitempty" mapstructure:"tls,omitempty"`
+		Addr string      `json:"addr"`
+		Name string      `json:"name"`
 	}
 
 	Addresses []Address
@@ -66,7 +68,7 @@ func (a Address) GetAddr() string {
 }
 
 // GetTLS implement the IAddress interface
-func (a Address) GetTLS() ITLSConfig {
+func (a Address) GetTLS() tls.IConfig {
 	if a.TLS == nil {
 		return nil
 	}

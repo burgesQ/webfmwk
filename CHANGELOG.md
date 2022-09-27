@@ -4,9 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.1.0] - 2020-19-09
+## [5.1.1]
 
 ### Added 
+- paramtrize TLS level
+
+## [5.1.0] - 2020-19-09
+
+### Added
 - Support for mTLS (#43)
 - LoadTLSListener and GetTLSCfg method
 

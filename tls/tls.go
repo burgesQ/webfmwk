@@ -1,4 +1,4 @@
-package webfmwk
+package tls
 
 import (
 	"crypto/tls"
@@ -6,40 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"strings"
 	"time"
-)
-
-type (
-	// ITLSConfig is used to interface the TLS implemtation.
-	ITLSConfig interface {
-		fmt.Stringer
-
-		// GetCert return the full path to the server certificate file.
-		GetCert() string
-
-		// GetKey return the full path to the server key file.
-		GetKey() string
-
-		// GetCa return the full path to the server ca cert file.
-		GetCa() string
-
-		// GetInsecure return true if the TLS Certificate shouldn't be checked.
-		GetInsecure() bool
-
-		// IsEmpty return true if the config is empty.
-		Empty() bool
-	}
-
-	// TLSConfig contain the tls config passed by the config file.
-	// It implement TLSConfig
-	TLSConfig struct {
-		Cert     string `json:"cert" mapstructur:"cert"`
-		Key      string `json:"key" mapstructur:"key"`
-		Ca       string `json:"ca" mapstructur:"ca"`
-		Insecure bool   `json:"insecure" mapstructur:"insecure"`
-	}
 )
 
 var (
@@ -68,90 +36,26 @@ var (
 	ErrParseUserCA = errors.New("failed to parse root certificate")
 )
 
-// GetCert implemte TLSConfig.
-func (config TLSConfig) GetCert() string {
-	return config.Cert
-}
-
-// GetKey implemte TLSConfig.
-func (config TLSConfig) GetKey() string {
-	return config.Key
-}
-
-// GetKey implemte TLSConfig.
-func (config TLSConfig) GetCa() string {
-	return config.Ca
-}
-
-// GetInsecure implemte TLSConfig.
-func (config TLSConfig) GetInsecure() bool {
-	return config.Insecure
-}
-
-// Empty implemte TLSConfig.
-func (config TLSConfig) Empty() bool {
-	return config.Cert == "" && config.Key == ""
-}
-
-// String implement Stringer interface.
-func (config TLSConfig) String() string {
-	if config.Empty() {
-		return ""
-	}
-
-	return fmt.Sprintf("\t ~!~ cert:\t%q\n\t ~!~ key:\t%q\n\t ~!~ ca:\t%q,\n\t ~!~ insecure:\t%t\n",
-		config.Cert, config.Key, config.Ca, config.Insecure)
-}
-
-// StartTLS expose an server to an HTTPS address..
-func (s *Server) StartTLS(addr string, tlsCfg ITLSConfig) {
-	s.internalHandler()
-
-	listener, err := LoadTLSListener(addr, tlsCfg)
-	if err != nil {
-		s.GetLogger().Fatalf("loading tls: %s", err.Error())
-	}
-
-	s.launcher.Start("https server "+addr, func() error {
-		return s.internalInit(addr).Serve(listener)
-	})
-}
-
-// LoadTLSListener return a tls listner ready for mTLS.
-func LoadTLSListener(addr string, tlsCfg ITLSConfig) (net.Listener, error) {
-	var cfg, e = GetTLSCfg(tlsCfg)
-	if e != nil {
-		return nil, e
-	}
-
-	listner, e := net.Listen("tcp4", addr)
-	if e != nil {
-		return nil, e
-	}
-
-	return tls.NewListener(listner, cfg), nil
-}
-
 // GetTLSCfg return a tls config ready for mTLS.
 // thx to https://dev.to/living_syn/validating-client-certificate-sans-in-go-i5p
-func GetTLSCfg(tlsCfg ITLSConfig) (*tls.Config, error) {
-	var cert, err = tls.LoadX509KeyPair(tlsCfg.GetCert(), tlsCfg.GetKey())
+func GetTLSCfg(icfg IConfig) (*tls.Config, error) {
+	var cert, err = tls.LoadX509KeyPair(icfg.GetCert(), icfg.GetKey())
 	if err != nil {
 		return nil, fmt.Errorf("cannot load cert [%s] and key [%s]: %w",
-			tlsCfg.GetCert(), tlsCfg.GetKey(), err)
+			icfg.GetCert(), icfg.GetKey(), err)
 	}
 
 	/* #nosec */
 	cfg := getBaseTLSCfg(&cert)
 
-	if tlsCfg.GetInsecure() {
+	if icfg.GetInsecure() {
 		cfg.ClientAuth = tls.NoClientCert
 
 		return cfg, nil
 	}
 
 	cfg.ClientAuth = tls.RequireAndVerifyClientCert
-	if e := loadCA(tlsCfg.GetCa(), cfg); e != nil {
+	if e := loadCA(icfg.GetCa(), cfg); e != nil {
 		return cfg, e
 	}
 

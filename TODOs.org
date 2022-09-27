@@ -7,10 +7,15 @@
 # to archive to file: C-c C-x C-a
 # open archive sibling: C-c C-tab
 
-* v5 [0/5] [0%]
+* TODO v5 [1/6] [16%]
 
-** IDEA logger don't support returned error
-** TODO fields translations
+** TODO parametrize TLS level
+** IDEA better logger
+- [ ] allow prefixing
+- [ ] based on zero logs perhaps ?
+  - [ ] must have syslog support
+** DONE fields translations
+CLOSED: [2022-09-27 Tue 16:21]
 ** TODO read header for translator
 DEADLINE: <2021-07-31 Sat>
 ** TODO perf profiling

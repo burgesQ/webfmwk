@@ -3,6 +3,7 @@ package webfmwk
 import (
 	"testing"
 
+	"github.com/burgesQ/webfmwk/v5/tls"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +22,7 @@ func TestAddress(t *testing.T) {
 	addr = &Address{
 		Addr: "Testing",
 		Name: "oops",
-		TLS: &TLSConfig{
+		TLS: &tls.Config{
 			Cert:     "some/cert",
 			Key:      "some/key",
 			Insecure: true,
