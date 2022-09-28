@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/webfmwk/v5/tls"
 	"github.com/lab259/cors"
 	"github.com/valyala/fasthttp"
 )
@@ -47,9 +48,9 @@ func (s *Server) Run(addrs ...Address) {
 			continue
 		}
 
-		if tls := addr.GetTLS(); tls != nil && !tls.Empty() {
+		if cfg := addr.GetTLS(); cfg != nil && !cfg.Empty() {
 			s.GetLogger().Infof("starting %s on https://%s", addr.GetName(), addr.GetAddr())
-			s.StartTLS(addr.GetAddr(), tls)
+			s.StartTLS(addr.GetAddr(), cfg)
 
 			continue
 		}
@@ -109,6 +110,20 @@ func (s *Server) Start(addr string) {
 		go s.pollPingEndpoint(addr)
 
 		return s.internalInit(addr).ListenAndServe(addr)
+	})
+}
+
+// StartTLS expose an server to an HTTPS address..
+func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
+	s.internalHandler()
+
+	listener, err := tls.LoadListener(addr, cfg)
+	if err != nil {
+		s.GetLogger().Fatalf("loading tls: %s", err.Error())
+	}
+
+	s.launcher.Start("https server "+addr, func() error {
+		return s.internalInit(addr).Serve(listener)
 	})
 }
 

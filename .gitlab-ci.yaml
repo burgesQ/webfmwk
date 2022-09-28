@@ -1,0 +1,54 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "v1" || $CI_COMMIT_BRANCH == "v2" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_IID
+
+image: docker.frafos.net/go-ci:1.15
+
+stages:
+  - test
+
+.go-cache:
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  before_script:
+    - mkdir -p .go
+  cache:
+    paths:
+      - .go/pkg/mod/
+
+linting:
+  stage: test
+  allow_failure: true
+  script:
+    - make lint
+
+# Address sanitizer and race detector:
+#   image: docker.frafos.net/go-ci-clang:1.15
+#   stage: test
+#   dependencies:
+#     - Vendor
+#   script:
+#     - make test-msan
+#     - make test-race
+
+unit testing:
+  stage: test
+  extends: .go-cache
+  script:
+    - make test-cover -e TEST_ARGS='-v' 2>&1 | tee out.txt
+    - make test-cover-html
+    - cat out.txt | go-junit-report > report.xml
+    - gocover-cobertura < cover.cov > cover.xml
+  coverage: /\(statements\)(?:\s+)?(\d+(?:\.\d+)?%)/
+  artifacts:
+    when: always
+    paths:
+      - report.xml
+      - cover.xml
+      - cover.html
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: cover.xml

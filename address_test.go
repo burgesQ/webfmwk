@@ -3,6 +3,7 @@ package webfmwk
 import (
 	"testing"
 
+	"github.com/burgesQ/webfmwk/v5/tls"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +22,7 @@ func TestAddress(t *testing.T) {
 	addr = &Address{
 		Addr: "Testing",
 		Name: "oops",
-		TLS: &TLSConfig{
+		TLS: &tls.Config{
 			Cert:     "some/cert",
 			Key:      "some/key",
 			Insecure: true,
@@ -35,7 +36,7 @@ func TestAddress(t *testing.T) {
 		"\n\t -!- name: \"oops\"\n\t -!- addr: \"Testing\"\n"+
 			"\t -!- tls:\n\t ~!~ cert:\t\"some/cert\"\n"+
 			"\t ~!~ key:\t\"some/key\"\n\t ~!~ ca:\t\"\",\n"+
-			"\t ~!~ insecure:\ttrue\n",
+			"\t ~!~ insecure:\ttrue\n\t ~!~ level:\tnever\n",
 		addr.String())
 
 	requirer.Equal(
@@ -44,6 +45,7 @@ func TestAddress(t *testing.T) {
 			"\t -!- addr: \"Testing\"\n\t -!- tls:\n"+
 			"\t ~!~ cert:\t\"some/cert\"\n\t ~!~ key:\t\"some/key\"\n"+
 			"\t ~!~ ca:\t\"\",\n\t ~!~ insecure:\ttrue\n"+
+			"\t ~!~ level:\tnever\n"+
 			"\nname: \"smth\"\naddr: \"Testing_2\"\n\t --- end address",
 		Addresses{
 			*addr,
