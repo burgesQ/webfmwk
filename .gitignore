@@ -1,2 +1,4 @@
 *.temp
 .coverage.out
+*.cov
+*.html

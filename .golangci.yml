@@ -1,15 +1,16 @@
 linters-settings:
-  # depguard:
-  #   list-type: blacklist
-  #   packages:
-  #     # logging is allowed only by gommon/golib/v2/log
-  #     - github.com/sirupsen/logrus
-  #     - log
-  #     - gommon/golib/log
-  #   packages-with-error-message:
-  #     - log: "logging is allowed only by golib/v2/log"
-  #     - github.com/sirupsen/logrus: "logging is allowed only by golib/v2/log"
-  #     - gommon/golib/log: "logging is allowed only by golib/v2/log"
+  depguard:
+    list-type: blacklist
+    packages:
+      # logging is allowed only by gommon/golib/v2/log
+      - github.com/sirupsen/logrus
+      - log
+      - gommon/golib/log
+      - fmt
+    packages-with-error-message:
+      - log: "logging is allowed only by golib/v2/log"
+      - github.com/sirupsen/logrus: "logging is allowed only by golib/v2/log"
+      - gommon/golib/log: "logging is allowed only by golib/v2/log"
   dupl:
     threshold: 100
   funlen:
@@ -44,6 +45,7 @@ linters-settings:
   revive:
     ignore-generated-header: true
     severity: warning
+    # enable-all-rules: true
     rules:
       - name: indent-error-flow
         severity: warning
@@ -64,12 +66,12 @@ linters-settings:
     enable:
       - fieldalignment
     settings:
-      # printf:
-      #   funcs:
-      #     - (gitlab.frafos.com/gommon/golib).Infof
-      #     - (gitlab.frafos.com/gommon/golib).Warnf
-      #     - (gitlab.frafos.com/gommon/golib).Errorf
-      #     - (gitlab.frafos.com/gommon/golib).Fatalf
+      printf:
+        funcs:
+          - (gitlab.frafos.com/gommon/golib).Infof
+          - (gitlab.frafos.com/gommon/golib).Warnf
+          - (gitlab.frafos.com/gommon/golib).Errorf
+          - (gitlab.frafos.com/gommon/golib).Fatalf
 
   lll:
     line-length: 140
@@ -101,7 +103,7 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    # - gofmt
+    - gofmt
     - goimports
     - gomnd
     - goprintffuncname
@@ -146,7 +148,7 @@ linters:
     - govet
     - typecheck
     - cyclop
-    # - godox
+    - godox
     # - godot
     - interfacer ## archived
 
@@ -162,7 +164,6 @@ linters:
     # - exhaustivestruct
     # - paralleltest
 
-
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
@@ -172,9 +173,8 @@ issues:
         - gosec
         - gocritic
         - revive
-        - wsl
-        - whitespace
-        - govet
+        - stylecheck
+        - godox
     # https://github.com/go-critic/go-critic/issues/926
     # - linters:
     #     - gocritic
