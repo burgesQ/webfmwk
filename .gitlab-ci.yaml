@@ -49,6 +49,7 @@ unit testing:
       - cover.html
     reports:
       junit: report.xml
+      # cobertura: cover.xml
       coverage_report:
         coverage_format: cobertura
         path: cover.xml
