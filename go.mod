@@ -11,6 +11,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/schema v1.2.0
 	github.com/lab259/cors v0.2.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/segmentio/encoding v0.2.7
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.34.0

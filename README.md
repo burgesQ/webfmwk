@@ -7,12 +7,18 @@
 [![Version compatibility with Go 1.15 onward using modules][15]][5]
 [![License][16]][6]
 
+
+[![Internal Build Status][17]][7]
+[![Internal Coverage Report][18]][8]
+
 [1]:https://github.com/burgesQ/webfmwk/actions?query=workflow%3AGoTest
 [2]:http://godoc.org/github.com/burgesQ/webfmwk/
 [3]:https://codecov.io/gh/burgesQ/webfmwk
 [4]:https://goreportcard.com/report/github.com/burgesQ/webfmwk
 [5]:https://github.com/burgesQ/webfmwk#run
 [6]:https://raw.githubusercontent.com/burgesQ/webfmwk/master/LICENSE
+[7]:https://gitlab.frafos.net/gommon/webfmwk/-/commits/master
+[8]:https://gitlab.frafos.net/gommon/webfmwk/-/commits/master
 
 [11]:https://github.com/burgesQ/webfmwk/workflows/GoTest/badge.svg
 [12]:https://godoc.org/github.com/burgesQ/webfmwk/v5?status.svg
@@ -20,6 +26,8 @@
 [14]:https://goreportcard.com/badge/github.com/burgesQ/webfmwk
 [15]:https://img.shields.io/badge/compatible%20with-go1.15+-5272b4.svg
 [16]:http://img.shields.io/badge/license-mit-blue.svg
+[17]:https://gitlab.frafos.net/gommon/webfmwk/badges/master/pipeline.svg
+[18]:https://gitlab.frafos.net/gommon/webfmwk/badges/master/coverage.svg
 
 ## What
 
