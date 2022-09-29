@@ -1,20 +1,21 @@
-package tls
+package cmd
 
 import (
 	"reflect"
 
+	"github.com/burgesQ/webfmwk/v5/tls"
 	"github.com/mitchellh/mapstructure"
 )
 
-// StringToSyslogHookFunc allow tls.Level param to be processed
+// StringToLevelHookFunc allow tls.Level param to be processed
 // by the spf13/cobra and spf13/viper utility.
 // Use as following with frafos:
 //
 //  func fetchCfg() (cfg api.ServerCfg) {
 //          cmd.ReadCfg(&cfg,
 //                  cmd_log.StringToSyslogHookFunc(),
-//                  tls.StringToSyslogHookFunc())
-func StringToSyslogHookFunc() mapstructure.DecodeHookFunc {
+//                  tls.StringToLevelHookFunc())
+func StringToLevelHookFunc() mapstructure.DecodeHookFunc {
 	return func(f reflect.Type, t reflect.Type, data interface{}) (
 		interface{}, error) {
 		if f.Name() != "string" || t.Name() != "Level" {
@@ -24,11 +25,11 @@ func StringToSyslogHookFunc() mapstructure.DecodeHookFunc {
 		raw, ok := data.(string)
 		if raw == "" || !ok {
 			return data, nil
-		} else if t != reflect.TypeOf(NoClientCert) {
+		} else if t != reflect.TypeOf(tls.NoClientCert) {
 			return data, nil
 		}
 
-		lvl := NoClientCert
+		var lvl tls.Level
 		e := lvl.Set(raw)
 
 		return lvl, e
