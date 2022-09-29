@@ -7,9 +7,14 @@
 # to archive to file: C-c C-x C-a
 # open archive sibling: C-c C-tab
 
-* TODO v5 [1/6] [16%]
+* TODO v5 [3/7] [42%]
 
-** TODO parametrize TLS level
+** DONE gitlab ci support
+CLOSED: [2022-09-29 Thu 11:43]
+- [X] ci file
+- [X] new makefile
+** DONE parametrize TLS level
+CLOSED: [2022-09-29 Thu 11:43]
 ** IDEA better logger
 - [ ] allow prefixing
 - [ ] based on zero logs perhaps ?
