@@ -33,31 +33,37 @@ const (
 	// during the handshake, and that at least one valid certificate is required
 	// to be sent by the client.
 	RequireAndVerifyClientCert
+	// RequireAndVerifyClientCertAndSAN is the same as RequireAndVerifyClientCert
+	// with an extra check to the certificate SAN.
+	RequireAndVerifyClientCertAndSAN
 )
 
 var (
 	_lvl2str = map[Level]string{
-		NoClientCert:               "never",
-		RequestClientCert:          "demande",
-		RequireAnyClientCert:       "allow",
-		VerifyClientCertIfGiven:    "try",
-		RequireAndVerifyClientCert: "hard",
+		NoClientCert:                     "never",
+		RequestClientCert:                "demande",
+		RequireAnyClientCert:             "allow",
+		VerifyClientCertIfGiven:          "try",
+		RequireAndVerifyClientCert:       "hard",
+		RequireAndVerifyClientCertAndSAN: "hardAndSAN",
 	}
 
 	_str2lvl = map[string]Level{
-		"never":   NoClientCert,
-		"demande": RequestClientCert,
-		"allow":   RequireAnyClientCert,
-		"try":     VerifyClientCertIfGiven,
-		"hard":    RequireAndVerifyClientCert,
+		"never":      NoClientCert,
+		"demande":    RequestClientCert,
+		"allow":      RequireAnyClientCert,
+		"try":        VerifyClientCertIfGiven,
+		"hard":       RequireAndVerifyClientCert,
+		"hardAndSAN": RequireAndVerifyClientCertAndSAN,
 	}
 
 	_toNatif = map[Level]tls.ClientAuthType{
-		NoClientCert:               tls.NoClientCert,
-		RequestClientCert:          tls.RequestClientCert,
-		RequireAnyClientCert:       tls.RequireAnyClientCert,
-		VerifyClientCertIfGiven:    tls.VerifyClientCertIfGiven,
-		RequireAndVerifyClientCert: tls.RequireAndVerifyClientCert,
+		NoClientCert:                     tls.NoClientCert,
+		RequestClientCert:                tls.RequestClientCert,
+		RequireAnyClientCert:             tls.RequireAnyClientCert,
+		VerifyClientCertIfGiven:          tls.VerifyClientCertIfGiven,
+		RequireAndVerifyClientCert:       tls.RequireAndVerifyClientCert,
+		RequireAndVerifyClientCertAndSAN: tls.RequireAndVerifyClientCert,
 	}
 )
 

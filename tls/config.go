@@ -1,7 +1,6 @@
 package tls
 
 import (
-	"crypto/tls"
 	"fmt"
 )
 
@@ -23,7 +22,7 @@ type (
 		GetInsecure() bool
 
 		// GetLevel return
-		GetLevel() tls.ClientAuthType
+		GetLevel() Level
 
 		// IsEmpty return true if the config is empty.
 		Empty() bool
@@ -60,8 +59,8 @@ func (cfg Config) GetInsecure() bool {
 	return cfg.Insecure
 }
 
-func (cfg Config) GetLevel() tls.ClientAuthType {
-	return cfg.Level.STD()
+func (cfg Config) GetLevel() Level {
+	return cfg.Level
 }
 
 // Empty implemte Config.
