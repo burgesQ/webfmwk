@@ -45,9 +45,11 @@ func DocURI(uri string) func(*Param) {
 // GetHandler return a DocHandler settup for redoc
 // use of template, params expect the DocURI string.
 //
-//  var opts = []webfmwk.Option{
-//      webfmwk.WithDocHandlers(redoc.GetHandler(
-//          redoc.DocURI("/api/v2/docs/swagger.json")))}
+//	var opts = []webfmwk.Option{
+//		webfmwk.WithDocHandlers(redoc.GetHandler(
+//			redoc.DocURI("/api/v2/docs/swagger.json")
+//		)
+//	)}
 func GetHandler(opt ...func(*Param)) webfmwk.DocHandler {
 	var p = _defRedoc
 

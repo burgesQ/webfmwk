@@ -91,7 +91,7 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    # - deadcode
+    - deadcode
     - depguard
     - dogsled
     - dupl
@@ -117,12 +117,10 @@ linters:
     - nolintlint
     - rowserrcheck
     - staticcheck
-    # - structcheck
     - stylecheck
     - unconvert
     - unparam
     - unused
-    # - varcheck
     - whitespace
     - asciicheck
     - gocognit
@@ -138,7 +136,6 @@ linters:
     - predeclared
     - nilerr
     - makezero
-    - ifshort
     - gomoddirectives
     - goheader
     - gci
@@ -150,18 +147,27 @@ linters:
     - cyclop
     - godox
     # - godot
-    - interfacer ## archived
+
+    ## archived
+    - ifshort
+    - interfacer
 
     # obsolet
     # - golint ## obsolete, pls use revive instead
 
     # - maligned ## use fieldalignment
     # - scopelint ## exportloopref
+    # - structcheck --> unused
+    # - varcheck --> unused
 
     ### don't enable:
+    # well ..
     # - gochecknoglobals
+    # test package should have a diff package
     # - testpackage
+    # unamed struct fields assignement / constructions
     # - exhaustivestruct
+    # test should support paralle keyword
     # - paralleltest
 
 issues:
@@ -170,11 +176,13 @@ issues:
     - path: _test\.go
       linters:
         - funlen
-        - gosec
         - gocritic
         - revive
-        - stylecheck
         - godox
+        - nlreturn
+        - whitespace
+        - wsl
+        - govet
     # https://github.com/go-critic/go-critic/issues/926
     # - linters:
     #     - gocritic

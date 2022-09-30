@@ -31,10 +31,11 @@ type (
 	// Options is a list of options
 	Options []Option
 
+	//nolint: govet
 	serverMeta struct {
+		handlers        []Handler    // 24
+		docHandlers     []DocHandler // 24
 		baseServer      *fasthttp.Server
-		handlers        []Handler       // 24
-		docHandlers     []DocHandler    // 24
 		routes          RoutesPerPrefix // 8
 		prefix          string          // 16
 		ctrlc           bool            // 1 * 5
@@ -137,16 +138,16 @@ func SetPrefix(prefix string) Option {
 // If use with SetPrefix, register WithDocHandler after the SetPrefix one.
 // Example:
 //
-//   package main
+//	package main
 //
-//   import (
-//     "github.com/burgesQ/webfmwk/v5"
-//     "github.com/burgesQ/webfmwk/v5/handler/redoc"
-//   )
+//	import (
+//		"github.com/burgesQ/webfmwk/v5"
+//		"github.com/burgesQ/webfmwk/v5/handler/redoc"
+//	)
 //
-//   func main() {
-//     var s = webfmwk.InitServer(webfmwk.WithDocHandlers(redoc.GetHandler()))
-//   }
+//	func main() {
+//		var s = webfmwk.InitServer(webfmwk.WithDocHandlers(redoc.GetHandler()))
+//	}
 func WithDocHandlers(handler ...DocHandler) Option {
 	return func(s *Server) {
 		s.addDocHandlers(handler...)
@@ -158,25 +159,25 @@ func WithDocHandlers(handler ...DocHandler) Option {
 // Handler signature is the webfmwk.HandlerFunc one (func(c Context)).
 // To register a custom context, simply do it in the toppest handler.
 //
-//  package main
+//	package main
 //
-//  import (
-//    "github.com/burgesQ/webfmwk/v5"
-//    "github.com/burgesQ/webfmwk/v5/handler/security"
-//  )
+//	import (
+//		"github.com/burgesQ/webfmwk/v5"
+//		"github.com/burgesQ/webfmwk/v5/handler/security"
+//	)
 //
-//  type CustomContext struct {
-//    webfmwk.Context
-//    val String
-//  }
+//	type CustomContext struct {
+//		webfmwk.Context
+//		val String
+//	}
 //
-//  func main() {
-//    var s = webfmwk.InitServer(webfmwk.WithHandlers(security.Handler,
-//      func(next Habdler) Handler {
-//        return func(c webfmwk.Context) error {
-//          cc := Context{c, "val"}
-//          return next(cc)
-//    }}))
+//	func main() {
+//		var s = webfmwk.InitServer(webfmwk.WithHandlers(security.Handler,
+//			func(next Habdler) Handler {
+//				return func(c webfmwk.Context) error {
+//					cc := Context{c, "val"}
+//					return next(cc)
+//		}}))
 func WithHandlers(h ...Handler) Option {
 	return func(s *Server) {
 		s.addHandlers(h...)
@@ -232,13 +233,19 @@ func MaxRequestBodySize(size int) Option {
 	}
 }
 
+const (
+	ReadTimeout  = 20
+	WriteTimeout = 20
+	IdleTimeout  = 1
+)
+
 // return default cfg
 func getDefaultMeta() serverMeta {
 	return serverMeta{
 		baseServer: &fasthttp.Server{
-			ReadTimeout:        20 * time.Second,
-			WriteTimeout:       20 * time.Second,
-			IdleTimeout:        1 * time.Minute,
+			ReadTimeout:        ReadTimeout * time.Second,
+			WriteTimeout:       WriteTimeout * time.Second,
+			IdleTimeout:        IdleTimeout * time.Minute,
 			MaxRequestBodySize: fasthttp.DefaultMaxRequestBodySize,
 		},
 		routes: make(RoutesPerPrefix),

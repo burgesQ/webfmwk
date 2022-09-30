@@ -11,10 +11,10 @@ import (
 // by the spf13/cobra and spf13/viper utility.
 // Use as following with frafos:
 //
-//  func fetchCfg() (cfg api.ServerCfg) {
-//          cmd.ReadCfg(&cfg,
-//                  cmd_log.StringToSyslogHookFunc(),
-//                  tls.StringToLevelHookFunc())
+//	func fetchCfg() (cfg api.ServerCfg) {
+//		cmd.ReadCfg(&cfg,
+//			cmd_log.StringToSyslogHookFunc(),
+//			tls.StringToLevelHookFunc())
 func StringToLevelHookFunc() mapstructure.DecodeHookFunc {
 	return stringToLevelHookFunc
 }
