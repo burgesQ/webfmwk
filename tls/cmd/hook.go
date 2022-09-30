@@ -16,22 +16,23 @@ import (
 //                  cmd_log.StringToSyslogHookFunc(),
 //                  tls.StringToLevelHookFunc())
 func StringToLevelHookFunc() mapstructure.DecodeHookFunc {
-	return func(f reflect.Type, t reflect.Type, data interface{}) (
-		interface{}, error) {
-		if f.Name() != "string" || t.Name() != "Level" {
-			return data, nil
-		}
+	return stringToLevelHookFunc
+}
 
-		raw, ok := data.(string)
-		if raw == "" || !ok {
-			return data, nil
-		} else if t != reflect.TypeOf(tls.NoClientCert) {
-			return data, nil
-		}
-
-		var lvl tls.Level
-		e := lvl.Set(raw)
-
-		return lvl, e
+func stringToLevelHookFunc(f, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Name() != "string" || t.Name() != "Level" {
+		return data, nil
 	}
+
+	raw, ok := data.(string)
+	if raw == "" || !ok {
+		return data, nil
+	} else if t != reflect.TypeOf(tls.NoClientCert) {
+		return data, nil
+	}
+
+	var lvl tls.Level
+	e := lvl.Set(raw)
+
+	return lvl, e
 }
