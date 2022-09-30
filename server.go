@@ -262,8 +262,9 @@ func (s *Server) IsReady() chan bool {
 // log which look like :
 // + INFO : [+] (bc339ac1-a62a-48df-8e97-adf9dec32c42) : [GET]/test
 //
-//   s.AddHandlers(handler.Logging, handler.RequestID)
-//nolint: unparam
+//	s.AddHandlers(handler.Logging, handler.RequestID)
+//
+//nolint:unparam
 func (s *Server) addHandlers(h ...Handler) *Server {
 	s.meta.handlers = append(s.meta.handlers, h...)
 

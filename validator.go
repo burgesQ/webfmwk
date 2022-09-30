@@ -83,6 +83,7 @@ func useJSONFieldName() {
 // See https://go-playground/validator.v10 for more.
 func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) error {
 	once.Do(initOnce)
+
 	return validate.RegisterValidation(name, fn)
 }
 

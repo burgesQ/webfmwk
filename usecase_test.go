@@ -28,6 +28,7 @@ type queryParam struct {
 	Some   *int `json:"some,omitempty" schema:"some" validate:"omitempty,min=-1"`
 }
 
+//nolint:forcetypeassert
 func initUseCaseServer() *Server {
 	var (
 		s = InitServer(
@@ -119,14 +120,14 @@ func TestUseCase(t *testing.T) {
 	)
 
 	tests := map[string]struct {
-		action      int
-		header      bool
-		bodyDiffer  bool
+		headers     [][2]string
 		url         string
 		body        string
-		code        int
-		headers     [][2]string
 		pushContent []byte
+		action      int
+		code        int
+		header      bool
+		bodyDiffer  bool
 	}{
 		"hello world": {
 			action: _reqNTest, header: true, url: "/api/hello",
