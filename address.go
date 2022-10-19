@@ -54,14 +54,24 @@ func (a Address) SameAs(in IAddress) bool {
 	return a.Addr == in.GetAddr() && a.Name == in.GetName() && tlsOk
 }
 
+// SameAs return true if all addresses in the in param match
+// One from the struct.
 func (a Addresses) SameAs(in Addresses) bool {
+	if len(a) != len(in) { // not same nb of address
+		return false
+	}
+
 	for i := range a {
 		iok := false
+
 		for j := range in {
 			if in[j].SameAs(a[i]) {
 				iok = true
+
+				break
 			}
 		}
+
 		if !iok {
 			return false
 		}

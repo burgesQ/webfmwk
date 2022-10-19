@@ -11,7 +11,6 @@ import (
 
 func TestAddress(t *testing.T) {
 	addr := new(Address)
-
 	requirer := require.New(t)
 
 	requirer.Implements((*IAddress)(nil), addr)
@@ -54,4 +53,40 @@ func TestAddress(t *testing.T) {
 				Name: "smth",
 			},
 		}.String())
+}
+
+func TestAddressSameAs(t *testing.T) {
+	addr := &Address{
+		Addr: "uno",
+		Name: "deuzio",
+		TLS: &tls.Config{
+			Cert:     "some/cert",
+			Key:      "some/key",
+			Insecure: true,
+		},
+	}
+	requirer := require.New(t)
+
+	requirer.False(addr.SameAs(&Address{}))
+	requirer.False(addr.SameAs(&Address{
+		Addr: "uno",
+		Name: "deuzio",
+	}))
+
+	requirer.False(addr.SameAs(&Address{
+		Addr: "uno",
+		Name: "deuzio",
+		TLS: &tls.Config{
+			Cert:     "some/cert",
+			Insecure: true,
+		}}))
+
+	requirer.True(addr.SameAs(&Address{
+		Addr: "uno",
+		Name: "deuzio",
+		TLS: &tls.Config{
+			Cert:     "some/cert",
+			Key:      "some/key",
+			Insecure: true,
+		}}))
 }
