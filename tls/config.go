@@ -26,6 +26,9 @@ type (
 
 		// IsEmpty return true if the config is empty.
 		Empty() bool
+
+		// SameAs return true if both config are identique.
+		SameAs(in IConfig) bool
 	}
 
 	// Config contain the tls config passed by the config file.
@@ -38,6 +41,14 @@ type (
 		Level    Level  `json:"level"    mapstructure:"level"`
 	}
 )
+
+func (cfg Config) SameAs(in IConfig) bool {
+	return cfg.Cert == in.GetCert() &&
+		cfg.Key == in.GetKey() &&
+		cfg.Ca == in.GetCa() &&
+		cfg.Insecure == in.GetInsecure() &&
+		cfg.Level == in.GetLevel()
+}
 
 // GetCert implemte Config.
 func (cfg Config) GetCert() string {

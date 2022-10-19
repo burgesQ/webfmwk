@@ -23,6 +23,9 @@ type (
 
 		// IsOk validate that the Address structure have at least the address field populated.
 		IsOk() bool
+
+		// SameAs return true if both config are identique.
+		SameAs(in IAddress) bool
 	}
 
 	// Address implement the IAddress interface
@@ -35,6 +38,37 @@ type (
 
 	Addresses []Address
 )
+
+func (a Address) SameAs(in IAddress) bool {
+	var (
+		tlsOk = false
+		itls  = in.GetTLS()
+	)
+
+	if a.TLS == nil && itls == nil {
+		tlsOk = true
+	} else if a.TLS != nil && itls != nil {
+		tlsOk = a.TLS.SameAs(itls)
+	}
+
+	return a.Addr == in.GetAddr() && a.Name == in.GetName() && tlsOk
+}
+
+func (a Addresses) SameAs(in Addresses) bool {
+	for i := range a {
+		iok := false
+		for j := range in {
+			if in[j].SameAs(a[i]) {
+				iok = true
+			}
+		}
+		if !iok {
+			return false
+		}
+	}
+
+	return true
+}
 
 func (a Addresses) String() (ret string) {
 	ret = "\t --- number of address(es): " + strconv.Itoa(len(a))
