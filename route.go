@@ -6,6 +6,7 @@ import (
 	"github.com/fasthttp/router"
 	"github.com/segmentio/encoding/json"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 )
 
 const (
@@ -215,17 +216,28 @@ func (s *Server) GetRouter() *router.Router {
 		}))
 	}
 
+	// register socket.io (goplog) handlers
+	switch {
+	case s.meta.socketIOHF:
+		s.log.Infof("loading socket io handler func on %q", s.meta.socketIOPath)
+		r.ANY(s.meta.socketIOPath,
+			fasthttpadaptor.NewFastHTTPHandlerFunc(s.meta.socketIOHandlerFunc))
+	case s.meta.socketIOH:
+		s.log.Infof("loading socket io handler on %q", s.meta.socketIOPath)
+		r.ANY(s.meta.socketIOPath,
+			fasthttpadaptor.NewFastHTTPHandler(s.meta.socketIOHandler))
+	}
+
 	// register routes
 	for p, rs := range s.meta.routes {
-		prefix := p
-		routes := rs
+		prefix, routes := p, rs // never sure if I should copy
 		group := r.Group(prefix)
 
 		for _, r1 := range routes {
 			route := r1
 			handler := route.Handler
 
-			// register internal Habdlers
+			// register internal Handlers
 			handler = contentIsJSON(handleHandlerError(handler))
 
 			// register user custom Handlers
