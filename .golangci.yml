@@ -6,7 +6,6 @@ linters-settings:
       - github.com/sirupsen/logrus
       - log
       - gommon/golib/log
-      - fmt
     packages-with-error-message:
       - log: "logging is allowed only by golib/v2/log"
       - github.com/sirupsen/logrus: "logging is allowed only by golib/v2/log"
@@ -45,12 +44,13 @@ linters-settings:
   revive:
     ignore-generated-header: true
     severity: warning
-    # enable-all-rules: true
     rules:
       - name: indent-error-flow
         severity: warning
       - name: add-constant
         severity: warning
+        # tmp disable, arguments ignored
+        disabled: true
         arguments:
           - maxLitCount: "3"
             allowStrs: '""'
@@ -73,6 +73,21 @@ linters-settings:
           - (gitlab.frafos.com/gommon/golib).Errorf
           - (gitlab.frafos.com/gommon/golib).Fatalf
 
+  gomoddirectives:
+    # Allow local `replace` directives.
+    # Default: false
+    replace-local: false
+    # List of allowed `replace` directives.
+    # Default: []
+    replace-allow-list:
+      - github.com/burgesQ/webfmwk/v5
+    # Allow to not explain why the version has been retracted in the `retract` directives.
+    # Default: false
+    retract-allow-no-explanation: false
+    # Forbid the use of the `exclude` directives.
+    # Default: false
+    exclude-forbidden: false
+
   lll:
     line-length: 140
   maligned:
@@ -91,7 +106,7 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
+    # - deadcode
     - depguard
     - dogsled
     - dupl
@@ -117,10 +132,12 @@ linters:
     - nolintlint
     - rowserrcheck
     - staticcheck
+    # - structcheck
     - stylecheck
     - unconvert
     - unparam
     - unused
+    # - varcheck
     - whitespace
     - asciicheck
     - gocognit
@@ -136,6 +153,7 @@ linters:
     - predeclared
     - nilerr
     - makezero
+    - ifshort
     - gomoddirectives
     - goheader
     - gci
@@ -145,30 +163,22 @@ linters:
     - govet
     - typecheck
     - cyclop
-    - godox
+    # - godox
     # - godot
-
-    ## archived
-    - ifshort
-    - interfacer
+    - interfacer ## archived
 
     # obsolet
     # - golint ## obsolete, pls use revive instead
 
     # - maligned ## use fieldalignment
     # - scopelint ## exportloopref
-    # - structcheck --> unused
-    # - varcheck --> unused
 
     ### don't enable:
-    # well ..
     # - gochecknoglobals
-    # test package should have a diff package
     # - testpackage
-    # unamed struct fields assignement / constructions
     # - exhaustivestruct
-    # test should support paralle keyword
     # - paralleltest
+
 
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
@@ -176,13 +186,13 @@ issues:
     - path: _test\.go
       linters:
         - funlen
-        - gocritic
-        - revive
-        - godox
-        - nlreturn
-        - whitespace
-        - wsl
-        - govet
+        - lll
+        # - gosec
+        # - cyclop
+        # - unparam
+        # - revive
+        - dupl
+
     # https://github.com/go-critic/go-critic/issues/926
     # - linters:
     #     - gocritic

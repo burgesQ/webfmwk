@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"net/http"
 	"sync"
 	"time"
 
@@ -33,16 +34,21 @@ type (
 
 	//nolint: govet
 	serverMeta struct {
-		handlers        []Handler    // 24
-		docHandlers     []DocHandler // 24
-		baseServer      *fasthttp.Server
-		routes          RoutesPerPrefix // 8
-		prefix          string          // 16
-		ctrlc           bool            // 1 * 5
-		checkIsUp       bool
-		ctrlcStarted    bool
-		cors            bool
-		enableKeepAlive bool
+		handlers            []Handler    // 24
+		docHandlers         []DocHandler // 24
+		baseServer          *fasthttp.Server
+		routes              RoutesPerPrefix // 8
+		prefix              string          // 16
+		ctrlc               bool            // 1 * 5
+		checkIsUp           bool
+		ctrlcStarted        bool
+		cors                bool
+		enableKeepAlive     bool
+		socketIOHF          bool
+		socketIOH           bool
+		socketIOHandlerFunc http.HandlerFunc
+		socketIOHandler     http.Handler
+		socketIOPath        string
 	}
 )
 
@@ -238,6 +244,22 @@ const (
 	WriteTimeout = 20
 	IdleTimeout  = 1
 )
+
+func WithSocketHandlerFunc(path string, hf http.HandlerFunc) Option {
+	return func(s *Server) {
+		s.meta.socketIOHandlerFunc, s.meta.socketIOPath, s.meta.socketIOHF =
+			hf, path, true
+		s.log.Debugf("\t-- socket io handler func loaded")
+	}
+}
+
+func WithSocketHandler(path string, h http.Handler) Option {
+	return func(s *Server) {
+		s.meta.socketIOHandler, s.meta.socketIOPath, s.meta.socketIOH =
+			h, path, true
+		s.log.Debugf("\t-- socket io handlers loaded")
+	}
+}
 
 // return default cfg
 func getDefaultMeta() serverMeta {
