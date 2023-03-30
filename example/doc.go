@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/burgesQ/gommon/log"
 	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v5/log"
+	wtls "github.com/burgesQ/webfmwk/v5/tls"
 )
 
 type (
@@ -39,12 +40,11 @@ func newCommand(fn func() *webfmwk.Server, name string, description ...string) *
 
 			if name == "tls" {
 				// start asynchronously on :4242
-				s.StartTLS(":4242", webfmwk.TLSConfig{
+				s.StartTLS(":4242", wtls.Config{
 					Cert:     "/path/to/cert",
 					Key:      "/path/to/key",
 					Insecure: false,
 				})
-
 			} else {
 				s.Start(":4242")
 			}
@@ -61,6 +61,7 @@ func newCommand(fn func() *webfmwk.Server, name string, description ...string) *
 func (c *cmd) Name() string {
 	return c.fs.Name()
 }
+
 func (c *cmd) Description() string {
 	return c.description
 }
@@ -91,11 +92,12 @@ func root(args []string) error {
 		newCommand(customContext, "custom_context", "extend, register and use a custom context"),
 		newCommand(customWorker, "custom_worker", "register extra worker"),
 		newCommand(panicToError, "panic_to_error", "use panic to handle some error case"),
+		newCommand(logMe, "logging", "use panic to handle some error case"),
 	}
 
 	subcommand := os.Args[1]
 
-	log.SetLogLevel(log.LogDEBUG)
+	log.SetLogLevel(log.LogDebug)
 
 	for _, cmd := range cmds {
 		if cmd.Name() == subcommand {
@@ -111,9 +113,10 @@ func root(args []string) error {
 
 // go run . (filename)
 // Example :
-//   go run . panic_to_error
-//   running panic_to_error (use panic to handle some error case)
-//   ! ERR  : http server :4242 (*net.OpError): listen tcp :4242: bind: address already in use
+//
+//	go run . panic_to_error
+//	running panic_to_error (use panic to handle some error case)
+//	! ERR  : http server :4242 (*net.OpError): listen tcp :4242: bind: address already in use
 func main() {
 	if err := root(os.Args[1:]); err != nil {
 		fmt.Println(err)

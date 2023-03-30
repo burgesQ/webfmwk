@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/burgesQ/gommon/log"
 	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v5/log"
 )
 
 func customWorker() *webfmwk.Server {
