@@ -6,10 +6,15 @@ import (
 )
 
 type (
-	// Log interface implement the logging system inside the API
-	Log interface {
-		Printf(format string, args ...interface{})
+	LogPrefix interface {
+		// SetPrefix return a new Log object with the
+		// prefix param set as internal logging message prefix
+		SetPrefix(prefix string) Log
 
+		GetPrefix() string
+	}
+
+	LogMessage interface {
 		Debugf(format string, v ...interface{})
 		Infof(format string, v ...interface{})
 		Warnf(format string, v ...interface{})
@@ -17,26 +22,42 @@ type (
 		Fatalf(format string, v ...interface{})
 	}
 
+	// Log interface implement the logging system inside the API
+	Log interface {
+		LogPrefix
+		LogMessage
+
+		Printf(format string, args ...interface{})
+	}
+
 	logger struct {
-		level Level
+		prefix string
+		level  Level
 	}
 )
 
-var (
-	_lg = logger{
-		level: LogErr,
-	}
-)
+// default internal logger
+var _lg = logger{level: LogErr, prefix: ""}
 
 // GetLogger return an struct fullfilling the Log interface
 func GetLogger() Log {
 	return _lg
 }
 
+// SetPrefix implement the LogPrefix interface
+func (l logger) SetPrefix(prefix string) Log {
+	return logger{level: l.level, prefix: prefix}
+}
+
+// GetPrefix implement the LogPrefix interface
+func (l logger) GetPrefix() string {
+	return l.prefix
+}
+
 func (l *logger) logContentf(level Level, format string, v ...interface{}) {
 	if level <= l.level || level == LogPrint {
 		//nolint: forbidigo
-		fmt.Printf("%s"+format+"\n", append([]interface{}{
+		fmt.Printf("%s"+l.prefix+format+"\n", append([]interface{}{
 			_out[level],
 		}, v...)...)
 	}
