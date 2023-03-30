@@ -14,15 +14,13 @@ const (
 )
 
 func TestHandler(t *testing.T) {
-	var (
-		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.SetPrefix("/api"),
-			webfmwk.WithHandlers(Handler),
-		)
+	s := webfmwk.InitServer(webfmwk.CheckIsUp(),
+		webfmwk.SetPrefix("/api"),
+		webfmwk.WithHandlers(Handler),
 	)
 
 	t.Cleanup(func() {
-		var ctx = s.GetContext()
+		ctx := s.GetContext()
 
 		ctx.Done()
 		s.Shutdown()
@@ -40,6 +38,7 @@ func TestHandler(t *testing.T) {
 
 	webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing",
 		func(t *testing.T, resp *http.Response) {
+			t.Helper()
 			webtest.Headers(t, resp,
 				[2]string{headerProtection, headerProtectionV},
 				[2]string{headerSecu, headerSecuV},

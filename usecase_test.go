@@ -36,6 +36,7 @@ func initUseCaseServer() *Server {
 			WithHandlers(func(next HandlerFunc) HandlerFunc {
 				return HandlerFunc(func(c Context) error {
 					cc := customContext{c, "turlu"}
+
 					return next(cc)
 				})
 			}),
@@ -45,23 +46,28 @@ func initUseCaseServer() *Server {
 				{
 					Verbe: "GET", Path: "", Handler: func(c Context) error {
 						return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello world" }`))
-					}},
+					},
+				},
 				{
 					Verbe: "GET", Path: "/{who}", Handler: func(c Context) error {
-						var content = `{ "message": "hello ` + c.GetVar("who") + `" }`
+						content := `{ "message": "hello ` + c.GetVar("who") + `" }`
+
 						return c.JSONBlob(http.StatusOK, []byte(content))
-					}},
+					},
+				},
 			},
 			"/test": {
 				{
 					Verbe: "GET", Path: "query", Handler: func(c Context) error {
 						return c.JSONOk(c.GetQuery())
-					}},
+					},
+				},
 				{
 					Verbe: "GET", Path: "Context", Handler: func(c Context) error {
 						return c.JSONBlob(http.StatusOK, []byte(`{ "message": "hello `+
 							c.(customContext).Value+`" }`))
-					}},
+					},
+				},
 
 				{
 					Verbe: "GET", Path: "/queryToStruct", Handler: func(c Context) error {
@@ -71,13 +77,15 @@ func initUseCaseServer() *Server {
 						}
 
 						return c.JSONOk(qp)
-					}},
+					},
+				},
 			},
 			"": {
 				{
 					Verbe: "GET", Path: "/routes", Handler: func(c Context) error {
 						return c.JSON(http.StatusOK, &testSerial{"hello"})
-					}},
+					},
+				},
 				{
 					Verbe: "POST", Path: "/world", Handler: func(c Context) error {
 						anonymous := userForm{}
@@ -87,7 +95,8 @@ func initUseCaseServer() *Server {
 						}
 
 						return c.JSONCreated(anonymous)
-					}},
+					},
+				},
 			},
 		}
 	)
@@ -98,13 +107,13 @@ func initUseCaseServer() *Server {
 }
 
 func TestUseCase(t *testing.T) {
-	var s = initUseCaseServer()
+	s := initUseCaseServer()
 
 	require.Nil(t, RegisterValidatorRule("custom", func(fi validator.FieldLevel) bool {
 		return fi.Field().String() != "fail"
 	}))
 	require.Nil(t, RegisterValidatorTrans("custom", "'{0} is invalid :)"))
-	//RegisterValidatorAlias("alpha", "letters")
+	// RegisterValidatorAlias("alpha", "letters")
 
 	defer stopServer(s)
 	go s.Start(_testPort)
@@ -220,10 +229,10 @@ func TestUseCase(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			//			t.Helper()
 			switch test.action {
-
 			case _reqNTest:
 				webtest.RequestAndTestAPI(t, _testAddr+test.url,
 					func(t *testing.T, resp *http.Response) {
+						t.Helper()
 						if test.header {
 							for _, testVal := range []string{"Content-Type", "Accept", "Produce"} {
 								webtest.Header(t, testVal, jsonEncode, resp)
@@ -241,6 +250,7 @@ func TestUseCase(t *testing.T) {
 			case _deleteNTest:
 				webtest.DeleteAndTestAPI(t, _testAddr+test.url,
 					func(t *testing.T, resp *http.Response) {
+						t.Helper()
 						webtest.Body(t, test.body, resp)
 						webtest.StatusCode(t, test.code, resp)
 					})
@@ -248,6 +258,7 @@ func TestUseCase(t *testing.T) {
 			case _pushNTest:
 				webtest.PushAndTestAPI(t, _testAddr+test.url, test.pushContent,
 					func(t *testing.T, resp *http.Response) {
+						t.Helper()
 						if test.bodyDiffer {
 							webtest.BodyDiffere(t, test.body, resp)
 						} else {
@@ -260,12 +271,11 @@ func TestUseCase(t *testing.T) {
 			case _pushNTestContain:
 				webtest.PushAndTestAPI(t, _testAddr+test.url, test.pushContent,
 					func(t *testing.T, resp *http.Response) {
+						t.Helper()
 						webtest.BodyContains(t, test.body, resp)
 						webtest.StatusCode(t, test.code, resp)
 					}, test.headers...)
-
 			}
-
 		})
 	}
 }

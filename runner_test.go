@@ -9,7 +9,7 @@ import (
 )
 
 func TestRunner(t *testing.T) {
-	var s = InitServer(CheckIsUp())
+	s := InitServer(CheckIsUp())
 
 	t.Cleanup(func() { stopServer(s) })
 
@@ -23,11 +23,13 @@ func TestRunner(t *testing.T) {
 
 	webtest.RequestAndTestAPI(t, "http://127.0.0.1:6661/test",
 		func(t *testing.T, resp *http.Response) {
+			t.Helper()
 			webtest.StatusCode(t, http.StatusOK, resp)
 		})
 
 	webtest.RequestAndTestAPI(t, "http://127.0.0.1:6662/test",
 		func(t *testing.T, resp *http.Response) {
+			t.Helper()
 			webtest.StatusCode(t, http.StatusOK, resp)
 		})
 }

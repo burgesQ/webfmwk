@@ -25,7 +25,8 @@ func TestAddress(t *testing.T) {
 			Cert:     "some/cert",
 			Key:      "some/key",
 			Insecure: true,
-		}}
+		},
+	}
 
 	requirer.Equal("Testing", addr.GetAddr())
 	requirer.Equal("oops", addr.GetName())
@@ -79,7 +80,8 @@ func TestAddressSameAs(t *testing.T) {
 		TLS: &tls.Config{
 			Cert:     "some/cert",
 			Insecure: true,
-		}}))
+		},
+	}))
 
 	requirer.True(addr.SameAs(&Address{
 		Addr: "uno",
@@ -88,5 +90,6 @@ func TestAddressSameAs(t *testing.T) {
 			Cert:     "some/cert",
 			Key:      "some/key",
 			Insecure: true,
-		}}))
+		},
+	}))
 }

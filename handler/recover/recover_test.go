@@ -13,16 +13,14 @@ import (
 const _testPort = ":6671"
 
 func TestHandler(t *testing.T) {
-	var (
-		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.SetPrefix("/api"),
-			webfmwk.WithHandlers(Handler),
-		)
+	s := webfmwk.InitServer(webfmwk.CheckIsUp(),
+		webfmwk.SetPrefix("/api"),
+		webfmwk.WithHandlers(Handler),
 	)
 
 	// t.Log("init server...")
 	t.Cleanup(func() {
-		var ctx = s.GetContext()
+		ctx := s.GetContext()
 		// t.Log("closing server ...")
 		ctx.Done()
 		s.Shutdown()
@@ -46,8 +44,11 @@ func TestHandler(t *testing.T) {
 	t.Run("testing panic over string ", func(t *testing.T) {
 		webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing/string",
 			func(t *testing.T, resp *http.Response) {
+				t.Helper()
 				webtest.StatusCode(t, http.StatusInternalServerError, resp)
+
 				body := webtest.FetchBody(t, resp)
+
 				require.Contains(t, body, "some fatal")
 				require.Contains(t, body, "status\":500")
 			})
@@ -56,8 +57,11 @@ func TestHandler(t *testing.T) {
 	t.Run("testing panic over error hanlded", func(t *testing.T) {
 		webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing/error",
 			func(t *testing.T, resp *http.Response) {
+				t.Helper()
 				webtest.StatusCode(t, http.StatusForbidden, resp)
+
 				body := webtest.FetchBody(t, resp)
+
 				require.Contains(t, body, "some fatal")
 				require.Contains(t, body, "status\":403")
 			})

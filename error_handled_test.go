@@ -45,7 +45,6 @@ func TestResponse(t *testing.T) {
 var errTest = errors.New("test")
 
 func TestError(t *testing.T) {
-
 	asserter := assert.New(t)
 
 	e := NewError("testing")
@@ -61,7 +60,7 @@ func TestError(t *testing.T) {
 }
 
 func TestMethod(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		actual, expected int
 	}{
 		"processing": {

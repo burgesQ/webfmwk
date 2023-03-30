@@ -216,7 +216,7 @@ func SetWriteTimeout(val time.Duration) Option {
 	}
 }
 
-// SetIDLETimeout the the server IDLE timeout AKA keepalive timeout.
+// SetIDLETimeout the server IDLE timeout AKA keepalive timeout.
 func SetIDLETimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.IdleTimeout = val
@@ -247,16 +247,14 @@ const (
 
 func WithSocketHandlerFunc(path string, hf http.HandlerFunc) Option {
 	return func(s *Server) {
-		s.meta.socketIOHandlerFunc, s.meta.socketIOPath, s.meta.socketIOHF =
-			hf, path, true
+		s.meta.socketIOHandlerFunc, s.meta.socketIOPath, s.meta.socketIOHF = hf, path, true
 		s.log.Debugf("\t-- socket io handler func loaded")
 	}
 }
 
 func WithSocketHandler(path string, h http.Handler) Option {
 	return func(s *Server) {
-		s.meta.socketIOHandler, s.meta.socketIOPath, s.meta.socketIOH =
-			h, path, true
+		s.meta.socketIOHandler, s.meta.socketIOPath, s.meta.socketIOH = h, path, true
 		s.log.Debugf("\t-- socket io handlers loaded")
 	}
 }

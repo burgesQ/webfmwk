@@ -24,6 +24,7 @@ func TestParam(t *testing.T) {
 
 		return c.JSONOk(id)
 	}, func(t *testing.T, resp *http.Response) {
+		t.Helper()
 		webtest.Body(t, `"tutu"`, resp)
 		webtest.StatusCode(t, http.StatusOK, resp)
 	})
@@ -56,7 +57,7 @@ func TestFetchContent(t *testing.T) {
 		_unprocessable
 	)
 
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		payload []byte
 		t       int
 	}{
@@ -67,7 +68,7 @@ func TestFetchContent(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			wrapperPost(t, "/test", "/test", test.payload, func(c Context) error {
-				var anonymous = struct {
+				anonymous := struct {
 					FirstName string `json:"first_name,omitempty" validate:"required"`
 				}{}
 				if e := c.FetchContent(&anonymous); e != nil {
@@ -75,10 +76,12 @@ func TestFetchContent(t *testing.T) {
 				} else if e := c.Validate(anonymous); e != nil {
 					return e
 				}
+
 				return c.JSON(http.StatusCreated, anonymous)
 			}, func(t *testing.T, resp *http.Response) {
-				switch test.t {
+				t.Helper()
 
+				switch test.t {
 				case _ok:
 					webtest.Body(t, `{"first_name":"tutu"}`, resp)
 					webtest.StatusCode(t, http.StatusCreated, resp)
@@ -95,6 +98,7 @@ func TestJSONBlobPretty(t *testing.T) {
 	wrapperGet(t, "/test", "/test?pretty", func(c Context) error {
 		return c.JSONBlob(http.StatusOK, []byte(hBody))
 	}, func(t *testing.T, resp *http.Response) {
+		t.Helper()
 		webtest.BodyDiffere(t, hBody, resp)
 		webtest.StatusCode(t, http.StatusOK, resp)
 	})

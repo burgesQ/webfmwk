@@ -10,14 +10,7 @@ import (
 
 const _contentType = "application/json; charset=UTF-8"
 
-// JSONResponse interface is used to answer JSON content to the client.
-type JSONResponse interface {
-	// JSONBlob answer the JSON content with the status code op.
-	JSONBlob(op int, content []byte) error
-
-	// JSON answer the JSON content with the status code op.
-	JSON(op int, content interface{}) error
-
+type JSONHTTPResponse interface { //nolint: interfacebloat
 	// JSONOk return the interface with an http.StatusOK (200).
 	JSONOk(content interface{}) error
 
@@ -56,6 +49,17 @@ type JSONResponse interface {
 
 	// JSONNotImplemented return the interface with an http.StatusNotImplemented (501).
 	JSONNotImplemented(content interface{}) error
+}
+
+// JSONResponse interface is used to answer JSON content to the client.
+type JSONResponse interface {
+	JSONHTTPResponse
+
+	// JSONBlob answer the JSON content with the status code op.
+	JSONBlob(op int, content []byte) error
+
+	// JSON answer the JSON content with the status code op.
+	JSON(op int, content interface{}) error
 }
 
 // JSONBlob sent a JSON response already encoded

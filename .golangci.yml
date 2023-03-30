@@ -1,183 +1,193 @@
 linters-settings:
-  depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed only by gommon/golib/v2/log
-      - github.com/sirupsen/logrus
-      - log
-      - gommon/golib/log
-    packages-with-error-message:
-      - log: "logging is allowed only by golib/v2/log"
-      - github.com/sirupsen/logrus: "logging is allowed only by golib/v2/log"
-      - gommon/golib/log: "logging is allowed only by golib/v2/log"
-  dupl:
-    threshold: 100
+  # new settings
+  cyclop:
+    max-complexity: 15
+    # package-average: 0.0
   funlen:
-    lines: 100
+    lines: 90
     statements: 50
-  gci:
-    local-prefixes: github.com/golangci/golangci-lint
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-      # - ifElseChain
-      # - octalLiteral
-      # - wrapperFunc
-    disabled-checks:
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - whyNoLint
-      - ioutilDeprecated
   gocyclo:
     min-complexity: 15
-  goimports:
-    local-prefixes: github.com/golangci/golangci-lint
-  # golint:
-  #   min-confidence: 0
-  # see https://github.com/mgechev/revive#available-rules for details.
+  gomoddirectives:
+    # Allow local `replace` directives.
+    replace-local: true
+    # List of allowed `replace` directives.
+    replace-allow-list:
+      # - github.com/burgesQ/webfmwk/v5
+      - frafos.com/json2redis
+  gomnd:
+    checks: argument,case,condition,operation,return,assign
+    # ignored-numbers: '0o666','0o755'
+  govet:
+    check-shadowing: true
+    enable-all: true
+    disable:
+      - shadow
+  misspell:
+    locale: US
   revive:
     ignore-generated-header: true
     severity: warning
-    rules:
-      - name: indent-error-flow
-        severity: warning
-      - name: add-constant
-        severity: warning
-        # tmp disable, arguments ignored
-        disabled: true
-        arguments:
-          - maxLitCount: "3"
-            allowStrs: '""'
-            allowInts: "0,1,2"
-            # allowFloats: "0.0,0.,1.0,1.,2.0,2."
-  gomnd:
-    settings:
-      mnd:
-        # don't include the "operation" and "assign"
-        checks: argument,case,condition,return
-  govet:
-    check-shadowing: true
-    enable:
-      - fieldalignment
-    settings:
-      printf:
-        funcs:
-          - (gitlab.frafos.com/gommon/golib).Infof
-          - (gitlab.frafos.com/gommon/golib).Warnf
-          - (gitlab.frafos.com/gommon/golib).Errorf
-          - (gitlab.frafos.com/gommon/golib).Fatalf
-
-  gomoddirectives:
-    # Allow local `replace` directives.
-    # Default: false
-    replace-local: false
-    # List of allowed `replace` directives.
-    # Default: []
-    replace-allow-list:
-      - github.com/burgesQ/webfmwk/v5
-    # Allow to not explain why the version has been retracted in the `retract` directives.
-    # Default: false
-    retract-allow-no-explanation: false
-    # Forbid the use of the `exclude` directives.
-    # Default: false
-    exclude-forbidden: false
-
-  lll:
-    line-length: 140
+    # enable-all-rules: true
   maligned:
-    suggest-new: true
-  misspell:
-    locale: US
-  nolintlint:
-    allow-leading-space: true # don't require machine-readable nolint directives (i.e. with no leading space)
-    allow-unused: false # report any unused nolint directives
-    require-explanation: false # don't require an explanation for nolint directives
-    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+      # print struct with more effective memory layout or not, false by default
+      suggest-new: true
+  # # old settings
+  # depguard:
+  #   list-type: blacklist
+  #   packages:
+  #     # logging is allowed only by gommon/golib/v4/log
+  #     - github.com/sirupsen/logrus
+  #     - log
+  #   packages-with-error-message:
+  #     - log: "logging is allowed only by golib/v4/log"
+  #     - github.com/sirupsen/logrus: "logging is allowed only by golib/v4/log"
+  # dupl:
+  #   threshold: 100
+  # gci:
+  #   local-prefixes: github.com/golangci/golangci-lint
+  # goconst:
+  #   min-len: 2
+  #   min-occurrences: 2
+  # gocritic:
+  #   enabled-tags:
+  #     - diagnostic
+  #     - experimental
+  #     - opinionated
+  #     - performance
+  #     - style
+  #     # - ifElseChain
+  #     # - octalLiteral
+  #     # - wrapperFunc
+  #   disabled-checks:
+  #     - dupImport # https://github.com/go-critic/go-critic/issues/845
+  #     - whyNoLint
+  #     - ioutilDeprecated
+  #     # Conflicts with govet check-shadowing
+  #     - sloppyReassign
+  # goimports:
+  #   local-prefixes: github.com/golangci/golangci-lint
+  # # golint:
+  # #   min-confidence: 0
+  # # see https://github.com/mgechev/revive#available-rules for details.
+  # # govet:
+  # #   check-shadowing: true
+  # #   enable:
+  # #     - fieldalignment
+  # #   shadow:
+  # #     strict: true
+  # #   settings:
+  # #     printf:
+  # #       funcs:
+  # #         - (gitlab.frafos.com/gommon/golib).Infof
+  # #         - (gitlab.frafos.com/gommon/golib).Warnf
+  # #         - (gitlab.frafos.com/gommon/golib).Errorf
+  # #         - (gitlab.frafos.com/gommon/golib).Fatalf
+  # gomoddirectives:
+  #   # Allow local `replace` directives.
+  #   # Default: false
+  #   replace-local: true
+  #   # List of allowed `replace` directives.
+  #   # Default: []
+  #   replace-allow-list:
+  #     # - github.com/burgesQ/webfmwk/v5
+  #     - frafos.com/json2redis
+  #   # Allow to not explain why the version has been retracted in the `retract` directives.
+  #   # Default: false
+  #   retract-allow-no-explanation: false
+  #   # Forbid the use of the `exclude` directives.
+  #   # Default: false
+  #   exclude-forbidden: false
+  # lll:
+  #   line-length: 140
+  # maligned:
+  #   suggest-new: true
+  # nolintlint:
+  #   allow-leading-space: true # don't require machine-readable nolint directives (i.e. with no leading space)
+  #   allow-unused: false # report any unused nolint directives
+  #   require-explanation: false # don't require an explanation for nolint directives
+  #   require-specific: false # don't require nolint directives to be specific about which linter is being skipped
 
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
-    - bodyclose
-    # - deadcode
+    - asasalint
+    - bidichk
+    - cyclop
+    - decorder
     - depguard
     - dogsled
     - dupl
+    - dupword
     - errcheck
-    - exportloopref
+    - errchkjson
+    - errorlint
     - exhaustive
+    - forbidigo
     - funlen
-    - gochecknoinits
+    - gci
+    - gocognit
     - goconst
     - gocritic
     - gocyclo
     - gofmt
+    - gofumpt
+    - goheader
     - goimports
     - gomnd
-    - goprintffuncname
-    - gosec
+    - gomoddirectives
+    - gomodguard
     - gosimple
-    - ineffassign
+    - gosec
+    - govet
+    - grouper
+    - ifshort
+    - importas
+    - interfacebloat
+    # - ireturn
     - lll
+    - loggercheck
+    - maintidx
+    - makezero
     - misspell
     - nakedret
-    - noctx
+    - nestif
+    - nilnil
+    - nlreturn
     - nolintlint
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
     - rowserrcheck
     - staticcheck
-    # - structcheck
     - stylecheck
-    - unconvert
+    # - tagliatelle ## should uncomment
+    - tenv
+    - thelper
+    - usestdlibvars
     - unparam
-    - unused
-    # - varcheck
     - whitespace
-    - asciicheck
-    - gocognit
-    - goerr113
-    - nestif
-    - prealloc
-    - revive
     - wsl
-    - durationcheck
-    - forbidigo
-    - wastedassign
-    - sqlclosecheck
-    - predeclared
-    - nilerr
-    - makezero
-    - ifshort
-    - gomoddirectives
-    - goheader
-    - gci
-    - errorlint
-    - forcetypeassert
-    - nlreturn
-    - govet
-    - typecheck
-    - cyclop
-    # - godox
-    # - godot
-    - interfacer ## archived
-
-    # obsolet
-    # - golint ## obsolete, pls use revive instead
-
-    # - maligned ## use fieldalignment
-    # - scopelint ## exportloopref
+    - maligned
 
     ### don't enable:
-    # - gochecknoglobals
-    # - testpackage
-    # - exhaustivestruct
+    # - ginkgolinter ## don't work
+    # - exhaustivestruct ## lazy - none is def
+    # - exhaustruct      ## lazy - none is def
+    # - godox ## lazy - should uncomment
+    # - godot ## lazy - should uncomment
+    # - golint   ## use revive
+    # - maligned ## use fieldalignment
+    # - nonamedreturns ## we name return on short func
     # - paralleltest
+    # - testpackage ## we test internal stuff from pkg
+    # - varcheck ## use unused
+    # - varnamelen ## lazy - let's live with it
+    # - wrapcheck ## lazy - to much work
 
 
 issues:
@@ -187,17 +197,16 @@ issues:
       linters:
         - funlen
         - lll
-        # - gosec
+        - dupl
+        - stylecheck
+        - goerr113
+        - forcetypeassert
+        - gocritic
+        - gosec
+        - govet
+        - noctx
+        - wsl
         # - cyclop
         # - unparam
-        # - revive
-        - dupl
+        - revive
 
-    # https://github.com/go-critic/go-critic/issues/926
-    # - linters:
-    #     - gocritic
-    #   text: "unnecessaryDefer:"
-
-# run:
-#   skip-dirs:
-#     - test/testdata_etc

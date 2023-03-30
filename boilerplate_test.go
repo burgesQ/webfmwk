@@ -16,7 +16,7 @@ const (
 //
 
 func stopServer(s *Server) {
-	var ctx = s.GetContext()
+	ctx := s.GetContext()
 
 	ctx.Done()
 	s.Shutdown()
@@ -26,10 +26,11 @@ func stopServer(s *Server) {
 
 func wrapperPost(t *testing.T, route, routeReq string,
 	content []byte,
-	handlerRoute HandlerFunc, handlerTest webtest.HandlerForTest) {
+	handlerRoute HandlerFunc, handlerTest webtest.HandlerForTest,
+) {
 	t.Helper()
 
-	var s = InitServer(CheckIsUp())
+	s := InitServer(CheckIsUp())
 	t.Cleanup(func() { stopServer(s) })
 	s.POST(route, handlerRoute)
 	go s.Start(_testPort)
@@ -39,10 +40,11 @@ func wrapperPost(t *testing.T, route, routeReq string,
 }
 
 func wrapperGet(t *testing.T, route, routeReq string,
-	handlerRoute HandlerFunc, handlerTest webtest.HandlerForTest) {
+	handlerRoute HandlerFunc, handlerTest webtest.HandlerForTest,
+) {
 	t.Helper()
 
-	var s = InitServer(CheckIsUp())
+	s := InitServer(CheckIsUp())
 
 	t.Cleanup(func() { stopServer(s) })
 

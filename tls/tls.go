@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 )
@@ -39,7 +39,7 @@ var (
 // GetTLSCfg return a tls config ready for mTLS.
 // thx to https://dev.to/living_syn/validating-client-certificate-sans-in-go-i5p
 func GetTLSCfg(icfg IConfig) (*tls.Config, error) {
-	var cert, err = tls.LoadX509KeyPair(icfg.GetCert(), icfg.GetKey())
+	cert, err := tls.LoadX509KeyPair(icfg.GetCert(), icfg.GetKey())
 	if err != nil {
 		return nil, fmt.Errorf("cannot load cert [%s] and key [%s]: %w",
 			icfg.GetCert(), icfg.GetKey(), err)
@@ -76,7 +76,7 @@ func loadCA(caPath string, cfg *tls.Config) error {
 
 	pool := x509.NewCertPool()
 
-	if caCertPEM, e := ioutil.ReadFile(caPath); e != nil {
+	if caCertPEM, e := os.ReadFile(caPath); e != nil {
 		return fmt.Errorf("cannot load ca cert %q in pool: %w", caPath, e)
 	} else if !pool.AppendCertsFromPEM(caCertPEM) {
 		return ErrParseUserCA
@@ -99,9 +99,10 @@ func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
 }
 
 func wrapGetConfigForClient(cert *tls.Certificate, caCert *x509.CertPool,
-	level Level) func(*tls.ClientHelloInfo) (*tls.Config, error) {
+	level Level,
+) func(*tls.ClientHelloInfo) (*tls.Config, error) {
 	return func(hi *tls.ClientHelloInfo) (*tls.Config, error) {
-		var cfg = getBaseTLSCfg(cert)
+		cfg := getBaseTLSCfg(cert)
 
 		cfg.ClientAuth, cfg.ClientCAs = level.STD(), caCert
 		if level == RequireAndVerifyClientCertAndSAN {
@@ -117,7 +118,7 @@ func wrapVerifyPerrCertificate(caCert *x509.CertPool, remoteAddr string) func(
 	[][]byte, [][]*x509.Certificate) error {
 	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 		// from src/crypto/tls/handshake_server.go:680 (go 1.11) + DNSName check
-		var opts = x509.VerifyOptions{
+		opts := x509.VerifyOptions{
 			Roots:         caCert,
 			CurrentTime:   time.Now(),
 			Intermediates: x509.NewCertPool(),

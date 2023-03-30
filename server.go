@@ -210,7 +210,7 @@ func (s *Server) internalHandler() {
 
 // handle ctrl+c internaly
 func (s *Server) exitHandler(sig ...os.Signal) {
-	var c = make(chan os.Signal, 1)
+	c := make(chan os.Signal, 1)
 
 	signal.Notify(c, sig...)
 
