@@ -3,7 +3,7 @@ package webfmwk
 import (
 	"testing"
 
-	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/log"
 	"github.com/stretchr/testify/assert"
 )
 

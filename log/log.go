@@ -23,7 +23,7 @@ func GetLogger() qlog.Log {
 }
 
 // SetPrefix implement the LogPrefix interface
-func (l logger) SetPrefix(prefix string) Log {
+func (l logger) SetPrefix(prefix string) qlog.Log {
 	return logger{level: l.level, prefix: prefix}
 }
 

@@ -6,7 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/burgesQ/webfmwk/v5/log"
+	//"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/log"
 	"github.com/valyala/fasthttp"
 )
 
