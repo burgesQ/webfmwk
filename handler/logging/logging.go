@@ -21,7 +21,6 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 	return webfmwk.HandlerFunc(func(c webfmwk.Context) error {
 		var (
 			start = time.Now()
-			lg    = c.GetLogger()
 			fc    = c.GetFastContext()
 			rid   = string(fc.Request.Header.Peek(HeaderRequestID))
 		)
@@ -31,7 +30,10 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 		}
 		c.SetHeader(HeaderRequestID, rid)
 
-		lg.Infof("[%s] --> %q [%s]%s ", rid, webfmwk.GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
+		lg := c.GetLogger().SetPrefix("[" + rid + "]: ")
+
+		c.SetLogger(lg)
+		lg.Infof("--> %q [%s]%s ", webfmwk.GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
 
 		e := next(c)
 		elapsed := time.Since(start)
@@ -40,13 +42,13 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 
 		if utf8.Valid(content) {
 			if l > _limitOutput {
-				lg.Debugf("[%s] >%s<", rid, content[:_limitOutput])
+				lg.Debugf(">%s<", content[:_limitOutput])
 			} else {
-				lg.Debugf("[%s] >%s<", rid, content)
+				lg.Debugf(">%s<", content)
 			}
 		}
 
-		lg.Infof("[%s] <-- [%d]: took %s", rid, fc.Response.Header.StatusCode(), elapsed)
+		lg.Infof("<-- [%d]: took %s", fc.Response.Header.StatusCode(), elapsed)
 
 		return e
 	})
