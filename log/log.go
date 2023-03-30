@@ -3,33 +3,11 @@ package log
 
 import (
 	"fmt"
+
+	qlog "github.com/burgesQ/log"
 )
 
 type (
-	LogPrefix interface {
-		// SetPrefix return a new Log object with the
-		// prefix param set as internal logging message prefix
-		SetPrefix(prefix string) Log
-
-		GetPrefix() string
-	}
-
-	LogMessage interface {
-		Debugf(format string, v ...interface{})
-		Infof(format string, v ...interface{})
-		Warnf(format string, v ...interface{})
-		Errorf(format string, v ...interface{})
-		Fatalf(format string, v ...interface{})
-	}
-
-	// Log interface implement the logging system inside the API
-	Log interface {
-		LogPrefix
-		LogMessage
-
-		Printf(format string, args ...interface{})
-	}
-
 	logger struct {
 		prefix string
 		level  Level
@@ -40,7 +18,7 @@ type (
 var _lg = logger{level: LogErr, prefix: ""}
 
 // GetLogger return an struct fullfilling the Log interface
-func GetLogger() Log {
+func GetLogger() qlog.Log {
 	return _lg
 }
 
