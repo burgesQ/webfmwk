@@ -4,9 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.5]
+
+### Added
+- log.LogPrefix inteface
+- handler.Logging example
+
+
+### Changed
+- handler.Logging object now prefix all request w/ the rid
+- updated go toolchain from 1.15 to 1.19
+
+### Fixed
+- fixed example
+
+## [5.2.[2,3,4]]
+
+### Added
+- websocket support
+- Socket.io handler support
+
+### Changed
+- TLS config implementation
+
 ## [5.2.1]
 
-### Added 
+### Added
 - tls/cmd package, for interpolation with spf13' cobra n viper
 - gitlab ci file
 
@@ -17,7 +40,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 - tls get it own pacakge
 - new GetLevel method to the IConfig interface
 
-### Remove 
+### Remove
 - webfmwk.tls doens't exist anymore - please use webfmwk/v5/tls.(I)Config
 - webfmwk.LoadTLSListener -> webfmwk/v5/tls.LoadListener
 - webfmwk.GetTLSLCfg -> webfmwk/v5/tls.GetCfg

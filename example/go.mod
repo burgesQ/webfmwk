@@ -1,6 +1,6 @@
 module example
 
-go 1.15
+go 1.19
 
 require (
 	github.com/burgesQ/webfmwk/v5 v5.0.0-beta
