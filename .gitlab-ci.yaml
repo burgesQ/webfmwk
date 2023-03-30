@@ -3,7 +3,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "v1" || $CI_COMMIT_BRANCH == "v2" || $CI_COMMIT_BRANCH == "master"
     - if: $CI_MERGE_REQUEST_IID
 
-image: docker.frafos.net/go-ci:1.15
+image: docker.frafos.net/go-ci:1.19
 
 stages:
   - test
