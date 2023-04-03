@@ -39,7 +39,7 @@ GOFMT	= $(GOPATH)/bin/gotestfmt
 
 .PHONY: test
 test: ${GOFMT} ## Run the go unit test
-	@go test $(TEST_ARGS) $(MAKE_ARGS) $(TEST_FILES) | tee ${TEST_OUT} | $<
+	@go test $(TEST_ARGS) $(MAKE_ARGS) -json $(TEST_FILES) | tee ${TEST_OUT} | $<
 
 .PHONY: test-verbose
 test-verbose: ## Run the go unit test with more verbosity
