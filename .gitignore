@@ -1,4 +1,7 @@
+# markdown live rendering artifacts
 *.temp
+# testing artifacts
 .coverage.out
 *.cov
 *.html
+out.txt
