@@ -21,7 +21,7 @@ stages:
       - .go/pkg/mod/
 
 linting:
-  stage: test
+  stage: lint
   needs: []
   allow_failure: true
   artifacts:
