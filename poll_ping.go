@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Server) getResp(uri string) (r *http.Response, e error) {
-	req, err := http.NewRequestWithContext(s.ctx, "GET", uri, http.NoBody)
+	req, err := http.NewRequestWithContext(s.ctx, http.MethodGet, uri, http.NoBody)
 	if err != nil {
 		return r, err
 	}

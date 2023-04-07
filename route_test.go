@@ -23,7 +23,7 @@ var _emptyController = func(c Context) error {
 // TODO: func TestAddRoutes(t *testing.T) {}
 
 func TestSetPrefix(t *testing.T) {
-	var s = InitServer(CheckIsUp(), SetPrefix(_testPrefix))
+	s := InitServer(CheckIsUp(), SetPrefix(_testPrefix))
 	t.Cleanup(func() { stopServer(s) })
 
 	s.GET(_testURL, _emptyController)
@@ -35,7 +35,7 @@ func TestSetPrefix(t *testing.T) {
 }
 
 func TestAddRoutes(t *testing.T) {
-	var s = InitServer(CheckIsUp())
+	s := InitServer(CheckIsUp())
 	t.Cleanup(func() { stopServer(s) })
 
 	asserter := assert.New(t)
@@ -95,7 +95,7 @@ func TestRouteMethod(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			var s = InitServer(CheckIsUp())
+			s := InitServer(CheckIsUp())
 			t.Cleanup(func() { stopServer(s) })
 
 			testVerb := ""
@@ -129,6 +129,7 @@ func TestHandleParam(t *testing.T) {
 	wrapperGet(t, "/test/{id}", "/test/toto?pretty=1", func(c Context) error {
 		assert.Equal(t, []byte("1"), c.GetQuery().Peek("pretty"))
 		assert.Equal(t, "toto", c.GetVar("id"))
+
 		return c.JSONNoContent()
-	}, func(t *testing.T, resp *http.Response) {})
+	}, func(t *testing.T, resp *http.Response) { t.Helper() })
 }

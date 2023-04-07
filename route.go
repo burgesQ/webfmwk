@@ -103,9 +103,7 @@ type (
 	RoutesPerPrefix map[string]Routes
 )
 
-var (
-	_pong = json.RawMessage(`{"ping": "pong"}`)
-)
+var _pong = json.RawMessage(`{"ping": "pong"}`)
 
 //
 // Routes method
@@ -191,14 +189,13 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 // - test handler (/ping) is registered
 // - registered fmwk routes
 func (s *Server) GetRouter() *router.Router {
-	var r = router.New()
+	r := router.New()
 
 	r.HandleMethodNotAllowed, r.HandleOPTIONS = true, true
 	r.RedirectTrailingSlash, r.RedirectFixedPath = false, false
 
 	// IDEA: router.PanicHandler
-	r.NotFound, r.MethodNotAllowed =
-		s.CustomHandler(handleNotFound), s.CustomHandler(handleNotAllowed)
+	r.NotFound, r.MethodNotAllowed = s.CustomHandler(handleNotFound), s.CustomHandler(handleNotAllowed)
 
 	// register doc handler
 	if len(s.meta.docHandlers) > 0 {
@@ -258,7 +255,7 @@ func (s *Server) GetRouter() *router.Router {
 // which return a HandlerFunc wrapper in an fasthttp.Handler.
 func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
 	return func(c *fasthttp.RequestCtx) {
-		var ctx, cancel = s.genContext(c)
+		ctx, cancel := s.genContext(c)
 		defer cancel()
 
 		// we skip verification as it's done in the useHandler
@@ -267,7 +264,7 @@ func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
 }
 
 func (s *Server) genContext(c *fasthttp.RequestCtx) (Context, context.CancelFunc) {
-	var ctx, fn = context.WithCancel(s.ctx)
+	ctx, fn := context.WithCancel(s.ctx)
 
 	return &icontext{c, s.log, ctx}, fn
 }

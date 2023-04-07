@@ -21,12 +21,10 @@ type Param struct {
 	DocURI string
 }
 
-var (
-	_defRedoc = &Param{
-		DocURI: _defURI,
-		Path:   _defPath,
-	}
-)
+var _defRedoc = &Param{
+	DocURI: _defURI,
+	Path:   _defPath,
+}
 
 // Path set the redoc handler path.
 func Path(path string) func(*Param) {
@@ -51,7 +49,7 @@ func DocURI(uri string) func(*Param) {
 //		)
 //	)}
 func GetHandler(opt ...func(*Param)) webfmwk.DocHandler {
-	var p = _defRedoc
+	p := _defRedoc
 
 	for _, o := range opt {
 		o(p)

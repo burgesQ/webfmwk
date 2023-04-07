@@ -7,27 +7,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	_emptyHandler = func(next HandlerFunc) HandlerFunc {
-		return HandlerFunc(func(c Context) error {
-			return next(c)
-		})
-	}
-)
+var _emptyHandler = func(next HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(c Context) error {
+		return next(c)
+	})
+}
 
 func TestServerNewInit(t *testing.T) {
-
 	var (
 		fakeswagger = DocHandler{}
 		testT       = time.Second * 42
 		s           = InitServer(
 			WithCtrlC(), CheckIsUp(), WithCORS(),
 			WithDocHandlers(fakeswagger),
-			//SetMaxHeaderBytes(42),
+			// SetMaxHeaderBytes(42),
 			SetReadTimeout(testT),
 			SetWriteTimeout(testT),
 			SetIDLETimeout(testT),
-			//SetReadHeaderTimeout(testT),
+			// SetReadHeaderTimeout(testT),
 			SetPrefix("/api"),
 			//			WithMiddlewares(_emptyMiddleware),
 			WithHandlers(_emptyHandler))
@@ -38,7 +35,7 @@ func TestServerNewInit(t *testing.T) {
 	asserter.True(s.meta.ctrlc)
 	asserter.True(s.meta.checkIsUp)
 	asserter.True(s.meta.cors)
-	//assert.True(t, len(s.meta.middlewares) == 1)
+	// assert.True(t, len(s.meta.middlewares) == 1)
 	asserter.True(len(s.meta.handlers) == 1)
 
 	asserter.Equal(s.meta.baseServer.ReadTimeout, testT)

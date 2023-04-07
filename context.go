@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/log"
 	validator "github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
 	"github.com/valyala/fasthttp"

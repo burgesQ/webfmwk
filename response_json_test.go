@@ -63,7 +63,7 @@ func TestJSONResponse(t *testing.T) {
 
 	// load custom endpoints
 	for n, t := range tests {
-		var fn = t.fn
+		fn := t.fn
 		s.GET("/"+n, func(c Context) error {
 			return fn(c, ret)
 		})
@@ -76,6 +76,8 @@ func TestJSONResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			webtest.RequestAndTestAPI(t, _testAddr+"/"+name,
 				func(t *testing.T, resp *http.Response) {
+					t.Helper()
+
 					if test.expectedOP != http.StatusNoContent {
 						webtest.Body(t, hBody, resp)
 					}

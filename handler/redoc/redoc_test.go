@@ -23,17 +23,15 @@ func TestRedocParam(t *testing.T) {
 }
 
 func TestGetHandler(t *testing.T) {
-	var (
-		s = webfmwk.InitServer(webfmwk.CheckIsUp(),
-			webfmwk.SetPrefix("/api"),
-			webfmwk.WithDocHandlers(
-				GetHandler(Path("/another"), DocURI("/source")),
-			),
-		)
+	s := webfmwk.InitServer(webfmwk.CheckIsUp(),
+		webfmwk.SetPrefix("/api"),
+		webfmwk.WithDocHandlers(
+			GetHandler(Path("/another"), DocURI("/source")),
+		),
 	)
 
 	t.Cleanup(func() {
-		var ctx = s.GetContext()
+		ctx := s.GetContext()
 		ctx.Done()
 		s.Shutdown()
 		s.WaitAndStop()
@@ -49,6 +47,7 @@ func TestGetHandler(t *testing.T) {
 
 	webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/another",
 		func(t *testing.T, resp *http.Response) {
+			t.Helper()
 			webtest.BodyContains(t, "/source", resp)
 		})
 }

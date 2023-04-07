@@ -3,12 +3,11 @@ package webfmwk
 import (
 	"testing"
 
-	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDumpRoutes(t *testing.T) {
-
 	s := InitServer(
 		SetPrefix("/api"),
 		CheckIsUp())
@@ -45,7 +44,6 @@ func TestDumpRoutes(t *testing.T) {
 
 	// options handled by fasthttp
 	// assert.Contains(t, all, "OPTIONS")
-
 }
 
 type customLoggerT struct{}
@@ -56,6 +54,8 @@ func (l customLoggerT) Infof(format string, v ...interface{})     {}
 func (l customLoggerT) Warnf(format string, v ...interface{})     {}
 func (l customLoggerT) Errorf(format string, v ...interface{})    {}
 func (l customLoggerT) Fatalf(format string, v ...interface{})    {}
+func (l customLoggerT) SetPrefix(prefix string) log.Log           { return l }
+func (l customLoggerT) GetPrefix() string                         { return "" }
 
 func TestRegisterLogger(t *testing.T) {
 	var (

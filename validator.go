@@ -66,7 +66,7 @@ func TranslateAndUseFieldName(errs validator.ValidationErrors) ErrorValidation {
 }
 
 // Use the struct json field name for validation errors
-// src: https://github.com/go-playground/validator/blob/9a5bce32538f319bf69aebb3aca90d394bc6d0cb/_examples/struct-level/main.go#L37
+// src: shorturl.at/evDJ0
 func useJSONFieldName() {
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		//nolint: gomnd

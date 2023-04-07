@@ -8,7 +8,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/log"
+	wlog "github.com/burgesQ/webfmwk/v5/log"
 	"github.com/burgesQ/webfmwk/v5/tls"
 	"github.com/lab259/cors"
 	"github.com/valyala/fasthttp"
@@ -65,7 +66,7 @@ func (s *Server) Run(addrs ...Address) {
 //
 
 func fetchLogger() {
-	logger = log.GetLogger()
+	logger = wlog.GetLogger()
 }
 
 // GetLogger return an instance of the Log interface used.
@@ -210,7 +211,7 @@ func (s *Server) internalHandler() {
 
 // handle ctrl+c internaly
 func (s *Server) exitHandler(sig ...os.Signal) {
-	var c = make(chan os.Signal, 1)
+	c := make(chan os.Signal, 1)
 
 	signal.Notify(c, sig...)
 
