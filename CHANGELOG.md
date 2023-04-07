@@ -10,7 +10,6 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 - log.LogPrefix inteface
 - handler.Logging example
 
-
 ### Changed
 - handler.Logging object now prefix all request w/ the rid
 - updated go toolchain from 1.15 to 1.19

@@ -1,12 +1,15 @@
 workflow:
   rules:
-    - if: $CI_COMMIT_BRANCH == "v1" || $CI_COMMIT_BRANCH == "v2" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "master"
     - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
 
 image: docker.frafos.net/go-ci:1.19
 
 stages:
   - test
+  - lint
+  - release
 
 .go-cache:
   variables:
@@ -19,6 +22,7 @@ stages:
 
 linting:
   stage: test
+  needs: []
   allow_failure: true
   artifacts:
     when: always
@@ -27,19 +31,13 @@ linting:
     reports:
       codequality: qc.json
   script:
-    - make lint LINT_ARGS='--max-same-issues 50 --out-format code-climate' | tee qc.json
-
-# Address sanitizer and race detector:
-#   image: docker.frafos.net/go-ci-clang:1.15
-#   stage: test
-#   dependencies:
-#     - Vendor
-#   script:
-#     - make test-msan
-#     - make test-race
+    - make lint LINT_ARGS='--max-same-issues 50 --out-format code-climate' \
+      | tee qc.json \
+      | jq -r '.[] | "\(.location.path):\(.location.lines.begin) \(.description)"'
 
 unit testing:
   stage: test
+  needs: []
   extends: .go-cache
   script:
     - make test-cover -e TEST_ARGS='-v'
@@ -59,3 +57,14 @@ unit testing:
       coverage_report:
         coverage_format: cobertura
         path: cover.xml
+
+release_job:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG                 # Run this job when a tag is created
+  script:
+    - echo "running release_job"
+  release:                               # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
+    tag_name: '$CI_COMMIT_TAG'
+    description: "webfmwk' release '$CI_COMMIT_TAG'"
