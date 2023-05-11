@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -23,7 +24,8 @@ var _emptyController = func(c Context) error {
 // TODO: func TestAddRoutes(t *testing.T) {}
 
 func TestSetPrefix(t *testing.T) {
-	s := InitServer(CheckIsUp(), SetPrefix(_testPrefix))
+	s, e := InitServer(CheckIsUp(), SetPrefix(_testPrefix))
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 
 	s.GET(_testURL, _emptyController)
@@ -35,7 +37,8 @@ func TestSetPrefix(t *testing.T) {
 }
 
 func TestAddRoutes(t *testing.T) {
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 
 	asserter := assert.New(t)
@@ -95,7 +98,8 @@ func TestRouteMethod(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			s := InitServer(CheckIsUp())
+			s, e := InitServer(CheckIsUp())
+			require.Nil(t, e)
 			t.Cleanup(func() { stopServer(s) })
 
 			testVerb := ""

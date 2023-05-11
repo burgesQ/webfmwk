@@ -4,7 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.2.5]
+## [5.2.6] (upcoming)
+
+### Added
+- test are now shuffled
+- pprof handler toggler
+
+### Changed
+- Shutdown now return an error 
+- WorkerLauncher is now an interface
+- WorkerLauncher.Run now only take a function as unique parameter
+- RegisterValidatorRule and RegisterValidatorAlias now return an error
+- Shutdown now return an error
+- InitServer now return an error (which should be handled as a fatal)
+
+### Fixed 
+
+### Removed 
+- internal call to the logger (not in a server/context), affected functions now return an error
+- WorkerLauncher call to logger
+- Shutdown call to logger
+
+## [5.2.5] (Fri Apr 7 08:41:20 2023)
 
 ### Added
 - log.LogPrefix inteface
@@ -17,7 +38,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 ### Fixed
 - fixed example
 
-## [5.2.[2,3,4]]
+## [5.2.[2,3,4]] (Fri Sep 30 11:38:53 2022, Wed Oct 19 16:35:20 2022, Mon Dec 12 14:30:42 2022)
 
 ### Added
 - websocket support
@@ -26,7 +47,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 ### Changed
 - TLS config implementation
 
-## [5.2.1]
+## [5.2.1] (Thu Sep 29 10:08:39 2022)
 
 ### Added
 - tls/cmd package, for interpolation with spf13' cobra n viper

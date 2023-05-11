@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/webtest"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -30,7 +31,9 @@ func wrapperPost(t *testing.T, route, routeReq string,
 ) {
 	t.Helper()
 
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
+	require.Nil(t, e)
+
 	t.Cleanup(func() { stopServer(s) })
 	s.POST(route, handlerRoute)
 	go s.Start(_testPort)
@@ -44,7 +47,8 @@ func wrapperGet(t *testing.T, route, routeReq string,
 ) {
 	t.Helper()
 
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
+	require.Nil(t, e)
 
 	t.Cleanup(func() { stopServer(s) })
 

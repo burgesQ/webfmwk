@@ -29,9 +29,9 @@ type queryParam struct {
 }
 
 //nolint:forcetypeassert
-func initUseCaseServer() *Server {
+func initUseCaseServer(t *testing.T) *Server {
 	var (
-		s = InitServer(
+		s, e = InitServer(
 			CheckIsUp(), SetPrefix("/api"),
 			WithHandlers(func(next HandlerFunc) HandlerFunc {
 				return HandlerFunc(func(c Context) error {
@@ -101,13 +101,15 @@ func initUseCaseServer() *Server {
 		}
 	)
 
+	require.Nil(t, e)
+
 	s.RouteApplier(routes)
 
 	return s
 }
 
 func TestUseCase(t *testing.T) {
-	s := initUseCaseServer()
+	s := initUseCaseServer(t)
 
 	require.Nil(t, RegisterValidatorRule("custom", func(fi validator.FieldLevel) bool {
 		return fi.Field().String() != "fail"

@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	//"github.com/burgesQ/webfmwk/v5/log"
 	"github.com/burgesQ/log"
 	"github.com/valyala/fasthttp"
 )
@@ -57,10 +56,7 @@ type (
 
 var once sync.Once
 
-func initOnce() {
-	fetchLogger()
-	initValidator()
-}
+func initOnce() error { return initValidator() }
 
 // UseOption apply the param o option to the params s server
 func UseOption(s *Server, o Option) {
@@ -79,8 +75,10 @@ func useOptions(s *Server, opts ...Option) {
 // List of server options : WithLogger, WithCtrlC, CheckIsUp, WithCORS, SetPrefix,
 // WithHandlers, WithDocHandler, SetReadTimeout, SetWriteTimeout, SetIdleTimeout,
 // EnableKeepAlive.
-func InitServer(opts ...Option) *Server {
-	once.Do(initOnce)
+// Any error returned by the method should be handled as a fatal one.
+func InitServer(opts ...Option) (*Server, error) {
+	var e error
+	once.Do(func() { e = initOnce() })
 
 	var (
 		wg          sync.WaitGroup
@@ -90,7 +88,7 @@ func InitServer(opts ...Option) *Server {
 			ctx:      ctx,
 			cancel:   cancel,
 			wg:       &wg,
-			log:      logger,
+			log:      fetchLogger(),
 			isReady:  make(chan bool),
 			meta:     getDefaultMeta(),
 		}
@@ -98,7 +96,7 @@ func InitServer(opts ...Option) *Server {
 
 	useOptions(s, opts...)
 
-	return s
+	return s, e
 }
 
 // WithLogger set the server logger which implement the log.Log interface

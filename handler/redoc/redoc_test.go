@@ -8,6 +8,7 @@ import (
 	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -23,12 +24,14 @@ func TestRedocParam(t *testing.T) {
 }
 
 func TestGetHandler(t *testing.T) {
-	s := webfmwk.InitServer(webfmwk.CheckIsUp(),
+	s, e := webfmwk.InitServer(webfmwk.CheckIsUp(),
 		webfmwk.SetPrefix("/api"),
 		webfmwk.WithDocHandlers(
 			GetHandler(Path("/another"), DocURI("/source")),
 		),
 	)
+
+	require.Nil(t, e)
 
 	t.Cleanup(func() {
 		ctx := s.GetContext()

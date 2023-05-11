@@ -18,9 +18,7 @@ type (
 var _lg = logger{level: LogErr, prefix: ""}
 
 // GetLogger return an struct fullfilling the Log interface
-func GetLogger() qlog.Log {
-	return _lg
-}
+func GetLogger() qlog.Log { return _lg }
 
 // SetPrefix implement the LogPrefix interface
 func (l logger) SetPrefix(prefix string) qlog.Log {

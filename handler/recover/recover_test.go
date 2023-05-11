@@ -13,10 +13,12 @@ import (
 const _testPort = ":6671"
 
 func TestHandler(t *testing.T) {
-	s := webfmwk.InitServer(webfmwk.CheckIsUp(),
+	s, e := webfmwk.InitServer(webfmwk.CheckIsUp(),
 		webfmwk.SetPrefix("/api"),
 		webfmwk.WithHandlers(Handler),
 	)
+
+	require.Nil(t, e)
 
 	// t.Log("init server...")
 	t.Cleanup(func() {

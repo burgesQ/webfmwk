@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/webtest"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJSONResponse(t *testing.T) {
 	var (
-		s   = InitServer(CheckIsUp())
-		ret = struct {
+		s, e = InitServer(CheckIsUp())
+		ret  = struct {
 			Message string `json:"message"`
 		}{"nul"}
 		tests = map[string]struct {
@@ -59,6 +60,7 @@ func TestJSONResponse(t *testing.T) {
 		}
 	)
 
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 
 	// load custom endpoints

@@ -1,6 +1,8 @@
 package webfmwk
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -33,7 +35,9 @@ var (
 	trans ut.Translator
 )
 
-func initValidator() {
+var ErrGetTranslator = errors.New("fetching the 'en' translator")
+
+func initValidator() error {
 	var (
 		en = en_translator.New()
 		ok bool
@@ -41,15 +45,17 @@ func initValidator() {
 
 	uni = ut.New(en, en)
 	if trans, ok = uni.GetTranslator("en"); !ok {
-		logger.Fatalf("cannot get en translator")
+		return ErrGetTranslator
 	}
 
 	validate = validator.New()
 	if e := en_translations.RegisterDefaultTranslations(validate, trans); e != nil {
-		logger.Fatalf("cannot init translations : %s", e.Error())
+		return fmt.Errorf("initializing the 'en' translator : %w", e)
 	}
 
 	useJSONFieldName()
+
+	return nil
 }
 
 // Trnaslate the errs array of validation error and use the actual filed name
@@ -81,19 +87,28 @@ func useJSONFieldName() {
 
 // RegisterValidatorRule register the  validation rule param.
 // See https://go-playground/validator.v10 for more.
-func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) error {
-	once.Do(initOnce)
+func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) (e error) {
+	once.Do(func() { e = initOnce() })
+	if e != nil {
+		return fmt.Errorf("registering validator rule: %w", e)
+	}
 
 	return validate.RegisterValidation(name, fn)
 }
 
 // RegisterValidatorAlias register some validation alias.
 // See https://go-playground/validator.v10 for more.
-func RegisterValidatorAlias(name, what string) {
+func RegisterValidatorAlias(name, what string) (e error) {
 	// from init server - if validator is called before
 	// the server init (which may happen pretty often)
-	once.Do(initOnce)
+	once.Do(func() { e = initOnce() })
+	if e != nil {
+		return fmt.Errorf("registering validator alias: %w", e)
+	}
+
 	validate.RegisterAlias(name, what)
+
+	return nil
 }
 
 // RegisterValidatorTrans register some validation alias.

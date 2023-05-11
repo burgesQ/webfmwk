@@ -6,11 +6,13 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/webtest"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRunner(t *testing.T) {
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
 
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 
 	s.GET("/test", func(c Context) error {

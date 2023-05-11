@@ -8,15 +8,18 @@ import (
 	"github.com/burgesQ/gommon/webtest"
 	"github.com/burgesQ/webfmwk/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const _testPort = ":6670"
 
 func TestHandler(t *testing.T) {
-	s := webfmwk.InitServer(webfmwk.CheckIsUp(),
+	s, e := webfmwk.InitServer(webfmwk.CheckIsUp(),
 		webfmwk.SetPrefix("/api"),
 		webfmwk.WithHandlers(Handler),
 	)
+
+	require.Nil(t, e)
 
 	t.Cleanup(func() {
 		ctx := s.GetContext()

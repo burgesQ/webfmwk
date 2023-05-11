@@ -4,13 +4,14 @@ import (
 	"testing"
 
 	"github.com/burgesQ/log"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDumpRoutes(t *testing.T) {
-	s := InitServer(
+	s, e := InitServer(
 		SetPrefix("/api"),
 		CheckIsUp())
+	require.Nil(t, e)
 
 	s.GET("/get", func(c Context) error {
 		return nil
@@ -40,10 +41,10 @@ func TestDumpRoutes(t *testing.T) {
 		"PUT":    {"/api/put"},
 	}
 
-	assert.Equal(t, expected, all)
+	require.Equal(t, expected, all)
 
 	// options handled by fasthttp
-	// assert.Contains(t, all, "OPTIONS")
+	// require.Contains(t, all, "OPTIONS")
 }
 
 type customLoggerT struct{}
@@ -59,17 +60,19 @@ func (l customLoggerT) GetPrefix() string                         { return "" }
 
 func TestRegisterLogger(t *testing.T) {
 	var (
-		lg = new(customLoggerT)
-		s  = InitServer(WithLogger(lg))
+		lg   = new(customLoggerT)
+		s, e = InitServer(WithLogger(lg))
 	)
 
-	assert.Implements(t, (*log.Log)(nil), lg)
-	assert.Equal(t, lg, s.GetLogger())
+	require.Nil(t, e)
+	require.Implements(t, (*log.Log)(nil), lg)
+	require.Equal(t, lg, s.GetLogger())
 }
 
 func TestGetLauncher(t *testing.T) {
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
 
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
@@ -77,8 +80,9 @@ func TestGetLauncher(t *testing.T) {
 }
 
 func TestGetContext(t *testing.T) {
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
 
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 
 	if s.GetContext() == nil {
@@ -87,7 +91,8 @@ func TestGetContext(t *testing.T) {
 }
 
 func TestAddHandlers(t *testing.T) {
-	s := InitServer(CheckIsUp())
+	s, e := InitServer(CheckIsUp())
+	require.Nil(t, e)
 	t.Cleanup(func() { stopServer(s) })
 
 	s.addHandlers(func(next HandlerFunc) HandlerFunc {
@@ -96,7 +101,7 @@ func TestAddHandlers(t *testing.T) {
 		})
 	})
 
-	assert.True(t, len(s.meta.handlers) == 1, "handler wrongly saved")
+	require.True(t, len(s.meta.handlers) == 1, "handler wrongly saved")
 }
 
 // // // TODO: TestStartTLS(t *testing.T)

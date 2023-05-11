@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var _emptyHandler = func(next HandlerFunc) HandlerFunc {
@@ -17,7 +17,7 @@ func TestServerNewInit(t *testing.T) {
 	var (
 		fakeswagger = DocHandler{}
 		testT       = time.Second * 42
-		s           = InitServer(
+		s, e        = InitServer(
 			WithCtrlC(), CheckIsUp(), WithCORS(),
 			WithDocHandlers(fakeswagger),
 			// SetMaxHeaderBytes(42),
@@ -30,25 +30,27 @@ func TestServerNewInit(t *testing.T) {
 			WithHandlers(_emptyHandler))
 	)
 
-	asserter := assert.New(t)
+	requirer := require.New(t)
 
-	asserter.True(s.meta.ctrlc)
-	asserter.True(s.meta.checkIsUp)
-	asserter.True(s.meta.cors)
-	// assert.True(t, len(s.meta.middlewares) == 1)
-	asserter.True(len(s.meta.handlers) == 1)
+	requirer.Nil(e)
 
-	asserter.Equal(s.meta.baseServer.ReadTimeout, testT)
-	asserter.Equal(s.meta.baseServer.WriteTimeout, testT)
-	asserter.Equal(s.meta.baseServer.IdleTimeout, testT)
+	requirer.True(s.meta.ctrlc)
+	requirer.True(s.meta.checkIsUp)
+	requirer.True(s.meta.cors)
+	// require.True(t, len(s.meta.middlewares) == 1)
+	requirer.True(len(s.meta.handlers) == 1)
 
-	asserter.True(len(s.meta.docHandlers) == 1)
+	requirer.Equal(s.meta.baseServer.ReadTimeout, testT)
+	requirer.Equal(s.meta.baseServer.WriteTimeout, testT)
+	requirer.Equal(s.meta.baseServer.IdleTimeout, testT)
 
-	asserter.Equal(s.meta.prefix, "/api")
+	requirer.True(len(s.meta.docHandlers) == 1)
+
+	requirer.Equal(s.meta.prefix, "/api")
 
 	ht := s.meta.toServer("testing")
-	asserter.Equal("webfmwk testing", ht.Name)
-	asserter.Equal(testT, ht.ReadTimeout)
-	asserter.Equal(testT, ht.WriteTimeout)
-	asserter.Equal(testT, ht.IdleTimeout)
+	requirer.Equal("webfmwk testing", ht.Name)
+	requirer.Equal(testT, ht.ReadTimeout)
+	requirer.Equal(testT, ht.WriteTimeout)
+	requirer.Equal(testT, ht.IdleTimeout)
 }

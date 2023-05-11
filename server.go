@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -30,9 +31,8 @@ type (
 
 var (
 	// poolOfServers hold all the http(s) server to properly shut them down
-	poolOfServers    []*fasthttp.Server
-	logger           log.Log
-	loggerMu, poolMu sync.Mutex
+	poolOfServers []*fasthttp.Server
+	poolMu        sync.Mutex
 )
 
 // Run allow to launch multiple server from a single call.
@@ -65,35 +65,24 @@ func (s *Server) Run(addrs ...Address) {
 // Global methods
 //
 
-func fetchLogger() {
-	logger = wlog.GetLogger()
-}
-
-// GetLogger return an instance of the Log interface used.
-func GetLogger() log.Log {
-	// from init server - if the logger is fetched before
-	// the server init (which happened pretty often)
-	once.Do(initOnce)
-
-	return logger
-}
+func fetchLogger() log.Log { return wlog.GetLogger() }
 
 // Shutdown terminate all running servers.
-func Shutdown() {
+func Shutdown() error {
 	poolMu.Lock()
 	defer poolMu.Unlock()
 
-	for _, server := range poolOfServers {
-		logger.Infof("shutdowning server %s...", server.Name)
+	var senti error
 
+	for i, server := range poolOfServers {
 		if e := server.Shutdown(); e != nil {
-			logger.Errorf("shutdowning server : %v", e)
+			senti = fmt.Errorf("shutdowning server %d : %w", i, e)
 		}
-
-		logger.Infof("server %s down", server.Name)
 	}
 
 	poolOfServers = nil
+
+	return senti
 }
 
 //
@@ -107,10 +96,14 @@ func Shutdown() {
 // Start expose an server to an HTTP endpoint.
 func (s *Server) Start(addr string) {
 	s.internalHandler()
-	s.launcher.Start("http server "+addr, func() error {
+	s.launcher.Start(func() {
+		s.log.Debugf("http server %s: starting", addr)
 		go s.pollPingEndpoint(addr)
 
-		return s.internalInit(addr).ListenAndServe(addr)
+		if e := s.internalInit(addr).ListenAndServe(addr); e != nil {
+			s.log.Errorf("http server %s (%T): %s", addr, e, e)
+		}
+		s.log.Infof("http server %s: done", addr)
 	})
 }
 
@@ -123,8 +116,14 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 		s.GetLogger().Fatalf("loading tls: %s", err.Error())
 	}
 
-	s.launcher.Start("https server "+addr, func() error {
-		return s.internalInit(addr).Serve(listener)
+	s.launcher.Start(func() {
+		s.log.Debugf("https server %s: starting", addr)
+		// go s.pollPingEndpoint(addr)
+
+		if e := s.internalInit(addr).Serve(listener); e != nil {
+			s.log.Errorf("https server %s (%T): %s", addr, e, e)
+		}
+		s.log.Infof("https server %s: done", addr)
 	})
 }
 
@@ -199,10 +198,10 @@ func concatAddr(addr, prefix string) string {
 // launch the ctrl+c job if needed
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
-		s.launcher.Start("exit handler", func() error {
+		s.launcher.Start(func() {
+			s.log.Debugf("exit handler: starting")
 			s.exitHandler(os.Interrupt, syscall.SIGHUP)
-
-			return nil
+			s.log.Infof("exit handler: starting")
 		})
 
 		s.meta.ctrlcStarted = true
@@ -288,10 +287,7 @@ func (s *Server) setPrefix(prefix string) *Server {
 
 // RegisterLogger register the Log used
 func (s *Server) registerLogger(lg log.Log) *Server {
-	loggerMu.Lock()
-	defer loggerMu.Unlock()
-
-	logger, s.log = lg, lg
+	s.log = lg
 
 	return s
 }
