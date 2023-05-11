@@ -29,7 +29,7 @@ lint-fix: ; @$(MAKE) lint LINT_ARGS="$(LINT_ARGS) --fix" ## Run the go linter
 
 # go unit test
 TEST_FILES	= ./...
-TEST_ARGS		= # -v -short -failfast
+TEST_ARGS		= -count=1 -v -race -shuffle=on
 MAKE_ARGS = # -cpu=1 -parallel=4 -run <pattern>
 COVER_FILE=cover.cov
 COVER_HTML=cover.html
@@ -39,7 +39,7 @@ GOFMT	= $(GOPATH)/bin/gotestfmt
 
 .PHONY: test
 test: ${GOFMT} ## Run the go unit test
-	@go test $(TEST_ARGS) $(MAKE_ARGS) -json $(TEST_FILES) | tee ${TEST_OUT} | $<
+	go test $(TEST_ARGS) $(MAKE_ARGS) -json $(TEST_FILES) | tee ${TEST_OUT} | $<
 
 .PHONY: test-verbose
 test-verbose: ## Run the go unit test with more verbosity
@@ -72,7 +72,7 @@ test-cover-clean: ## Clean the test coverage artifacts
 test-clean: test-cover-clean ## Proxy test-cover-clean
 clean-test: test-clean ## PRoxt test-clean
 
-test-cover-re: test-cover-clean test-cover ## Re-run the test coverage
+test-cover-re: test-cover-clean test-cover test-cover-html ## Re-run the test coverage
 
 install-fmt: ${GOFMT} ## Install gotestfmt
 ${GOFMT}:

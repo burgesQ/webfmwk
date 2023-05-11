@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	_defPath = "api/doc/swagger.json"
+	_defPath = "/doc/swagger.json"
 	_defURI  = "/doc/redoc"
 )
 
@@ -21,10 +21,7 @@ type Param struct {
 	DocURI string
 }
 
-var _defRedoc = &Param{
-	DocURI: _defURI,
-	Path:   _defPath,
-}
+func defRedoc() *Param { return &Param{DocURI: _defURI, Path: _defPath} }
 
 // Path set the redoc handler path.
 func Path(path string) func(*Param) {
@@ -49,7 +46,7 @@ func DocURI(uri string) func(*Param) {
 //		)
 //	)}
 func GetHandler(opt ...func(*Param)) webfmwk.DocHandler {
-	p := _defRedoc
+	p := defRedoc()
 
 	for _, o := range opt {
 		o(p)
