@@ -57,7 +57,7 @@ func TestAddress(t *testing.T) {
 }
 
 func TestAddressSameAs(t *testing.T) {
-	addr := &Address{
+	addrs := Addresses{{
 		Addr: "uno",
 		Name: "deuzio",
 		TLS: &tls.Config{
@@ -65,25 +65,25 @@ func TestAddressSameAs(t *testing.T) {
 			Key:      "some/key",
 			Insecure: true,
 		},
-	}
+	}}
 	requirer := require.New(t)
 
-	requirer.False(addr.SameAs(&Address{}))
-	requirer.False(addr.SameAs(&Address{
+	requirer.False(addrs.SameAs(Addresses{}))
+	requirer.False(addrs.SameAs(Addresses{{
 		Addr: "uno",
 		Name: "deuzio",
-	}))
+	}}))
 
-	requirer.False(addr.SameAs(&Address{
+	requirer.False(addrs.SameAs(Addresses{{
 		Addr: "uno",
 		Name: "deuzio",
 		TLS: &tls.Config{
 			Cert:     "some/cert",
 			Insecure: true,
 		},
-	}))
+	}}))
 
-	requirer.True(addr.SameAs(&Address{
+	requirer.True(addrs.SameAs(Addresses{{
 		Addr: "uno",
 		Name: "deuzio",
 		TLS: &tls.Config{
@@ -91,5 +91,5 @@ func TestAddressSameAs(t *testing.T) {
 			Key:      "some/key",
 			Insecure: true,
 		},
-	}))
+	}}))
 }

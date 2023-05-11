@@ -67,11 +67,9 @@ var (
 	}
 )
 
-type ErrLevel struct {
-	what string
-}
+type LevelError struct{ what string }
 
-func (e ErrLevel) Error() string {
+func (e LevelError) Error() string {
 	return fmt.Sprintf("non existing TLS level: %s", e.what)
 }
 
@@ -94,7 +92,7 @@ func (lv *Level) Set(val string) error {
 		return nil
 	}
 
-	return ErrLevel{val}
+	return LevelError{val}
 }
 
 func (lv *Level) UnmarshalJSON(b []byte) error {

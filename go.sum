@@ -3,6 +3,8 @@ github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/burgesQ/gommon v1.2.3 h1:vqqgxa8Q+g85ez6GQMJoisu3BLuxrX4bZ2hEbiuKdko=
 github.com/burgesQ/gommon v1.2.3/go.mod h1:JXuiXVcuwJ/gxtjb9Lnpp0zDIdCDASVW0uv6cWy0COs=
+github.com/burgesQ/gommon v1.2.4 h1:KpPzDjtaSZ20Tas75siJNASglDINXG0N20HoGKhsTbY=
+github.com/burgesQ/gommon v1.2.4/go.mod h1:JXuiXVcuwJ/gxtjb9Lnpp0zDIdCDASVW0uv6cWy0COs=
 github.com/burgesQ/log v0.0.0-20230330150931-630d98180763 h1:YIj2ZWf+NR+VJncs/amzYeYJ+rmRFhJQ16clXAmw1oc=
 github.com/burgesQ/log v0.0.0-20230330150931-630d98180763/go.mod h1:0mqbA+jgzeuo2IcjkgOHi/NKCmjWVrkLS/7DEmAkCng=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=

@@ -89,6 +89,7 @@ func useJSONFieldName() {
 // See https://go-playground/validator.v10 for more.
 func RegisterValidatorRule(name string, fn func(fl validator.FieldLevel) bool) (e error) {
 	once.Do(func() { e = initOnce() })
+
 	if e != nil {
 		return fmt.Errorf("registering validator rule: %w", e)
 	}
@@ -102,6 +103,7 @@ func RegisterValidatorAlias(name, what string) (e error) {
 	// from init server - if validator is called before
 	// the server init (which may happen pretty often)
 	once.Do(func() { e = initOnce() })
+
 	if e != nil {
 		return fmt.Errorf("registering validator alias: %w", e)
 	}

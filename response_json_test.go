@@ -61,7 +61,7 @@ func TestJSONResponse(t *testing.T) {
 	)
 
 	require.Nil(t, e)
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 
 	// load custom endpoints
 	for n, t := range tests {

@@ -32,17 +32,16 @@ type (
 	// Options is a list of options
 	Options []Option
 
-	//nolint: govet
 	serverMeta struct {
 		socketIOHandler     http.Handler
 		socketIOHandlerFunc http.HandlerFunc
 		baseServer          *fasthttp.Server
-		routes              RoutesPerPrefix // 8
-		prefix              string          // 16
+		routes              RoutesPerPrefix
+		prefix              string
 		pprofPath           string
 		socketIOPath        string
-		docHandlers         []DocHandler // 24
-		handlers            []Handler    // 24
+		docHandlers         []DocHandler
+		handlers            []Handler
 		cors                bool
 		socketIOHF          bool
 		socketIOH           bool
@@ -50,7 +49,7 @@ type (
 		enableKeepAlive     bool
 		ctrlcStarted        bool
 		checkIsUp           bool
-		ctrlc               bool // 1 * 5
+		ctrlc               bool
 	}
 )
 
@@ -78,6 +77,7 @@ func useOptions(s *Server, opts ...Option) {
 // Any error returned by the method should be handled as a fatal one.
 func InitServer(opts ...Option) (*Server, error) {
 	var e error
+
 	once.Do(func() { e = initOnce() })
 
 	var (

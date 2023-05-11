@@ -22,14 +22,7 @@ func TestHandler(t *testing.T) {
 
 	require.Nil(t, e)
 
-	t.Cleanup(func() {
-		ctx := s.GetContext()
-
-		ctx.Done()
-		s.Shutdown()
-		s.WaitAndStop()
-		webfmwk.Shutdown()
-	})
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 
 	s.GET("/testing", func(c webfmwk.Context) error {
 		// never reach

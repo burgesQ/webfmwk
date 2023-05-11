@@ -30,6 +30,8 @@ type queryParam struct {
 
 //nolint:forcetypeassert
 func initUseCaseServer(t *testing.T) *Server {
+	t.Helper()
+
 	var (
 		s, e = InitServer(
 			CheckIsUp(), SetPrefix("/api"),
@@ -117,7 +119,8 @@ func TestUseCase(t *testing.T) {
 	require.Nil(t, RegisterValidatorTrans("custom", "'{0} is invalid :)"))
 	// RegisterValidatorAlias("alpha", "letters")
 
-	defer stopServer(s)
+	defer func() { require.Nil(t, s.ShutAndWait()) }()
+
 	go s.Start(_testPort)
 	<-s.isReady
 

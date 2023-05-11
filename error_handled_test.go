@@ -11,10 +11,7 @@ import (
 var (
 	_testOP              = 200
 	_testContent         = "ok"
-	_testingErrorHandled = errorHandled{
-		op:      _testOP,
-		content: _testContent,
-	}
+	_testingErrorHandled = handledError{op: _testOP, content: _testContent} //nolint:errname
 )
 
 func TestGetOPCode(t *testing.T) {

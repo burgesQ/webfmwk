@@ -3,7 +3,7 @@ module github.com/burgesQ/webfmwk/v5
 go 1.19
 
 require (
-	github.com/burgesQ/gommon v1.2.3
+	github.com/burgesQ/gommon v1.2.4
 	github.com/burgesQ/log v0.0.0-20230330150931-630d98180763
 	github.com/fasthttp/router v1.3.9
 	github.com/go-playground/locales v0.13.0

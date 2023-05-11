@@ -16,15 +16,6 @@ const (
 // helpers methods
 //
 
-func stopServer(s *Server) {
-	ctx := s.GetContext()
-
-	ctx.Done()
-	s.Shutdown()
-	s.WaitAndStop()
-	Shutdown()
-}
-
 func wrapperPost(t *testing.T, route, routeReq string,
 	content []byte,
 	handlerRoute HandlerFunc, handlerTest webtest.HandlerForTest,
@@ -34,7 +25,7 @@ func wrapperPost(t *testing.T, route, routeReq string,
 	s, e := InitServer(CheckIsUp())
 	require.Nil(t, e)
 
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 	s.POST(route, handlerRoute)
 	go s.Start(_testPort)
 	<-s.isReady
@@ -50,7 +41,7 @@ func wrapperGet(t *testing.T, route, routeReq string,
 	s, e := InitServer(CheckIsUp())
 	require.Nil(t, e)
 
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 
 	s.GET(route, handlerRoute)
 	go s.Start(_testPort)

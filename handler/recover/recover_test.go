@@ -20,15 +20,10 @@ func TestHandler(t *testing.T) {
 
 	require.Nil(t, e)
 
-	// t.Log("init server...")
+	t.Log("init server...")
 	t.Cleanup(func() {
-		ctx := s.GetContext()
-		// t.Log("closing server ...")
-		ctx.Done()
-		s.Shutdown()
-		s.WaitAndStop()
-		webfmwk.Shutdown()
-		// t.Log("server closed")
+		t.Log("closing server ...")
+		require.Nil(t, s.ShutAndWait())
 	})
 
 	s.GET("/testing/string", func(c webfmwk.Context) error {

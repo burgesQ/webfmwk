@@ -73,7 +73,7 @@ func TestGetLauncher(t *testing.T) {
 	s, e := InitServer(CheckIsUp())
 
 	require.Nil(t, e)
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 	if s.GetLauncher() == nil {
 		t.Errorf("Launcher wrongly created : %v.", s.launcher)
 	}
@@ -83,7 +83,7 @@ func TestGetContext(t *testing.T) {
 	s, e := InitServer(CheckIsUp())
 
 	require.Nil(t, e)
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 
 	if s.GetContext() == nil {
 		t.Errorf("Context wrongly created : %v.", s.ctx)
@@ -93,7 +93,7 @@ func TestGetContext(t *testing.T) {
 func TestAddHandlers(t *testing.T) {
 	s, e := InitServer(CheckIsUp())
 	require.Nil(t, e)
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 
 	s.addHandlers(func(next HandlerFunc) HandlerFunc {
 		return HandlerFunc(func(c Context) error {

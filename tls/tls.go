@@ -98,7 +98,9 @@ func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
 	}
 }
 
-func wrapGetConfigForClient(cert *tls.Certificate, caCert *x509.CertPool,
+func wrapGetConfigForClient(
+	cert *tls.Certificate,
+	caCert *x509.CertPool,
 	level Level,
 ) func(*tls.ClientHelloInfo) (*tls.Config, error) {
 	return func(hi *tls.ClientHelloInfo) (*tls.Config, error) {

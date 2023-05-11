@@ -4,7 +4,7 @@
 [![GoDoc][12]][2]
 [![codecov][13]][3]
 [![Go Report Card][14]][4]
-[![Version compatibility with Go 1.15 onward using modules][15]][5]
+[![Version compatibility with Go 1.19 onward using modules][15]][5]
 [![License][16]][6]
 
 
@@ -24,8 +24,8 @@
 [12]:https://godoc.org/github.com/burgesQ/webfmwk/v5?status.svg
 [13]:https://codecov.io/gh/burgesQ/webfmwk/branch/master/graph/badge.svg
 [14]:https://goreportcard.com/badge/github.com/burgesQ/webfmwk
-[15]:https://img.shields.io/badge/compatible%20with-go1.15+-5272b4.svg
-[16]:http://img.shields.io/badge/license-mit-blue.svg
+[15]:https://img.shields.io/badge/compatible%20with-go1.19+-5272b4.svg
+[16]:https://img.shields.io/badge/license-dwtfywtpl-blue.svg
 [17]:https://gitlab.frafos.net/gommon/webfmwk/badges/master/pipeline.svg
 [18]:https://gitlab.frafos.net/gommon/webfmwk/badges/master/coverage.svg
 
@@ -54,7 +54,7 @@ Import `github.com/burgesQ/webfmwk/v5`.
 
 ### Important
 
-Go `1.15` is required.
+Go `1.19` is required.
 
 ### Example
 

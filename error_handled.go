@@ -24,7 +24,7 @@ type (
 		// Wrap/Unwrap ?
 	}
 
-	errorHandled struct {
+	handledError struct {
 		content interface{}
 		op      int
 	}
@@ -120,29 +120,29 @@ func (a *Error) SetStatusCode(op int) {
 }
 
 // Error implement the Error interface.
-func (e errorHandled) Error() string {
+func (e handledError) Error() string {
 	return fmt.Sprintf("[%d]: %#v", e.op, e.content)
 }
 
 // SetStatusCode implement the ErrorHandled interface.
-func (e errorHandled) SetStatusCode(op int) ErrorHandled {
+func (e handledError) SetStatusCode(op int) ErrorHandled {
 	e.op = op
 
 	return e
 }
 
 // GetOPCode implement the ErrorHandled interface.
-func (e errorHandled) GetOPCode() int {
+func (e handledError) GetOPCode() int {
 	return e.op
 }
 
 // GetContent implement the ErrorHandled interface.
-func (e errorHandled) GetContent() interface{} {
+func (e handledError) GetContent() interface{} {
 	return e.content
 }
 
-func factory(op int, content interface{}) errorHandled {
-	ret := errorHandled{
+func factory(op int, content interface{}) handledError {
+	ret := handledError{
 		op:      op,
 		content: content,
 	}
@@ -171,7 +171,7 @@ func NewNoContent() ErrorHandled {
 	return factory(http.StatusNoContent, nil)
 }
 
-// NewBadRequest produce an errorHandled with the status code 400.
+// NewBadRequest produce an handledError with the status code 400.
 func NewBadRequest(content interface{}) ErrorHandled {
 	return factory(http.StatusBadRequest, content)
 }

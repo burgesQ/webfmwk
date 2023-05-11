@@ -70,10 +70,8 @@ type (
 	// It hold the data used by the request
 	icontext struct {
 		*fasthttp.RequestCtx
-		// vars  map[string]string
-		// query map[string][]string
 		log log.Log
-		ctx context.Context
+		ctx context.Context //nolint:containedctx
 	}
 )
 

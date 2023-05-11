@@ -17,6 +17,8 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 - RegisterValidatorRule and RegisterValidatorAlias now return an error
 - Shutdown now return an error
 - InitServer now return an error (which should be handled as a fatal)
+- Server.Shutdown now call to WaitAndStop
+- WaitAndStop renamed to WaitForStop
 
 ### Fixed 
 

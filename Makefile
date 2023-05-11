@@ -29,17 +29,18 @@ lint-fix: ; @$(MAKE) lint LINT_ARGS="$(LINT_ARGS) --fix" ## Run the go linter
 
 # go unit test
 TEST_FILES	= ./...
-TEST_ARGS		= -count=1 -v -race -shuffle=on
+TEST_ARGS		= -count=1 -v -race -shuffle on -timeout 10s
 MAKE_ARGS = # -cpu=1 -parallel=4 -run <pattern>
 COVER_FILE=cover.cov
 COVER_HTML=cover.html
 TEST_OUT=out.txt
-GOFMT	= $(GOPATH)/bin/gotestfmt
-
+TEST_JSON=-json
+GOFMT = $(GOPATH)/bin/gotestfmt
+TEST_FMT=| tee ${TEST_OUT} | ${GOFMT}
 
 .PHONY: test
-test: ${GOFMT} ## Run the go unit test
-	go test $(TEST_ARGS) $(MAKE_ARGS) -json $(TEST_FILES) | tee ${TEST_OUT} | $<
+test: ## Run the go unit test
+	go test $(TEST_ARGS) $(MAKE_ARGS) ${TEST_JSON} $(TEST_FILES) ${TEST_FMT}
 
 .PHONY: test-verbose
 test-verbose: ## Run the go unit test with more verbosity
@@ -63,7 +64,7 @@ $(COVER_HTML): $(COVER_FILE)
 test-cover-gen: $(COVER_FILE) ## Run the test and generate the coverage file per package
 $(COVER_FILE):
 	@ $(MAKE) test \
-		MAKE_ARGS="${MAKE_ARGS} -cover -covermode=atomic -coverprofile $(COVER_FILE)"
+		MAKE_ARGS="${MAKE_ARGS} -coverpkg ./... -covermode atomic -coverprofile $(COVER_FILE)"
 
 .PHONY: test-cover-clean
 test-cover-clean: ## Clean the test coverage artifacts

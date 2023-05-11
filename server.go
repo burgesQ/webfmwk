@@ -19,7 +19,7 @@ import (
 type (
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
-		ctx      context.Context
+		ctx      context.Context //nolint:containedctx
 		cancel   context.CancelFunc
 		wg       *sync.WaitGroup
 		launcher WorkerLauncher
@@ -39,7 +39,7 @@ var (
 // It take an va arg list of Address as argument.
 // The method wait for the server to end via a call to WaitAndStop.
 func (s *Server) Run(addrs ...Address) {
-	defer s.WaitAndStop()
+	defer s.WaitForStop()
 
 	for i := range addrs {
 		addr := addrs[i]
@@ -67,7 +67,7 @@ func (s *Server) Run(addrs ...Address) {
 
 func fetchLogger() log.Log { return wlog.GetLogger() }
 
-// Shutdown terminate all running servers.
+// Shututdown terminate all running servers.
 func Shutdown() error {
 	poolMu.Lock()
 	defer poolMu.Unlock()
@@ -118,7 +118,7 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 
 	s.launcher.Start(func() {
 		s.log.Debugf("https server %s: starting", addr)
-		// go s.pollPingEndpoint(addr)
+		go s.pollPingEndpoint(addr, cfg)
 
 		if e := s.internalInit(addr).Serve(listener); e != nil {
 			s.log.Errorf("https server %s (%T): %s", addr, e, e)
@@ -127,15 +127,22 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 	})
 }
 
-// Shutdown call the framework shutdown to stop all running server.
-func (s *Server) Shutdown() {
-	s.cancel()
-	Shutdown()
+func (s *Server) ShutAndWait() error {
+	defer s.WaitForStop()
+
+	return s.Shutdown()
 }
 
-// WaitAndStop wait for all servers to terminate.
+// Shutdown call the framework shutdown to stop all running server.
+func (s *Server) Shutdown() error {
+	s.cancel()
+
+	return Shutdown()
+}
+
+// WaitForStop wait for all servers to terminate.
 // Use of a sync.waitGroup to properly wait all running servers.
-func (s *Server) WaitAndStop() {
+func (s *Server) WaitForStop() {
 	s.wg.Wait()
 }
 
@@ -214,7 +221,11 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 
 	signal.Notify(c, sig...)
 
-	defer s.Shutdown()
+	defer func() {
+		if e := s.Shutdown(); e != nil {
+			s.log.Errorf("cannot stop the server: %v", e)
+		}
+	}()
 
 	for s.ctx.Err() == nil {
 		select {
@@ -238,8 +249,8 @@ func (s *Server) GetLogger() log.Log {
 }
 
 // GetLauncher return a pointer to the internal workerLauncher.
-func (s *Server) GetLauncher() *WorkerLauncher {
-	return &s.launcher
+func (s *Server) GetLauncher() WorkerLauncher {
+	return s.launcher
 }
 
 // GetContext return the context.Context used.

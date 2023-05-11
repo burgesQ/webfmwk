@@ -13,7 +13,7 @@ func TestRunner(t *testing.T) {
 	s, e := InitServer(CheckIsUp())
 
 	require.Nil(t, e)
-	t.Cleanup(func() { stopServer(s) })
+	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
 
 	s.GET("/test", func(c Context) error {
 		return c.JSONOk(json.RawMessage(`{"value":"test"}`))
