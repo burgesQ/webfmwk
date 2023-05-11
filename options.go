@@ -34,23 +34,23 @@ type (
 
 	//nolint: govet
 	serverMeta struct {
-		handlers            []Handler    // 24
-		docHandlers         []DocHandler // 24
+		socketIOHandler     http.Handler
+		socketIOHandlerFunc http.HandlerFunc
 		baseServer          *fasthttp.Server
 		routes              RoutesPerPrefix // 8
 		prefix              string          // 16
-		ctrlc               bool            // 1 * 5
-		checkIsUp           bool
-		ctrlcStarted        bool
+		pprofPath           string
+		socketIOPath        string
+		docHandlers         []DocHandler // 24
+		handlers            []Handler    // 24
 		cors                bool
-		enableKeepAlive     bool
 		socketIOHF          bool
 		socketIOH           bool
 		pprof               bool
-		socketIOHandlerFunc http.HandlerFunc
-		socketIOHandler     http.Handler
-		socketIOPath        string
-		pprofPath           string
+		enableKeepAlive     bool
+		ctrlcStarted        bool
+		checkIsUp           bool
+		ctrlc               bool // 1 * 5
 	}
 )
 

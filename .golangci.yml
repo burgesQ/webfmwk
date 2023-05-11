@@ -10,11 +10,10 @@ linters-settings:
     min-complexity: 15
   gomoddirectives:
     # Allow local `replace` directives.
-    replace-local: true
+    replace-local: false
     # List of allowed `replace` directives.
-    replace-allow-list:
-      # - github.com/burgesQ/webfmwk/v5
-      - frafos.com/json2redis
+    # replace-allow-list:
+    #   - github.com/burgesQ/webfmwk/v5
   gomnd:
     checks: argument,case,condition,operation,return,assign
     # ignored-numbers: '0o666','0o755'
@@ -25,88 +24,23 @@ linters-settings:
       - shadow
   misspell:
     locale: US
+  maligned:
+      # print struct with more effective memory layout or not, false by default
+      suggest-new: true
   revive:
     ignore-generated-header: true
     severity: warning
     # enable-all-rules: true
-  maligned:
-      # print struct with more effective memory layout or not, false by default
-      suggest-new: true
-  # # old settings
-  # depguard:
-  #   list-type: blacklist
-  #   packages:
-  #     # logging is allowed only by gommon/golib/v4/log
-  #     - github.com/sirupsen/logrus
-  #     - log
-  #   packages-with-error-message:
-  #     - log: "logging is allowed only by golib/v4/log"
-  #     - github.com/sirupsen/logrus: "logging is allowed only by golib/v4/log"
-  # dupl:
-  #   threshold: 100
-  # gci:
-  #   local-prefixes: github.com/golangci/golangci-lint
-  # goconst:
-  #   min-len: 2
-  #   min-occurrences: 2
-  # gocritic:
-  #   enabled-tags:
-  #     - diagnostic
-  #     - experimental
-  #     - opinionated
-  #     - performance
-  #     - style
-  #     # - ifElseChain
-  #     # - octalLiteral
-  #     # - wrapperFunc
-  #   disabled-checks:
-  #     - dupImport # https://github.com/go-critic/go-critic/issues/845
-  #     - whyNoLint
-  #     - ioutilDeprecated
-  #     # Conflicts with govet check-shadowing
-  #     - sloppyReassign
-  # goimports:
-  #   local-prefixes: github.com/golangci/golangci-lint
-  # # golint:
-  # #   min-confidence: 0
-  # # see https://github.com/mgechev/revive#available-rules for details.
-  # # govet:
-  # #   check-shadowing: true
-  # #   enable:
-  # #     - fieldalignment
-  # #   shadow:
-  # #     strict: true
-  # #   settings:
-  # #     printf:
-  # #       funcs:
-  # #         - (gitlab.frafos.com/gommon/golib).Infof
-  # #         - (gitlab.frafos.com/gommon/golib).Warnf
-  # #         - (gitlab.frafos.com/gommon/golib).Errorf
-  # #         - (gitlab.frafos.com/gommon/golib).Fatalf
-  # gomoddirectives:
-  #   # Allow local `replace` directives.
-  #   # Default: false
-  #   replace-local: true
-  #   # List of allowed `replace` directives.
-  #   # Default: []
-  #   replace-allow-list:
-  #     # - github.com/burgesQ/webfmwk/v5
-  #     - frafos.com/json2redis
-  #   # Allow to not explain why the version has been retracted in the `retract` directives.
-  #   # Default: false
-  #   retract-allow-no-explanation: false
-  #   # Forbid the use of the `exclude` directives.
-  #   # Default: false
-  #   exclude-forbidden: false
-  # lll:
-  #   line-length: 140
-  # maligned:
-  #   suggest-new: true
-  # nolintlint:
-  #   allow-leading-space: true # don't require machine-readable nolint directives (i.e. with no leading space)
-  #   allow-unused: false # report any unused nolint directives
-  #   require-explanation: false # don't require an explanation for nolint directives
-  #   require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+  varnamelen:
+    ignore-decls:
+      - c context.Context
+      - c webfmwk.Context
+      - t testing.T
+      - e error
 
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
@@ -114,24 +48,39 @@ linters:
   disable-all: true
   enable:
     - asasalint
+    - asciicheck
     - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
     - cyclop
     - decorder
     - depguard
     - dogsled
     - dupl
     - dupword
+    - durationcheck
     - errcheck
     - errchkjson
+    - errname
     - errorlint
     - exhaustive
+    # - exhaustivestruct ## lazy - none is def
+    # - exhaustruct      ## lazy - none is def
+    - exportloopref
     - forbidigo
+    # - forcetypeassert
     - funlen
     - gci
+    # - gocheckcompilerdirectives
+    - gochecknoinits
     - gocognit
     - goconst
     - gocritic
+    # - godox ## lazy - should uncomment
+    # - godot ## lazy - should uncomment
     - gocyclo
+    - goerr113
     - gofmt
     - gofumpt
     - goheader
@@ -140,13 +89,14 @@ linters:
     - gomoddirectives
     - gomodguard
     - gosimple
+    - goprintffuncname
     - gosec
     - govet
     - grouper
     - ifshort
     - importas
     - interfacebloat
-    # - ireturn
+    # - ireturn ## to uncomment ..
     - lll
     - loggercheck
     - maintidx
@@ -154,8 +104,10 @@ linters:
     - misspell
     - nakedret
     - nestif
+    - nilerr
     - nilnil
     - nlreturn
+    - noctx
     - nolintlint
     - prealloc
     - predeclared
@@ -165,29 +117,27 @@ linters:
     - rowserrcheck
     - staticcheck
     - stylecheck
-    # - tagliatelle ## should uncomment
+    - tagliatelle
     - tenv
+    - testableexamples
     - thelper
+    - unconvert
     - usestdlibvars
     - unparam
+    # - varnamelen ## to uncomment ...
+    - wastedassign
     - whitespace
+    # - wrapcheck ## to uncomment ...
     - wsl
-    - maligned
 
     ### don't enable:
     # - ginkgolinter ## don't work
-    # - exhaustivestruct ## lazy - none is def
-    # - exhaustruct      ## lazy - none is def
-    # - godox ## lazy - should uncomment
-    # - godot ## lazy - should uncomment
     # - golint   ## use revive
     # - maligned ## use fieldalignment
     # - nonamedreturns ## we name return on short func
     # - paralleltest
     # - testpackage ## we test internal stuff from pkg
     # - varcheck ## use unused
-    # - varnamelen ## lazy - let's live with it
-    # - wrapcheck ## lazy - to much work
 
 
 issues:
@@ -203,7 +153,7 @@ issues:
         - forcetypeassert
         - gocritic
         - gosec
-        - govet
+        # - govet
         - noctx
         - wsl
         # - cyclop

@@ -15,46 +15,46 @@ func TestJSONResponse(t *testing.T) {
 			Message string `json:"message"`
 		}{"nul"}
 		tests = map[string]struct {
-			expectedOP int
 			fn         func(c Context, ret interface{}) error
+			expectedOP int
 		}{
-			"blob": {http.StatusOK, func(c Context, ret interface{}) error {
+			"blob": {expectedOP: http.StatusOK, fn: func(c Context, ret interface{}) error {
 				return c.JSONBlob(http.StatusOK, []byte(hBody))
 			}},
-			"ok": {http.StatusOK, func(c Context, ret interface{}) error {
+			"ok": {expectedOP: http.StatusOK, fn: func(c Context, ret interface{}) error {
 				return c.JSONOk(ret)
 			}},
-			"created": {http.StatusCreated, func(c Context, ret interface{}) error {
+			"created": {expectedOP: http.StatusCreated, fn: func(c Context, ret interface{}) error {
 				return c.JSONCreated(ret)
 			}},
-			"accepted": {http.StatusAccepted, func(c Context, ret interface{}) error {
+			"accepted": {expectedOP: http.StatusAccepted, fn: func(c Context, ret interface{}) error {
 				return c.JSONAccepted(ret)
 			}},
-			"noContent": {http.StatusNoContent, func(c Context, ret interface{}) error {
+			"noContent": {expectedOP: http.StatusNoContent, fn: func(c Context, ret interface{}) error {
 				return c.JSONNoContent()
 			}},
-			"badRequest": {http.StatusBadRequest, func(c Context, ret interface{}) error {
+			"badRequest": {expectedOP: http.StatusBadRequest, fn: func(c Context, ret interface{}) error {
 				return c.JSONBadRequest(ret)
 			}},
-			"unauthorized": {http.StatusUnauthorized, func(c Context, ret interface{}) error {
+			"unauthorized": {expectedOP: http.StatusUnauthorized, fn: func(c Context, ret interface{}) error {
 				return c.JSONUnauthorized(ret)
 			}},
-			"forbidden": {http.StatusForbidden, func(c Context, ret interface{}) error {
+			"forbidden": {expectedOP: http.StatusForbidden, fn: func(c Context, ret interface{}) error {
 				return c.JSONForbidden(ret)
 			}},
-			"notFound": {http.StatusNotFound, func(c Context, ret interface{}) error {
+			"notFound": {expectedOP: http.StatusNotFound, fn: func(c Context, ret interface{}) error {
 				return c.JSONNotFound(ret)
 			}},
-			"conflict": {http.StatusConflict, func(c Context, ret interface{}) error {
+			"conflict": {expectedOP: http.StatusConflict, fn: func(c Context, ret interface{}) error {
 				return c.JSONConflict(ret)
 			}},
-			"unprocessable": {http.StatusUnprocessableEntity, func(c Context, ret interface{}) error {
+			"unprocessable": {expectedOP: http.StatusUnprocessableEntity, fn: func(c Context, ret interface{}) error {
 				return c.JSONUnprocessable(ret)
 			}},
-			"internalError": {http.StatusInternalServerError, func(c Context, ret interface{}) error {
+			"internalError": {expectedOP: http.StatusInternalServerError, fn: func(c Context, ret interface{}) error {
 				return c.JSONInternalError(ret)
 			}},
-			"notImplemented": {http.StatusNotImplemented, func(c Context, ret interface{}) error {
+			"notImplemented": {expectedOP: http.StatusNotImplemented, fn: func(c Context, ret interface{}) error {
 				return c.JSONNotImplemented(ret)
 			}},
 		}

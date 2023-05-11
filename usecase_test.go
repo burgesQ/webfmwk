@@ -24,8 +24,8 @@ type userForm struct {
 }
 
 type queryParam struct {
-	Pretty bool `json:"pretty" schema:"pretty"`
 	Some   *int `json:"some,omitempty" schema:"some" validate:"omitempty,min=-1"`
+	Pretty bool `json:"pretty" schema:"pretty"`
 }
 
 //nolint:forcetypeassert
@@ -182,7 +182,7 @@ func TestUseCase(t *testing.T) {
 		},
 		"query to struct filled": {
 			action: _reqNTest, url: "/api/test/queryToStruct?some=10&pretty",
-			body: "{\n  \"pretty\": false,\n  \"some\": 10\n}", code: http.StatusOK,
+			body: "{\n  \"some\": 10,\n  \"pretty\": false\n}", code: http.StatusOK,
 		},
 
 		"query params pretty": {
