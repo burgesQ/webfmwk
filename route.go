@@ -7,6 +7,7 @@ import (
 	"github.com/segmentio/encoding/json"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
+	"github.com/valyala/fasthttp/pprofhandler"
 )
 
 const (
@@ -223,6 +224,11 @@ func (s *Server) GetRouter() *router.Router {
 		s.log.Infof("loading socket io handler on %q", s.meta.socketIOPath)
 		r.ANY(s.meta.socketIOPath,
 			fasthttpadaptor.NewFastHTTPHandler(s.meta.socketIOHandler))
+	}
+
+	if s.meta.pprof {
+		s.log.Infof("loading pprof handler on '/debug/pprof/{profile:*}'")
+		r.GET(s.meta.prefix+s.meta.pprofPath, pprofhandler.PprofHandler)
 	}
 
 	// register routes

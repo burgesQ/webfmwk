@@ -47,9 +47,11 @@ type (
 		enableKeepAlive     bool
 		socketIOHF          bool
 		socketIOH           bool
+		pprof               bool
 		socketIOHandlerFunc http.HandlerFunc
 		socketIOHandler     http.Handler
 		socketIOPath        string
+		pprofPath           string
 	}
 )
 
@@ -233,6 +235,19 @@ func EnableKeepAlive() Option {
 	}
 }
 
+// EnablePprof enable the pprof endpoints.
+func EnablePprof(path ...string) Option {
+	return func(s *Server) {
+		s.meta.pprof = true
+
+		if len(path) > 0 {
+			s.meta.pprofPath = path[0]
+		}
+
+		s.log.Debugf("\t-- pprof endpoint enabled")
+	}
+}
+
 func MaxRequestBodySize(size int) Option {
 	return func(s *Server) {
 		s.meta.baseServer.MaxRequestBodySize = size
@@ -269,7 +284,8 @@ func getDefaultMeta() serverMeta {
 			IdleTimeout:        IdleTimeout * time.Minute,
 			MaxRequestBodySize: fasthttp.DefaultMaxRequestBodySize,
 		},
-		routes: make(RoutesPerPrefix),
+		routes:    make(RoutesPerPrefix),
+		pprofPath: "/debug/pprof/{profile:*}",
 	}
 }
 
