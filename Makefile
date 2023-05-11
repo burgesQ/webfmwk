@@ -29,13 +29,13 @@ lint-fix: ; @$(MAKE) lint LINT_ARGS="$(LINT_ARGS) --fix" ## Run the go linter
 
 # go unit test
 TEST_FILES	= ./...
-TEST_ARGS		= -count=1 -v -race -shuffle on -timeout 10s
+TEST_ARGS		= -v -shuffle on
 MAKE_ARGS = # -cpu=1 -parallel=4 -run <pattern>
 COVER_FILE=cover.cov
 COVER_HTML=cover.html
 TEST_OUT=out.txt
 TEST_JSON=-json
-GOFMT = $(GOPATH)/bin/gotestfmt
+GOFMT = gotestfmt
 TEST_FMT=| tee ${TEST_OUT} | ${GOFMT}
 
 .PHONY: test
@@ -73,10 +73,9 @@ test-cover-clean: ## Clean the test coverage artifacts
 test-clean: test-cover-clean ## Proxy test-cover-clean
 clean-test: test-clean ## PRoxt test-clean
 
-test-cover-re: test-cover-clean test-cover test-cover-html ## Re-run the test coverage
+test-cover-re: test-cover-clean test-cover ## Re-run the test coverage
 
-install-fmt: ${GOFMT} ## Install gotestfmt
-${GOFMT}:
+install-fmt: ## Install gotestfmt
 	go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
 
 #

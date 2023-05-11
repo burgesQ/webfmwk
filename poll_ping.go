@@ -11,12 +11,7 @@ import (
 
 func getResp(ctx context.Context, uri string, cfg ...tls.IConfig) (*http.Response, error) {
 	if len(cfg) > 0 {
-
-		if strings.HasPrefix(uri, "http://") {
-			uri = uri[7:]
-		}
-
-		uri = "https://" + uri
+		uri = "https://" + strings.TrimPrefix(uri, "http://")
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, http.NoBody)

@@ -15,7 +15,7 @@ type (
 )
 
 // default internal logger
-var _lg = logger{level: LogDebug, prefix: ""}
+var _lg = logger{level: LogErr, prefix: ""}
 
 // GetLogger return an struct fullfilling the Log interface
 func GetLogger() qlog.Log { return _lg }

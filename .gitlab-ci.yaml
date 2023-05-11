@@ -13,12 +13,12 @@ stages:
 
 .go-cache:
   variables:
-    GOPATH: $CI_PROJECT_DIR/.go
+    GOPATH: /tmp/.go
   before_script:
-    - mkdir -p .go
+    - mkdir -p /tmp/.go
   cache:
     paths:
-      - .go/pkg/mod/
+      - /tmp/.go/pkg/mod/
 
 linting:
   stage: lint
@@ -40,8 +40,7 @@ unit testing:
   needs: []
   extends: .go-cache
   script:
-    - make test-cover -e TEST_ARGS='-v'
-    - make test-cover-html
+    - make test-cover-re
     - cat out.txt | go-junit-report > report.xml
     - gocover-cobertura < cover.cov > cover.xml
   coverage: /\(statements\)(?:\s+)?(\d+(?:\.\d+)?%)/
