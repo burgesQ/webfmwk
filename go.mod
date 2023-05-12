@@ -27,6 +27,6 @@ require (
 	github.com/savsgio/gotils v0.0.0-20210225112730-595c7e5a8a7a // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
