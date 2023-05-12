@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"testing"
 
@@ -16,4 +17,6 @@ func TestLevel(t *testing.T) {
 	b, e := json.Marshal(VerifyClientCertIfGiven)
 	require.Nil(t, e)
 	require.Equal(t, `"try"`, string(b))
+
+	require.Equal(t, tls.RequireAnyClientCert, lvl.STD())
 }
