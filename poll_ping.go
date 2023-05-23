@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -64,7 +65,8 @@ func (s *Server) pollPingEndpoint(addr string, cfg ...tls.IConfig) {
 				continue
 			}
 
-			resp.Body.Close()
+			defer resp.Body.Close()
+			_, _ = io.ReadAll(resp.Body)
 
 			return
 
