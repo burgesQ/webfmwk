@@ -119,7 +119,7 @@ func TestUseCase(t *testing.T) {
 	require.Nil(t, RegisterValidatorTrans("custom", "'{0} is invalid :)"))
 	// RegisterValidatorAlias("alpha", "letters")
 
-	defer func() { require.Nil(t, s.ShutAndWait()) }()
+	defer func() { require.Nil(t, s.ShutdownAndWait()) }()
 
 	go s.Start(_testPort)
 	<-s.isReady

@@ -10,16 +10,16 @@ import (
 	"time"
 )
 
+const H2TLSProto = "h2"
+
 var (
-	// DefaultCurve TLS curve supported
+	// DefaultCurve represent the supported TLS curves.
 	DefaultCurve = []tls.CurveID{
 		tls.CurveP256,
 		tls.X25519,
-		// tls.CurveP384
-		// tls.CurveP521
-
 	}
-	// DefaultCipher accepted
+
+	// DefaultCipher represent the accepted ciphers.
 	DefaultCipher = []uint16{
 		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,   // HTTP/2-required AES_128_GCM_SHA256 cipher
 		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,   // ECDHE-RSA-AES256-GCM-SHA384
@@ -32,13 +32,16 @@ var (
 		tls.TLS_RSA_WITH_AES_256_GCM_SHA384, // ECDH-RSA-AES256-SHA384
 	}
 
-	// Returned in case of invalid ca cert path.
+	// ErrParseUserCA error is returned in case of invalid ca cert path.
 	ErrParseUserCA = errors.New("failed to parse root certificate")
 )
 
 // GetTLSCfg return a tls config ready for mTLS.
+// Optional support for http can be specified via the http2 variadic argument.
+// Enabling http2 add 'h2' to the NextProto list.
 // thx to https://dev.to/living_syn/validating-client-certificate-sans-in-go-i5p
-func GetTLSCfg(icfg IConfig) (*tls.Config, error) {
+// see example/http2/main.go for more
+func GetTLSCfg(icfg IConfig, http2 ...bool) (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(icfg.GetCert(), icfg.GetKey())
 	if err != nil {
 		return nil, fmt.Errorf("cannot load cert [%s] and key [%s]: %w",
@@ -46,7 +49,7 @@ func GetTLSCfg(icfg IConfig) (*tls.Config, error) {
 	}
 
 	/* #nosec */
-	cfg := getBaseTLSCfg(&cert)
+	cfg := getBaseTLSCfg(&cert, http2...)
 
 	if icfg.GetInsecure() {
 		cfg.ClientAuth = tls.NoClientCert
@@ -64,7 +67,7 @@ func GetTLSCfg(icfg IConfig) (*tls.Config, error) {
 		return cfg, e
 	}
 
-	cfg.GetConfigForClient = wrapGetConfigForClient(&cert, cfg.ClientCAs, lvl)
+	cfg.GetConfigForClient = wrapGetConfigForClient(&cert, cfg.ClientCAs, lvl, http2...)
 
 	return cfg, nil
 }
@@ -87,8 +90,8 @@ func loadCA(caPath string, cfg *tls.Config) error {
 	return nil
 }
 
-func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
-	return &tls.Config{
+func getBaseTLSCfg(cert *tls.Certificate, http2 ...bool) *tls.Config {
+	cfg := &tls.Config{
 		Certificates:             []tls.Certificate{*cert},
 		PreferServerCipherSuites: true,
 		CurvePreferences:         DefaultCurve,
@@ -96,20 +99,26 @@ func getBaseTLSCfg(cert *tls.Certificate) *tls.Config {
 		MaxVersion:               tls.VersionTLS13, // tls.VersionTLS12 ?
 		CipherSuites:             DefaultCipher,
 	}
+
+	if len(http2) > 0 && http2[0] {
+		cfg.NextProtos = append(cfg.NextProtos, H2TLSProto)
+	}
+
+	return cfg
 }
 
 func wrapGetConfigForClient(
 	cert *tls.Certificate,
 	caCert *x509.CertPool,
 	level Level,
+	http2 ...bool,
 ) func(*tls.ClientHelloInfo) (*tls.Config, error) {
 	return func(hi *tls.ClientHelloInfo) (*tls.Config, error) {
-		cfg := getBaseTLSCfg(cert)
+		cfg := getBaseTLSCfg(cert, http2...)
 
 		cfg.ClientAuth, cfg.ClientCAs = level.STD(), caCert
 		if level == RequireAndVerifyClientCertAndSAN {
-			cfg.VerifyPeerCertificate = wrapVerifyPerrCertificate(caCert,
-				hi.Conn.RemoteAddr().String())
+			cfg.VerifyPeerCertificate = wrapVerifyPerrCertificate(caCert, hi.Conn.RemoteAddr().String())
 		}
 
 		return cfg, nil

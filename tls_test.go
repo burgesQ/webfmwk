@@ -28,7 +28,7 @@ func TestSSLEnforced(t *testing.T) {
 		},
 	})
 
-	defer func() { require.Nil(t, s.ShutAndWait()) }()
+	defer func() { require.Nil(t, s.ShutdownAndWait()) }()
 
 	port, e := port.GetFree()
 	require.Nil(t, e)
@@ -43,7 +43,6 @@ func TestSSLEnforced(t *testing.T) {
 
 	go s.StartTLS(fmt.Sprintf("127.0.0.1:%d", port), cfg)
 	t.Logf("waiting for tls server ...\n")
-	// time.Sleep(time.Second * 1)
 	<-s.isReady
 	t.Logf("tls server is ready ...\n")
 

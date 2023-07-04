@@ -22,7 +22,7 @@ func TestHandler(t *testing.T) {
 
 	require.Nil(t, e)
 
-	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
+	t.Cleanup(func() { require.Nil(t, s.ShutdownAndWait()) })
 
 	s.GET("/testing", func(c webfmwk.Context) error {
 		// never reach

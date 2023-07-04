@@ -16,6 +16,8 @@ var (
 )
 
 func TestParam(t *testing.T) {
+	log.SetLogLevel(log.LogDebug)
+
 	wrapperGet(t, "/test/{id}", "/test/tutu", func(c Context) error {
 		id := c.GetVar("id")
 		if id != "tutu" {

@@ -12,6 +12,7 @@ import (
 	"github.com/burgesQ/log"
 	wlog "github.com/burgesQ/webfmwk/v5/log"
 	"github.com/burgesQ/webfmwk/v5/tls"
+	fasthttp2 "github.com/dgrr/http2"
 	"github.com/lab259/cors"
 	"github.com/valyala/fasthttp"
 )
@@ -30,6 +31,7 @@ type (
 )
 
 var (
+	// TODO: use sync.Pool
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*fasthttp.Server
 	poolMu        sync.Mutex
@@ -95,9 +97,16 @@ func Shutdown() error {
 
 // Start expose an server to an HTTP endpoint.
 func (s *Server) Start(addr string) {
+	if s.meta.http2 {
+		s.log.Warnf("https endpoints required with http2, skipping %q", addr)
+
+		return
+	}
+
 	s.internalHandler()
 	s.launcher.Start(func() {
 		s.log.Debugf("http server %s: starting", addr)
+
 		go s.pollPingEndpoint(addr)
 
 		if e := s.internalInit(addr).ListenAndServe(addr); e != nil {
@@ -107,27 +116,40 @@ func (s *Server) Start(addr string) {
 	})
 }
 
-// StartTLS expose an server to an HTTPS address..
+// StartTLS expose an https server.
+// The server may have mTLS and/or http2 capabilities.
 func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 	s.internalHandler()
 
-	listener, err := tls.LoadListener(addr, cfg)
+	tlsCfg, err := tls.GetTLSCfg(cfg, s.meta.http2)
 	if err != nil {
-		s.GetLogger().Fatalf("loading tls: %s", err.Error())
+		s.log.Fatalf("loading tls config: %v", err)
+	}
+
+	listner, err := tls.LoadListner(addr, tlsCfg)
+	if err != nil {
+		s.log.Fatalf("loading tls listener: %v", err)
+	}
+
+	server := s.internalInit(addr)
+	if s.meta.http2 {
+		fasthttp2.ConfigureServer(server, fasthttp2.ServerConfig{Debug: true})
 	}
 
 	s.launcher.Start(func() {
 		s.log.Debugf("https server %s: starting", addr)
-		go s.pollPingEndpoint(addr, cfg)
+		defer s.log.Infof("https server %s: done", addr)
 
-		if e := s.internalInit(addr).Serve(listener); e != nil {
+		go s.pollPingEndpoint(addr)
+
+		if e := server.Serve(listner); e != nil {
 			s.log.Errorf("https server %s (%T): %s", addr, e, e)
 		}
-		s.log.Infof("https server %s: done", addr)
 	})
 }
 
-func (s *Server) ShutAndWait() error {
+// ShutdownAndWait call for Shutdown and wait for all server to terminate.
+func (s *Server) ShutdownAndWait() error {
 	defer s.WaitForStop()
 
 	return s.Shutdown()
@@ -202,20 +224,20 @@ func concatAddr(addr, prefix string) string {
 	return addr + prefix + _pingEndpoint
 }
 
-// launch the ctrl+c job if needed
+// launch the ctrl+c job if needed.
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start(func() {
 			s.log.Debugf("exit handler: starting")
 			s.exitHandler(os.Interrupt, syscall.SIGHUP)
-			s.log.Infof("exit handler: starting")
+			s.log.Infof("exit handler: done")
 		})
 
 		s.meta.ctrlcStarted = true
 	}
 }
 
-// handle ctrl+c internaly
+// handle ctrl+c internaly.
 func (s *Server) exitHandler(sig ...os.Signal) {
 	c := make(chan os.Signal, 1)
 
@@ -269,58 +291,51 @@ func (s *Server) IsReady() chan bool {
 }
 
 // AddHandlers register the Handler handlers. Handler are executed from the top most.
-// The followig examle run the RequestID handler BEFORE the Logging one, to produce a
-// log which look like :
-// + INFO : [+] (bc339ac1-a62a-48df-8e97-adf9dec32c42) : [GET]/test
-//
-//	s.AddHandlers(handler.Logging, handler.RequestID)
-//
-//nolint:unparam
 func (s *Server) addHandlers(h ...Handler) *Server {
 	s.meta.handlers = append(s.meta.handlers, h...)
 
 	return s
 }
 
-// RegisterDocHandler is used to register an swagger doc handler
+// RegisterDocHandler is used to register an swagger doc handler.
 func (s *Server) addDocHandlers(h ...DocHandler) *Server {
 	s.meta.docHandlers = append(s.meta.docHandlers, h...)
 
 	return s
 }
 
-// SetPrefix save a custom context so it can be fetched in the controllers
+// SetPrefix save a custom context so it can be fetched in the controllers.
 func (s *Server) setPrefix(prefix string) *Server {
 	s.meta.prefix = prefix
 
 	return s
 }
 
-// RegisterLogger register the Log used
+// RegisterLogger register the Log used.
 func (s *Server) registerLogger(lg log.Log) *Server {
 	s.log = lg
 
 	return s
 }
 
-// EnableCORS enable CORS verification
+// EnableCORS enable CORS verification.
 func (s *Server) enableCORS() *Server {
 	s.meta.cors = true
 
 	return s
 }
 
-// enableCheckIsUp add an /ping endpoint. Is used, cnce a server is started,
-// the user can check weather the server is up or not by reading the isReady channel
-// vie the IsReady() method.
+// enableCheckIsUp add an /ping endpoint.
+// If used, once a server is started, the user can check weather the server is
+// up or not by reading the isReady channel vie the IsReady() method.
 func (s *Server) enableCheckIsUp() *Server {
 	s.meta.checkIsUp = true
 
 	return s
 }
 
-// EnableCtrlC let the server handle the SIGINT interuption. To add
-// worker to the interuption pool, please use the `GetLauncher` method
+// EnableCtrlC let the server handle the SIGINT interuption.
+// To add worker to the interuption pool, please use the `GetLauncher` method.
 func (s *Server) enableCtrlC() *Server {
 	s.meta.ctrlc = true
 

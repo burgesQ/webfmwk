@@ -23,7 +23,7 @@ func TestHandler(t *testing.T) {
 	t.Log("init server...")
 	t.Cleanup(func() {
 		t.Log("closing server ...")
-		require.Nil(t, s.ShutAndWait())
+		require.Nil(t, s.ShutdownAndWait())
 	})
 
 	s.GET("/testing/string", func(c webfmwk.Context) error {

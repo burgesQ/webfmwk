@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -56,7 +57,8 @@ func (s *Server) pollPingEndpoint(addr string, cfg ...tls.IConfig) {
 				str := e.Error()
 
 				if strings.HasSuffix(str, "unknown authority") ||
-					strings.HasSuffix(str, "any IP SANs") {
+					strings.HasSuffix(str, "any IP SANs") ||
+					errors.Is(e, io.EOF) {
 					return
 				}
 

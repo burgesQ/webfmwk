@@ -50,6 +50,7 @@ type (
 		ctrlcStarted        bool
 		checkIsUp           bool
 		ctrlc               bool
+		http2               bool
 	}
 )
 
@@ -97,6 +98,14 @@ func InitServer(opts ...Option) (*Server, error) {
 	useOptions(s, opts...)
 
 	return s, e
+}
+
+// WithHTTP2 enable HTTP2 capabilities.
+func WithHTTP2() Option {
+	return func(s *Server) {
+		s.meta.http2 = true
+		s.log.Debugf("\t-- logger loaded")
+	}
 }
 
 // WithLogger set the server logger which implement the log.Log interface
@@ -288,7 +297,7 @@ func getDefaultMeta() serverMeta {
 }
 
 func (m *serverMeta) toServer(addr string) *fasthttp.Server {
-	return &fasthttp.Server{
+	s := &fasthttp.Server{
 		ReadTimeout:                   m.baseServer.ReadTimeout,
 		WriteTimeout:                  m.baseServer.WriteTimeout,
 		IdleTimeout:                   m.baseServer.IdleTimeout,
@@ -296,8 +305,14 @@ func (m *serverMeta) toServer(addr string) *fasthttp.Server {
 		Name:                          "webfmwk " + addr,
 		DisableKeepalive:              !m.enableKeepAlive,
 		DisableHeaderNamesNormalizing: true,
-		ReduceMemoryUsage:             false,
+		ReduceMemoryUsage:             true,
 		LogAllErrors:                  true,
 		CloseOnShutdown:               true,
 	}
+
+	// if m.http2 {
+	// 	http2.ConfigureServer(s, http2.ServerConfig{})
+	// }
+
+	return s
 }

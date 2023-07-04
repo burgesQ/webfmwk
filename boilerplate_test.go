@@ -25,7 +25,7 @@ func wrapperPost(t *testing.T, route, routeReq string,
 	s, e := InitServer(CheckIsUp())
 	require.Nil(t, e)
 
-	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
+	t.Cleanup(func() { require.Nil(t, s.ShutdownAndWait()) })
 	s.POST(route, handlerRoute)
 	go s.Start(_testPort)
 	<-s.isReady
@@ -41,11 +41,18 @@ func wrapperGet(t *testing.T, route, routeReq string,
 	s, e := InitServer(CheckIsUp())
 	require.Nil(t, e)
 
-	t.Cleanup(func() { require.Nil(t, s.ShutAndWait()) })
+	t.Log("server is created")
+
+	t.Cleanup(func() { require.Nil(t, s.ShutdownAndWait()) })
 
 	s.GET(route, handlerRoute)
+
+	t.Logf("starting server -- %q\n", route)
 	go s.Start(_testPort)
 	<-s.isReady
+	t.Log("server's ready")
+
+	t.Logf("requesting the API on %q\n", _testAddr+routeReq)
 
 	webtest.RequestAndTestAPI(t, _testAddr+routeReq, handlerTest)
 }

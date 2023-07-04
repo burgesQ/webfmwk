@@ -22,6 +22,8 @@ const (
 	// DELETE http verbe
 	DELETE = "DELETE"
 
+	ANY = "ANY"
+
 	_pingEndpoint = "/ping"
 )
 
@@ -160,6 +162,15 @@ func (s *Server) PATCH(path string, handler HandlerFunc) {
 	})
 }
 
+// PATCH expose a handler to the http verb PATCH.
+func (s *Server) ANY(path string, handler HandlerFunc) {
+	s.AddRoutes(Route{
+		Path:    path,
+		Verbe:   ANY,
+		Handler: handler,
+	})
+}
+
 // RouteApplier apply the array of RoutePerPrefix.
 func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 	for _, rpp := range rpps {
@@ -176,6 +187,8 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 					s.PATCH(prefix+route.Path, route.Handler)
 				case DELETE:
 					s.DELETE(prefix+route.Path, route.Handler)
+				case ANY:
+					s.ANY(prefix+route.Path, route.Handler)
 				default:
 					s.log.Warnf("Cannot load route [%s](%s)", prefix+route.Path, route.Verbe)
 				}
@@ -233,8 +246,13 @@ func (s *Server) GetRouter() *router.Router {
 
 	// register routes
 	for p, rs := range s.meta.routes {
+
 		prefix, routes := p, rs // never sure if I should copy
-		group := r.Group(prefix)
+
+		var group *router.Group
+		if len(prefix) != 0 {
+			group = r.Group(prefix)
+		}
 
 		for _, r1 := range routes {
 			route := r1
@@ -243,14 +261,26 @@ func (s *Server) GetRouter() *router.Router {
 			// register internal Handlers
 			handler = contentIsJSON(handleHandlerError(handler))
 
-			// register user custom Handlers
+			// register user server wise custom Handlers
 			if s.meta.handlers != nil {
 				for _, h := range s.meta.handlers {
 					handler = h(handleHandlerError(handler))
 				}
 			}
 
-			group.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
+			// TODO: register user group wise custom Handlers
+			// if route.handlers != nil {
+			// 	for _, h := range s.meta.handlers {
+			// 		handler = h(handleHandlerError(handler))
+			// 	}
+			// }
+
+			if len(prefix) == 0 {
+				r.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
+			} else {
+				group.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
+			}
+
 		}
 	}
 
