@@ -4,13 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.2.6] (upcoming)
+## [5.3.0] (Wed Jul 5 13:3136 2023)
 
 ### Added
+- support for http2
 - test are now shuffled
 - pprof handler toggler
 
 ### Changed
+- ShutAndWait renamed to ShutdownAndWait
+- tls.GetTLSCfg now accept an tls.Config and an optional http2 param 
+- tls.NewListener(IConfig) changed to tls.NewListner(tls.Config)
 - Shutdown now return an error 
 - WorkerLauncher is now an interface
 - WorkerLauncher.Run now only take a function as unique parameter
@@ -21,6 +25,7 @@ and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v
 - WaitAndStop renamed to WaitForStop
 
 ### Fixed 
+- poll ping over EOF tls connection 
 
 ### Removed 
 - internal call to the logger (not in a server/context), affected functions now return an error
