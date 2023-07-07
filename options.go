@@ -104,7 +104,7 @@ func InitServer(opts ...Option) (*Server, error) {
 func WithHTTP2() Option {
 	return func(s *Server) {
 		s.meta.http2 = true
-		s.log.Debugf("\t-- logger loaded")
+		s.log.Debugf("\t-- http2 enabled")
 	}
 }
 
@@ -129,7 +129,7 @@ func WithCtrlC() Option {
 // when it's started.
 func CheckIsUp() Option {
 	return func(s *Server) {
-		s.enableCheckIsUp()
+		s.EnableCheckIsUp()
 		s.log.Debugf("\t-- check is up support enabled")
 	}
 }

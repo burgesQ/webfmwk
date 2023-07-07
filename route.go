@@ -95,7 +95,7 @@ type (
 		// If a prefix is setup, the path will be prefixed.
 		Path string `json:"path"`
 
-		// NAme is used in message.
+		// Name is used in message.
 		Name string `json:"name"`
 	}
 
@@ -268,8 +268,13 @@ func (s *Server) GetRouter() *router.Router {
 				}
 			}
 
-			// TODO: register user group wise custom Handlers
+			// TODO: register group wise / route wise custom Handlers
 			// if route.handlers != nil {
+			// 	for _, h := range s.meta.handlers {
+			// 		handler = h(handleHandlerError(handler))
+			// 	}
+			// }
+			// if group.handlers != nil {
 			// 	for _, h := range s.meta.handlers {
 			// 		handler = h(handleHandlerError(handler))
 			// 	}

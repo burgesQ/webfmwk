@@ -132,20 +132,32 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 	}
 
 	server := s.internalInit(addr)
+
 	if s.meta.http2 {
+		s.log.Infof("loading http2 support")
 		fasthttp2.ConfigureServer(server, fasthttp2.ServerConfig{Debug: true})
 	}
 
+	so2 := sOr2(s.meta.http2)
+
 	s.launcher.Start(func() {
-		s.log.Debugf("https server %s: starting", addr)
-		defer s.log.Infof("https server %s: done", addr)
+		s.log.Debugf("%s server %s: starting", so2, addr)
+		defer s.log.Infof("%s server %s: done", so2, addr)
 
 		go s.pollPingEndpoint(addr)
 
 		if e := server.Serve(listner); e != nil {
-			s.log.Errorf("https server %s (%T): %s", addr, e, e)
+			s.log.Errorf("%s server %s (%T): %s", so2, addr, e, e)
 		}
 	})
+}
+
+func sOr2(http2 bool) string {
+	if http2 {
+		return "http2"
+	}
+
+	return "https"
 }
 
 // ShutdownAndWait call for Shutdown and wait for all server to terminate.
@@ -328,8 +340,17 @@ func (s *Server) enableCORS() *Server {
 // enableCheckIsUp add an /ping endpoint.
 // If used, once a server is started, the user can check weather the server is
 // up or not by reading the isReady channel vie the IsReady() method.
-func (s *Server) enableCheckIsUp() *Server {
+func (s *Server) EnableCheckIsUp() *Server {
 	s.meta.checkIsUp = true
+
+	return s
+}
+
+// DisableHTTP2 allow to disable HTTP2 on the fly.
+// It usage isn't recommanded.
+// For testing purpore only.
+func (s *Server) DisableHTTP2() *Server {
+	s.meta.http2 = false
 
 	return s
 }
