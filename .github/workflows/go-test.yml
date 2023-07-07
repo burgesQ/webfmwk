@@ -26,7 +26,7 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        go test -shuffle=on -coverpkg github.com/burges/webfmwk/... -coverprofile=cover.cov -covermode=atomic -v -race ./...
+        go test -shuffle=on -coverpkg github.com/burgesQ/webfmwk/... -coverprofile=cover.cov -covermode=atomic -v -race ./...
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v1
