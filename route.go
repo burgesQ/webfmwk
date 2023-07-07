@@ -246,7 +246,6 @@ func (s *Server) GetRouter() *router.Router {
 
 	// register routes
 	for p, rs := range s.meta.routes {
-
 		prefix, routes := p, rs // never sure if I should copy
 
 		var group *router.Group
@@ -285,7 +284,6 @@ func (s *Server) GetRouter() *router.Router {
 			} else {
 				group.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
 			}
-
 		}
 	}
 

@@ -303,7 +303,7 @@ func (s *Server) IsReady() chan bool {
 }
 
 // AddHandlers register the Handler handlers. Handler are executed from the top most.
-func (s *Server) addHandlers(h ...Handler) *Server {
+func (s *Server) addHandlers(h ...Handler) *Server { //nolint: unparam
 	s.meta.handlers = append(s.meta.handlers, h...)
 
 	return s
