@@ -1,6 +1,7 @@
 package webfmwk
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
@@ -12,6 +13,10 @@ var _emptyHandler = func(next HandlerFunc) HandlerFunc {
 		return next(c)
 	})
 }
+
+type ws struct{}
+
+func (ws) ServeHTTP(http.ResponseWriter, *http.Request) {}
 
 func TestServerNewInit(t *testing.T) {
 	var (
@@ -27,26 +32,37 @@ func TestServerNewInit(t *testing.T) {
 			// SetReadHeaderTimeout(testT),
 			SetPrefix("/api"),
 			//			WithMiddlewares(_emptyMiddleware),
-			WithHandlers(_emptyHandler))
+			EnableKeepAlive(),
+			WithHTTP2(),
+			EnablePprof("/some/path"),
+			WithHandlers(_emptyHandler),
+			MaxRequestBodySize(42),
+			WithSocketHandler("/sock_1", ws{}),
+			WithSocketHandlerFunc("/sock_1", func(http.ResponseWriter, *http.Request) {}),
+		)
 	)
 
 	requirer := require.New(t)
 
 	requirer.Nil(e)
 
-	requirer.True(s.meta.ctrlc)
-	requirer.True(s.meta.checkIsUp)
-	requirer.True(s.meta.cors)
+	requirer.True(s.meta.pprof, "pprof should be enabled")
+	requirer.True(s.meta.enableKeepAlive, "keep alive should be enabled")
+	requirer.True(s.meta.http2, "http2 should be enabled")
+	requirer.True(s.meta.ctrlc, "ctrl+c support enabled")
+	requirer.True(s.meta.checkIsUp, "ping pong start enabled")
+	requirer.True(s.meta.cors, "cors enabled")
 	// require.True(t, len(s.meta.middlewares) == 1)
-	requirer.True(len(s.meta.handlers) == 1)
+	requirer.True(len(s.meta.handlers) == 1, "one handler should be loaded")
 
-	requirer.Equal(s.meta.baseServer.ReadTimeout, testT)
-	requirer.Equal(s.meta.baseServer.WriteTimeout, testT)
-	requirer.Equal(s.meta.baseServer.IdleTimeout, testT)
+	requirer.Equal(testT, s.meta.baseServer.ReadTimeout)
+	requirer.Equal(testT, s.meta.baseServer.WriteTimeout)
+	requirer.Equal(testT, s.meta.baseServer.IdleTimeout, "idle timeout should be custom")
+	requirer.Equal(42, s.meta.baseServer.MaxRequestBodySize, "body max size should be 42")
 
 	requirer.True(len(s.meta.docHandlers) == 1)
 
-	requirer.Equal(s.meta.prefix, "/api")
+	requirer.Equal("/api", s.meta.prefix, "prefix should be custom")
 
 	ht := s.meta.toServer("testing")
 	requirer.Equal("webfmwk testing", ht.Name)
