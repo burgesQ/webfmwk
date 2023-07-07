@@ -10,7 +10,6 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.14.1
-	github.com/google/uuid v1.3.0
 	github.com/gorilla/schema v1.2.0
 	github.com/lab259/cors v0.2.0
 	github.com/mitchellh/mapstructure v1.5.0

@@ -1,11 +1,11 @@
 package logging
 
 import (
+	"strconv"
 	"time"
 	"unicode/utf8"
 
 	"github.com/burgesQ/webfmwk/v5"
-	"github.com/google/uuid"
 )
 
 const (
@@ -26,7 +26,7 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 		)
 
 		if rid == "" {
-			rid = uuid.New().String()
+			rid = strconv.Itoa(int(c.GetFastContext().ID()))
 		}
 		c.SetHeader(HeaderRequestID, rid)
 
