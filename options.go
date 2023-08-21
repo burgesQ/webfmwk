@@ -2,11 +2,11 @@ package webfmwk
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/burgesQ/log"
 	"github.com/valyala/fasthttp"
 )
 
@@ -14,7 +14,7 @@ type (
 	// Option apply specific configuration to the server at init time
 	// They are tu be used this way :
 	//   s := w.InitServer(
-	//     webfmwk.WithLogger(log.GetLogger()),
+	//     webfmwk.WithStructuredLogger(slog.Default()),
 	//     webfmwk.WithCtrlC(),
 	//     webfmwk.CheckIsUp(),
 	//     webfmwk.WithCORS(),
@@ -89,7 +89,7 @@ func InitServer(opts ...Option) (*Server, error) {
 			ctx:      ctx,
 			cancel:   cancel,
 			wg:       &wg,
-			log:      fetchLogger(),
+			slog:     slog.Default(),
 			isReady:  make(chan bool),
 			meta:     getDefaultMeta(),
 		}
@@ -104,16 +104,16 @@ func InitServer(opts ...Option) (*Server, error) {
 func WithHTTP2() Option {
 	return func(s *Server) {
 		s.meta.http2 = true
-		s.log.Debugf("\t-- http2 enabled")
+		s.slog.Debug("\t-- http2 enabled")
 	}
 }
 
-// WithLogger set the server logger which implement the log.Log interface
-// Try to set it the earliest posible.
-func WithLogger(lg log.Log) Option {
+// WithStructuredLogger set the server structured logger which derive from slog.Logger.
+// Try to set it the earliest possible.
+func WithStructuredLogger(slg *slog.Logger) Option {
 	return func(s *Server) {
-		s.registerLogger(lg)
-		lg.Debugf("\t-- logger loaded")
+		s.registerStructuredLogger(slg)
+		slg.Debug("logger loaded", "webfmwk", "init:option")
 	}
 }
 
@@ -121,7 +121,7 @@ func WithLogger(lg log.Log) Option {
 func WithCtrlC() Option {
 	return func(s *Server) {
 		s.enableCtrlC()
-		s.log.Debugf("\t-- crtl-c support enabled")
+		s.slog.Debug("\t-- crtl-c support enabled")
 	}
 }
 
@@ -130,7 +130,7 @@ func WithCtrlC() Option {
 func CheckIsUp() Option {
 	return func(s *Server) {
 		s.EnableCheckIsUp()
-		s.log.Debugf("\t-- check is up support enabled")
+		s.slog.Debug("\t-- check is up support enabled")
 	}
 }
 
@@ -138,7 +138,7 @@ func CheckIsUp() Option {
 func WithCORS() Option {
 	return func(s *Server) {
 		s.enableCORS()
-		s.log.Debugf("\t-- CORS support enabled")
+		s.slog.Debug("\t-- CORS support enabled")
 	}
 }
 
@@ -146,7 +146,7 @@ func WithCORS() Option {
 func SetPrefix(prefix string) Option {
 	return func(s *Server) {
 		s.setPrefix(prefix)
-		s.log.Debugf("\t-- api prefix loaded")
+		s.slog.Debug("\t-- api prefix loaded")
 	}
 }
 
@@ -167,7 +167,7 @@ func SetPrefix(prefix string) Option {
 func WithDocHandlers(handler ...DocHandler) Option {
 	return func(s *Server) {
 		s.addDocHandlers(handler...)
-		s.log.Debugf("\t-- doc handlers loaded")
+		s.slog.Debug("\t-- doc handlers loaded")
 	}
 }
 
@@ -197,7 +197,7 @@ func WithDocHandlers(handler ...DocHandler) Option {
 func WithHandlers(h ...Handler) Option {
 	return func(s *Server) {
 		s.addHandlers(h...)
-		s.log.Debugf("\t-- handlers loaded")
+		s.slog.Debug("\t-- handlers loaded")
 	}
 }
 
@@ -209,7 +209,7 @@ func WithHandlers(h ...Handler) Option {
 func SetReadTimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.ReadTimeout = val
-		s.log.Debugf("\t-- read timeout loaded")
+		s.slog.Debug("\t-- read timeout loaded")
 	}
 }
 
@@ -222,7 +222,7 @@ func SetReadTimeout(val time.Duration) Option {
 func SetWriteTimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.WriteTimeout = val
-		s.log.Debugf("\t-- write timeout loaded")
+		s.slog.Debug("\t-- write timeout loaded")
 	}
 }
 
@@ -230,7 +230,7 @@ func SetWriteTimeout(val time.Duration) Option {
 func SetIDLETimeout(val time.Duration) Option {
 	return func(s *Server) {
 		s.meta.baseServer.IdleTimeout = val
-		s.log.Debugf("\t-- idle aka keepalive timeout loaded")
+		s.slog.Debug("\t-- idle aka keepalive timeout loaded")
 	}
 }
 
@@ -238,7 +238,7 @@ func SetIDLETimeout(val time.Duration) Option {
 func EnableKeepAlive() Option {
 	return func(s *Server) {
 		s.meta.enableKeepAlive = true
-		s.log.Debugf("\t-- keepalive disabled")
+		s.slog.Debug("\t-- keepalive disabled")
 	}
 }
 
@@ -251,14 +251,14 @@ func EnablePprof(path ...string) Option {
 			s.meta.pprofPath = path[0]
 		}
 
-		s.log.Debugf("\t-- pprof endpoint enabled")
+		s.slog.Debug("\t-- pprof endpoint enabled")
 	}
 }
 
 func MaxRequestBodySize(size int) Option {
 	return func(s *Server) {
 		s.meta.baseServer.MaxRequestBodySize = size
-		s.log.Debugf("\t-- request max body size set to %d", size)
+		s.slog.Debug("\t-- request max body size set", "value", size)
 	}
 }
 
@@ -271,14 +271,14 @@ const (
 func WithSocketHandlerFunc(path string, hf http.HandlerFunc) Option {
 	return func(s *Server) {
 		s.meta.socketIOHandlerFunc, s.meta.socketIOPath, s.meta.socketIOHF = hf, path, true
-		s.log.Debugf("\t-- socket io handler func loaded")
+		s.slog.Debug("\t-- socket io handler func loaded")
 	}
 }
 
 func WithSocketHandler(path string, h http.Handler) Option {
 	return func(s *Server) {
 		s.meta.socketIOHandler, s.meta.socketIOPath, s.meta.socketIOH = h, path, true
-		s.log.Debugf("\t-- socket io handlers loaded")
+		s.slog.Debug("\t-- socket io handlers loaded")
 	}
 }
 

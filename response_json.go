@@ -76,7 +76,7 @@ func (c *icontext) JSONBlob(statusCode int, content []byte) error {
 	)
 
 	if e := run(); e != nil {
-		c.log.Errorf("canno't pretting the content : %s", e.Error())
+		c.slog.Error("cannot prettying the content", "error", e)
 	} else {
 		content = out.Bytes()
 	}
