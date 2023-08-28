@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v6"
 )
 
 var (

@@ -1,8 +1,8 @@
 module example
 
-go 1.19
+go 1.21
 
-require github.com/burgesQ/webfmwk/v5 v5.0.0-beta
+require github.com/burgesQ/webfmwk/v6 v6.0.0
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
@@ -25,4 +25,4 @@ require (
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 )
 
-replace github.com/burgesQ/webfmwk/v5 => ../
+replace github.com/burgesQ/webfmwk/v6 => ../

@@ -21,7 +21,7 @@
 [8]:https://gitlab.frafos.net/gommon/webfmwk/-/commits/master
 
 [11]:https://github.com/burgesQ/webfmwk/workflows/GoTest/badge.svg
-[12]:https://godoc.org/github.com/burgesQ/webfmwk/v5?status.svg
+[12]:https://godoc.org/github.com/burgesQ/webfmwk/v6?status.svg
 [13]:https://codecov.io/gh/burgesQ/webfmwk/branch/master/graph/badge.svg
 [14]:https://goreportcard.com/badge/github.com/burgesQ/webfmwk
 [15]:https://img.shields.io/badge/compatible%20with-go1.19+-5272b4.svg
@@ -50,7 +50,7 @@ structure validation and error translation
 
 ## Use it
 
-Import `github.com/burgesQ/webfmwk/v5`.
+Import `github.com/burgesQ/webfmwk/v6`.
 
 ### Important
 
@@ -69,7 +69,7 @@ package main
 import (
     "net/http"
 
-    "github.com/burgesQ/webfmwk/v5"
+    "github.com/burgesQ/webfmwk/v6"
 )
 
 // curl -X GET 127.0.0.1:4242/hello

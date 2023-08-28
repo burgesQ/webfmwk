@@ -43,7 +43,7 @@ type (
 	// Handler hold the function signature for webfmwk Handler chaning (middlware).
 	//
 	//  import (
-	//    github.com/burgesQ/webfmwk/v5
+	//    github.com/burgesQ/webfmwk/v6
 	//    github.com/burgesQ/webfmwk/handler/logging
 	//    github.com/burgesQ/webfmwk/handler/security
 	//  )
@@ -59,7 +59,7 @@ type (
 	//
 	// Example serving a redoc one:
 	//  import (
-	//    github.com/burgesQ/webfmwk/v5
+	//    github.com/burgesQ/webfmwk/v6
 	//    github.com/burgesQ/webfmwk/handler/redoc
 	//  )
 	//
@@ -198,7 +198,7 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 }
 
 // GetRouter create a fasthttp/router.Router whit:
-// - registered handlers (webfmwk/v5/handler)
+// - registered handlers (webfmwk/v6/handler)
 // - doc handler is registered
 // - test handler (/ping) is registered
 // - registered fmwk routes

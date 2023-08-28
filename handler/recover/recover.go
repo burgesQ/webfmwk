@@ -4,7 +4,7 @@ package recover
 import (
 	"fmt"
 
-	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v6"
 )
 
 // Handler launch a panic catcher - if the catched panic hold an

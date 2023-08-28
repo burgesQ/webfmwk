@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/handler/logging"
+	"github.com/burgesQ/webfmwk/v6"
+	"github.com/burgesQ/webfmwk/v6/handler/logging"
 )
 
 // curl -X GET 127.0.0.1:4242/hello

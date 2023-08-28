@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v6"
 )
 
 const (

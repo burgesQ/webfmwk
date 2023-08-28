@@ -1,4 +1,4 @@
-module github.com/burgesQ/webfmwk/v5
+module github.com/burgesQ/webfmwk/v6
 
 go 1.19
 

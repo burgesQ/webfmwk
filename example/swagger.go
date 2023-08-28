@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/handler/redoc"
+	"github.com/burgesQ/webfmwk/v6"
+	"github.com/burgesQ/webfmwk/v6/handler/redoc"
 )
 
 // TODO: form & payload schema

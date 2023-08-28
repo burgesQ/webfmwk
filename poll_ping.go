@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/burgesQ/webfmwk/v5/tls"
+	"github.com/burgesQ/webfmwk/v6/tls"
 )
 
 func getResp(ctx context.Context, uri string, cfg ...tls.IConfig) (*http.Response, error) {

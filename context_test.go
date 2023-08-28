@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/burgesQ/gommon/webtest"
-	"github.com/burgesQ/webfmwk/v5/log"
+	"github.com/burgesQ/webfmwk/v6/log"
 	"github.com/stretchr/testify/assert"
 )
 

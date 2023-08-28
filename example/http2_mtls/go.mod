@@ -1,6 +1,6 @@
 module http_try
 
-go 1.20
+go 1.21
 
 require (
 	github.com/dgrr/http2 v0.3.5
@@ -14,4 +14,4 @@ require (
 	github.com/valyala/fastrand v1.0.0 // indirect
 )
 
-replace github.com/burgesQ/webfmwk/v5 => /home/master/repo/webfmwk
+replace github.com/burgesQ/webfmwk/v6 => ../../

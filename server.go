@@ -10,8 +10,8 @@ import (
 	"syscall"
 
 	"github.com/burgesQ/log"
-	wlog "github.com/burgesQ/webfmwk/v5/log"
-	"github.com/burgesQ/webfmwk/v5/tls"
+	wlog "github.com/burgesQ/webfmwk/v6/log"
+	"github.com/burgesQ/webfmwk/v6/tls"
 	fasthttp2 "github.com/dgrr/http2"
 	"github.com/lab259/cors"
 	"github.com/valyala/fasthttp"

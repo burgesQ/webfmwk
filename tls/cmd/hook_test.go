@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/burgesQ/webfmwk/v5/tls"
+	"github.com/burgesQ/webfmwk/v6/tls"
 	"github.com/stretchr/testify/require"
 )
 

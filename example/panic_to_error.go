@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/handler/logging"
-	"github.com/burgesQ/webfmwk/v5/handler/recover"
+	"github.com/burgesQ/webfmwk/v6"
+	"github.com/burgesQ/webfmwk/v6/handler/logging"
+	"github.com/burgesQ/webfmwk/v6/handler/recover"
 )
 
 func panicToError() *webfmwk.Server {

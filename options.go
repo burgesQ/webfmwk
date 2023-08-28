@@ -157,8 +157,8 @@ func SetPrefix(prefix string) Option {
 //	package main
 //
 //	import (
-//		"github.com/burgesQ/webfmwk/v5"
-//		"github.com/burgesQ/webfmwk/v5/handler/redoc"
+//		"github.com/burgesQ/webfmwk/v6"
+//		"github.com/burgesQ/webfmwk/v6/handler/redoc"
 //	)
 //
 //	func main() {
@@ -178,8 +178,8 @@ func WithDocHandlers(handler ...DocHandler) Option {
 //	package main
 //
 //	import (
-//		"github.com/burgesQ/webfmwk/v5"
-//		"github.com/burgesQ/webfmwk/v5/handler/security"
+//		"github.com/burgesQ/webfmwk/v6"
+//		"github.com/burgesQ/webfmwk/v6/handler/security"
 //	)
 //
 //	type CustomContext struct {

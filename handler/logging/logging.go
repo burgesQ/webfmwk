@@ -5,7 +5,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/burgesQ/webfmwk/v5"
+	"github.com/burgesQ/webfmwk/v6"
 )
 
 const (

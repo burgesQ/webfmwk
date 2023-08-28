@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/burgesQ/webfmwk/v5"
-	"github.com/burgesQ/webfmwk/v5/log"
-	wtls "github.com/burgesQ/webfmwk/v5/tls"
+	"github.com/burgesQ/webfmwk/v6"
+	"github.com/burgesQ/webfmwk/v6/log"
+	wtls "github.com/burgesQ/webfmwk/v6/tls"
 )
 
 type (

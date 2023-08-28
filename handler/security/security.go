@@ -1,6 +1,6 @@
 package security
 
-import "github.com/burgesQ/webfmwk/v5"
+import "github.com/burgesQ/webfmwk/v6"
 
 const (
 	headerProtection = "X-Xss-Protection"

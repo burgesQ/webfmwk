@@ -1,6 +1,6 @@
 package main
 
-import "github.com/burgesQ/webfmwk/v5"
+import "github.com/burgesQ/webfmwk/v6"
 
 // customContext extend the webfmwk.Context
 type ctx struct {
