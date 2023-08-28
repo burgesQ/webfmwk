@@ -4,12 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.3.1] (upcoming)
+## [6.0.1] (upcoming)
 
 ### Added
-### Channged
+### Changed
 ### Fixed
 ### Removed
+
+## [6.0.0] (Mon Aug 28 17:27:46 2023)
+
+### Added
+- http2 support 
+- slog support
+
+### Changed
+- bumped toolchain to go 1.21
+
+### Removed
+- old logger interface and implementation
+
+### Fixed
 
 ## [5.3.0] (Wed Jul 5 13:3136 2023)
 

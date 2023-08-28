@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 
-	"github.com/burgesQ/log"
 	validator "github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
 	"github.com/valyala/fasthttp"
@@ -37,11 +37,11 @@ type (
 
 	// ContextLogger interface implement the context Logger needs.
 	ContextLogger interface {
-		// SetLogger set the logger of the ctx.
-		SetLogger(logger log.Log) Context
+		// SetStructuredLogger set context' structured logger.
+		SetStructuredLogger(logger *slog.Logger) Context
 
-		// GetLogger return the logger of the ctx.
-		GetLogger() log.Log
+		// GetStructuredLogger return context' structured logger.
+		GetStructuredLogger() *slog.Logger
 	}
 
 	// Context interface implement the context used in this project.
@@ -70,8 +70,8 @@ type (
 	// It hold the data used by the request
 	icontext struct {
 		*fasthttp.RequestCtx
-		log log.Log
-		ctx context.Context //nolint:containedctx
+		slog *slog.Logger
+		ctx  context.Context //nolint:containedctx
 	}
 )
 
@@ -91,26 +91,26 @@ func (c *icontext) GetVar(key string) string {
 	return v
 }
 
-// GetQuery implement Context
+// GetQuery implement Context.
 func (c *icontext) GetQuery() *fasthttp.Args {
 	return c.QueryArgs()
 }
 
-// GetFastContext implement Context
+// GetFastContext implement Context.
 func (c *icontext) GetFastContext() *fasthttp.RequestCtx {
 	return c.RequestCtx
 }
 
-// SetLogger implement Context
-func (c *icontext) SetLogger(logger log.Log) Context {
-	c.log = logger
+// SetStructuredLogger implement Context.
+func (c *icontext) SetStructuredLogger(logger *slog.Logger) Context {
+	c.slog = logger
 
 	return c
 }
 
 // GetLogger implement Context
-func (c *icontext) GetLogger() log.Log {
-	return c.log
+func (c *icontext) GetStructuredLogger() *slog.Logger {
+	return c.slog
 }
 
 // GetContext implement Context
@@ -124,7 +124,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 	b := c.PostBody()
 
 	if e := json.Unmarshal(b, &dest); e != nil {
-		c.log.Errorf("fetching payload: %s", e.Error())
+		c.slog.Error("fetching payload", "error", e)
 
 		return errUnprocessablePayload
 	}
@@ -136,7 +136,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 // this implemtation use validator to anotate & check struct
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	if e := validate.Struct(dest); e != nil {
-		c.log.Errorf("validating : %s", e.Error())
+		c.slog.Error("validating form or query param", "error", e)
 
 		var ev validator.ValidationErrors
 
@@ -172,7 +172,7 @@ func (c *icontext) DecodeQP(dest interface{}) ErrorHandled {
 	})
 
 	if e := decoder.Decode(dest, m); e != nil {
-		c.log.Errorf("validating qp : %s", e.Error())
+		c.slog.Error("validating query params", "error", e)
 
 		return NewUnprocessable(NewErrorFromError(e))
 	}

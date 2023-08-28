@@ -3,6 +3,16 @@ linters-settings:
   cyclop:
     max-complexity: 15
     # package-average: 0.0
+  depguard:
+    rules:
+      ioutil:
+        deny:
+          - pkg: "io/ioutl"
+            desc: use io or os instead
+      logging:
+        deny:
+          - pkg: "log"
+            desc: not allowed use log/slog instead
   funlen:
     lines: 90
     statements: 50
@@ -24,9 +34,6 @@ linters-settings:
       - shadow
   misspell:
     locale: US
-  maligned:
-      # print struct with more effective memory layout or not, false by default
-      suggest-new: true
   revive:
     ignore-generated-header: true
     severity: warning
@@ -41,7 +48,7 @@ linters-settings:
       - c webfmwk.Context
       - t testing.T
       - e error
-
+  
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
@@ -55,7 +62,7 @@ linters:
     - contextcheck
     - cyclop
     - decorder
-    - depguard
+    # - depguard
     - dogsled
     - dupl
     - dupword

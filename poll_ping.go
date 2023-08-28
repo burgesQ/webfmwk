@@ -39,7 +39,7 @@ func (s *Server) pollPingEndpoint(addr string, cfg ...tls.IConfig) {
 	}
 
 	defer func() {
-		s.log.Infof("server is up")
+		s.slog.Info("server is up")
 		s.isReady <- true
 	}()
 
@@ -62,7 +62,7 @@ func (s *Server) pollPingEndpoint(addr string, cfg ...tls.IConfig) {
 					return
 				}
 
-				s.log.Infof("server not up (%q): %T %v", uri, e, str)
+				s.slog.Info("server not up", "uri", uri, "error", e)
 
 				continue
 			}
