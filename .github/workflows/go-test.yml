@@ -4,7 +4,7 @@ on:
   push:
     branches:
         - master
-        - fasthttp
+
 jobs:
   build:
 
@@ -26,13 +26,13 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        go test -coverpkg ./... -coverprofile=coverage.txt -covermode=atomic -v -race
+        go test -shuffle=on -coverpkg github.com/burgesQ/webfmwk/... -coverprofile=cover.cov -covermode=atomic -v -race ./...
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.txt
+        file: ./cover.cov
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: true

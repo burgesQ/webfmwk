@@ -18,7 +18,7 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 					webfmwk.HandleError(c, e)
 
 				default:
-					c.GetLogger().Errorf("catched %T %#v", e, e)
+					c.GetStructuredLogger().Error("catched exit", "error", e)
 					_ = c.JSONInternalError(webfmwk.NewError(
 						fmt.Sprintf("internal error: %T %v", e, e)))
 				}

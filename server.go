@@ -3,14 +3,13 @@ package webfmwk
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
 	"syscall"
 
-	"github.com/burgesQ/log"
-	wlog "github.com/burgesQ/webfmwk/v5/log"
 	"github.com/burgesQ/webfmwk/v5/tls"
 	fasthttp2 "github.com/dgrr/http2"
 	"github.com/lab259/cors"
@@ -24,9 +23,10 @@ type (
 		cancel   context.CancelFunc
 		wg       *sync.WaitGroup
 		launcher WorkerLauncher
-		log      log.Log
-		isReady  chan bool
-		meta     serverMeta
+		// log      log.Log
+		slog    *slog.Logger
+		isReady chan bool
+		meta    serverMeta
 	}
 )
 
@@ -46,19 +46,21 @@ func (s *Server) Run(addrs ...Address) {
 	for i := range addrs {
 		addr := addrs[i]
 		if !addr.IsOk() {
-			s.GetLogger().Errorf("invalid address format : %s", addr)
+			s.GetStructuredLogger().Error("invalid format", "address", addr)
 
 			continue
 		}
 
 		if cfg := addr.GetTLS(); cfg != nil && !cfg.Empty() {
-			s.GetLogger().Infof("starting %s on https://%s", addr.GetName(), addr.GetAddr())
+			s.GetStructuredLogger().Info("starting https server",
+				"name", addr.GetName(), "address", "https://"+addr.GetAddr())
 			s.StartTLS(addr.GetAddr(), cfg)
 
 			continue
 		}
 
-		s.GetLogger().Infof("starting %s on http://%s", addr.GetName(), addr.GetAddr())
+		s.GetStructuredLogger().Info("starting http server",
+			"name", addr.GetName(), "address", "http://"+addr.GetAddr())
 		s.Start(addr.GetAddr())
 	}
 }
@@ -66,8 +68,6 @@ func (s *Server) Run(addrs ...Address) {
 //
 // Global methods
 //
-
-func fetchLogger() log.Log { return wlog.GetLogger() }
 
 // Shututdown terminate all running servers.
 func Shutdown() error {
@@ -98,21 +98,22 @@ func Shutdown() error {
 // Start expose an server to an HTTP endpoint.
 func (s *Server) Start(addr string) {
 	if s.meta.http2 {
-		s.log.Warnf("https endpoints required with http2, skipping %q", addr)
+		s.slog.Warn("https endpoints required with http2, skipping", "address", addr)
 
 		return
 	}
 
 	s.internalHandler()
 	s.launcher.Start(func() {
-		s.log.Debugf("http server %s: starting", addr)
+		s.slog.Debug("http server: starting", "address", addr)
 
 		go s.pollPingEndpoint(addr)
 
 		if e := s.internalInit(addr).ListenAndServe(addr); e != nil {
-			s.log.Errorf("http server %s (%T): %s", addr, e, e)
+			s.slog.Error("http server", "address", addr, "error", e)
 		}
-		s.log.Infof("http server %s: done", addr)
+
+		s.slog.Info("http server: done", "address", addr)
 	})
 }
 
@@ -123,31 +124,33 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 
 	tlsCfg, err := tls.GetTLSCfg(cfg, s.meta.http2)
 	if err != nil {
-		s.log.Fatalf("loading tls config: %v", err)
+		s.slog.Error("loading tls config", "error", err)
+		os.Exit(2)
 	}
 
 	listner, err := tls.LoadListner(addr, tlsCfg)
 	if err != nil {
-		s.log.Fatalf("loading tls listener: %v", err)
+		s.slog.Error("loading tls listener", "error", err)
+		os.Exit(3)
 	}
 
 	server := s.internalInit(addr)
 
 	if s.meta.http2 {
-		s.log.Infof("loading http2 support")
+		s.slog.Info("loading http2 support")
 		fasthttp2.ConfigureServer(server, fasthttp2.ServerConfig{Debug: true})
 	}
 
 	so2 := sOr2(s.meta.http2)
 
 	s.launcher.Start(func() {
-		s.log.Debugf("%s server %s: starting", so2, addr)
-		defer s.log.Infof("%s server %s: done", so2, addr)
+		s.slog.Debug(fmt.Sprintf("%s server: starting", so2), "address", addr)
+		defer s.slog.Info(fmt.Sprintf("%s server: done", so2), "address", addr)
 
 		go s.pollPingEndpoint(addr)
 
 		if e := server.Serve(listner); e != nil {
-			s.log.Errorf("%s server %s (%T): %s", so2, addr, e, e)
+			s.slog.Error(fmt.Sprintf("%s server", so2), "address", addr, "error", e)
 		}
 	})
 }
@@ -186,11 +189,17 @@ func (s *Server) DumpRoutes() map[string][]string {
 
 	for m, p := range all {
 		for i := range p {
-			s.log.Infof("routes: [%s]%s", m, p[i])
+			s.slog.Info("routes", "name", m, "route", p[i])
 		}
 	}
 
 	return all
+}
+
+type FastLogger struct{ *slog.Logger }
+
+func (flg *FastLogger) Printf(msg string, keys ...any) {
+	flg.Info(msg, keys...)
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.
@@ -213,7 +222,7 @@ func (s *Server) internalInit(addr string) *fasthttp.Server {
 		worker.Handler = router.Handler
 	}
 
-	worker.Logger = s.log
+	worker.Logger = &FastLogger{s.slog}
 
 	// save the server
 	poolMu.Lock()
@@ -221,7 +230,7 @@ func (s *Server) internalInit(addr string) *fasthttp.Server {
 
 	poolOfServers = append(poolOfServers, worker)
 
-	s.log.Debugf("[+] server %d (%s) ", len(poolOfServers), addr)
+	s.slog.Debug("[+] server ", "address", addr, "total", len(poolOfServers))
 
 	return worker
 }
@@ -240,9 +249,9 @@ func concatAddr(addr, prefix string) string {
 func (s *Server) internalHandler() {
 	if s.meta.ctrlc && !s.meta.ctrlcStarted {
 		s.launcher.Start(func() {
-			s.log.Debugf("exit handler: starting")
+			s.slog.Debug("exit handler: starting")
 			s.exitHandler(os.Interrupt, syscall.SIGHUP)
-			s.log.Infof("exit handler: done")
+			s.slog.Info("exit handler: done")
 		})
 
 		s.meta.ctrlcStarted = true
@@ -257,14 +266,14 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 
 	defer func() {
 		if e := s.Shutdown(); e != nil {
-			s.log.Errorf("cannot stop the server: %v", e)
+			s.slog.Error("cannot stop the server", "error", e)
 		}
 	}()
 
 	for s.ctx.Err() == nil {
 		select {
 		case si := <-c:
-			s.log.Infof("captured %v, exiting...", si)
+			s.slog.Info("captured signal, exiting...", "signal", si)
 
 			return
 		case <-s.ctx.Done():
@@ -278,8 +287,8 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 //
 
 // GetLogger return the used Log instance.
-func (s *Server) GetLogger() log.Log {
-	return s.log
+func (s *Server) GetStructuredLogger() *slog.Logger {
+	return s.slog
 }
 
 // GetLauncher return a pointer to the internal workerLauncher.
@@ -303,7 +312,7 @@ func (s *Server) IsReady() chan bool {
 }
 
 // AddHandlers register the Handler handlers. Handler are executed from the top most.
-func (s *Server) addHandlers(h ...Handler) *Server {
+func (s *Server) addHandlers(h ...Handler) *Server { //nolint: unparam
 	s.meta.handlers = append(s.meta.handlers, h...)
 
 	return s
@@ -324,8 +333,8 @@ func (s *Server) setPrefix(prefix string) *Server {
 }
 
 // RegisterLogger register the Log used.
-func (s *Server) registerLogger(lg log.Log) *Server {
-	s.log = lg
+func (s *Server) registerStructuredLogger(slg *slog.Logger) *Server {
+	s.slog = slg
 
 	return s
 }

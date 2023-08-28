@@ -3,7 +3,6 @@ package webfmwk
 import (
 	"testing"
 
-	"github.com/burgesQ/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,28 +44,6 @@ func TestDumpRoutes(t *testing.T) {
 
 	// options handled by fasthttp
 	// require.Contains(t, all, "OPTIONS")
-}
-
-type customLoggerT struct{}
-
-func (l customLoggerT) Printf(format string, args ...interface{}) {}
-func (l customLoggerT) Debugf(format string, v ...interface{})    {}
-func (l customLoggerT) Infof(format string, v ...interface{})     {}
-func (l customLoggerT) Warnf(format string, v ...interface{})     {}
-func (l customLoggerT) Errorf(format string, v ...interface{})    {}
-func (l customLoggerT) Fatalf(format string, v ...interface{})    {}
-func (l customLoggerT) SetPrefix(prefix string) log.Log           { return l }
-func (l customLoggerT) GetPrefix() string                         { return "" }
-
-func TestRegisterLogger(t *testing.T) {
-	var (
-		lg   = new(customLoggerT)
-		s, e = InitServer(WithLogger(lg))
-	)
-
-	require.Nil(t, e)
-	require.Implements(t, (*log.Log)(nil), lg)
-	require.Equal(t, lg, s.GetLogger())
 }
 
 func TestGetLauncher(t *testing.T) {

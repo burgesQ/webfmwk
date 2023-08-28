@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"bytes"
+	"log/slog"
 
 	"github.com/segmentio/encoding/json"
 	"github.com/valyala/fasthttp"
@@ -40,7 +41,7 @@ func GetIPFromRequest(fc *fasthttp.RequestCtx) string {
 func handleHandlerError(next HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(c Context) error {
 		if e := next(c); e != nil {
-			c.GetLogger().Errorf("catched from handler (%T) : %s", e, e.Error())
+			c.GetStructuredLogger().Error("catch'd from handler", "error", e)
 			HandleError(c, e)
 		}
 
@@ -71,8 +72,8 @@ func contentIsJSON(next HandlerFunc) HandlerFunc {
 func handleNotFound(c Context) error {
 	fc := c.GetFastContext()
 
-	c.GetLogger().Infof("[!] 404 reached for [%s] %s %s",
-		GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
+	c.GetStructuredLogger().Info("[!] 404 reached", slog.Group("request",
+		"ip", GetIPFromRequest(fc), "method", fc.Method(), "uri", fc.RequestURI()))
 
 	return c.JSONNotFound(json.RawMessage(`{"status":404,"message":"not found"}`))
 }
@@ -80,8 +81,8 @@ func handleNotFound(c Context) error {
 func handleNotAllowed(c Context) error {
 	fc := c.GetFastContext()
 
-	c.GetLogger().Infof("[!] 405 reached for [%s] %s %s",
-		GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
+	c.GetStructuredLogger().Info("[!] 405 reached", slog.Group("request",
+		"ip", GetIPFromRequest(fc), "method", fc.Method(), "uri", fc.RequestURI()))
 
 	return c.JSONMethodNotAllowed(json.RawMessage(`{"status":405,"message":"method not allowed"}`))
 }

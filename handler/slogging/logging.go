@@ -1,6 +1,7 @@
-package logging
+package slogging
 
 import (
+	"log/slog"
 	"strconv"
 	"time"
 	"unicode/utf8"
@@ -30,10 +31,13 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 		}
 		c.SetHeader(HeaderRequestID, rid)
 
-		lg := c.GetLogger().SetPrefix("[" + rid + "]: ")
+		lg := c.GetStructuredLogger().With("request id", rid, slog.Group("request",
+			"ip", webfmwk.GetIPFromRequest(fc),
+			"method", fc.Method(),
+			"uri", fc.RequestURI()))
+		c.SetStructuredLogger(lg)
 
-		c.SetLogger(lg)
-		lg.Infof("--> %q [%s]%s ", webfmwk.GetIPFromRequest(fc), fc.Method(), fc.RequestURI())
+		lg.Info("--> new request")
 
 		e := next(c)
 		elapsed := time.Since(start)
@@ -42,13 +46,16 @@ func Handler(next webfmwk.HandlerFunc) webfmwk.HandlerFunc {
 
 		if utf8.Valid(content) {
 			if l > _limitOutput {
-				lg.Debugf(">%s<", content[:_limitOutput])
+				lg.Debug("trunkated response", "body",
+					content[:_limitOutput],
+					"lim", _limitOutput)
 			} else {
-				lg.Debugf(">%s<", content)
+				lg.Debug("full response", "body", content)
 			}
 		}
 
-		lg.Infof("<-- [%d]: took %s", fc.Response.Header.StatusCode(), elapsed)
+		lg.Info("<-- request done", "code", fc.Response.Header.StatusCode(),
+			"elapsed", elapsed)
 
 		return e
 	})

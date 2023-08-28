@@ -1,10 +1,9 @@
 module github.com/burgesQ/webfmwk/v5
 
-go 1.19
+go 1.21
 
 require (
 	github.com/burgesQ/gommon v1.2.4
-	github.com/burgesQ/log v0.0.0-20230331103157-ecfef450adac
 	github.com/dgrr/http2 v0.3.5
 	github.com/fasthttp/router v1.4.19
 	github.com/go-playground/locales v0.14.1

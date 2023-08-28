@@ -55,7 +55,7 @@ func (c *icontext) setHeaders(headers ...Header) {
 	for _, h := range headers {
 		key, val := h[0], h[1]
 		if key == "" || val == "" {
-			c.log.Warnf("can't set header [%s] to [%s] (empty value)", key, val)
+			c.slog.Warn("can't set header: empty value", "key", key, "val", val)
 
 			return
 		}

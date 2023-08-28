@@ -190,7 +190,7 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 				case ANY:
 					s.ANY(prefix+route.Path, route.Handler)
 				default:
-					s.log.Warnf("Cannot load route [%s](%s)", prefix+route.Path, route.Verbe)
+					s.slog.Warn("Cannot load route [%s](%s)", "route", prefix+route.Path, "verbe", route.Verbe)
 				}
 			}
 		}
@@ -215,7 +215,7 @@ func (s *Server) GetRouter() *router.Router {
 	if len(s.meta.docHandlers) > 0 {
 		for i := range s.meta.docHandlers {
 			h := s.meta.docHandlers[i]
-			s.log.Infof("load %q doc handler", h.Name)
+			s.slog.Info("load doc handler", "name", h.Name)
 			r.ANY(s.meta.prefix+h.Path, s.CustomHandler(h.H))
 		}
 	}
@@ -230,23 +230,22 @@ func (s *Server) GetRouter() *router.Router {
 	// register socket.io (goplog) handlers
 	switch {
 	case s.meta.socketIOHF:
-		s.log.Infof("loading socket io handler func on %q", s.meta.socketIOPath)
+		s.slog.Info("loading socket io handler func", "path", s.meta.socketIOPath)
 		r.ANY(s.meta.socketIOPath,
 			fasthttpadaptor.NewFastHTTPHandlerFunc(s.meta.socketIOHandlerFunc))
 	case s.meta.socketIOH:
-		s.log.Infof("loading socket io handler on %q", s.meta.socketIOPath)
+		s.slog.Info("loading socket io handler", "path", s.meta.socketIOPath)
 		r.ANY(s.meta.socketIOPath,
 			fasthttpadaptor.NewFastHTTPHandler(s.meta.socketIOHandler))
 	}
 
 	if s.meta.pprof {
-		s.log.Infof("loading pprof handler on '/debug/pprof/{profile:*}'")
+		s.slog.Info("loading pprof handler", "path", "/debug/pprof/{profile:*}'")
 		r.GET(s.meta.prefix+s.meta.pprofPath, pprofhandler.PprofHandler)
 	}
 
 	// register routes
 	for p, rs := range s.meta.routes {
-
 		prefix, routes := p, rs // never sure if I should copy
 
 		var group *router.Group
@@ -285,7 +284,6 @@ func (s *Server) GetRouter() *router.Router {
 			} else {
 				group.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
 			}
-
 		}
 	}
 
@@ -307,5 +305,5 @@ func (s *Server) CustomHandler(handler HandlerFunc) fasthttp.RequestHandler {
 func (s *Server) genContext(c *fasthttp.RequestCtx) (Context, context.CancelFunc) {
 	ctx, fn := context.WithCancel(s.ctx)
 
-	return &icontext{c, s.log, ctx}, fn
+	return &icontext{c, s.slog, ctx}, fn
 }

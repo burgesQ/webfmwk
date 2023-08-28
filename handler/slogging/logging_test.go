@@ -1,4 +1,4 @@
-package logging
+package slogging
 
 import (
 	"encoding/json"

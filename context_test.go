@@ -2,11 +2,11 @@ package webfmwk
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"testing"
 
 	"github.com/burgesQ/gommon/webtest"
-	"github.com/burgesQ/webfmwk/v5/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,8 +16,6 @@ var (
 )
 
 func TestParam(t *testing.T) {
-	log.SetLogLevel(log.LogDebug)
-
 	wrapperGet(t, "/test/{id}", "/test/tutu", func(c Context) error {
 		id := c.GetVar("id")
 		if id != "tutu" {
@@ -35,11 +33,11 @@ func TestParam(t *testing.T) {
 func TestLogger(t *testing.T) {
 	var (
 		c      = icontext{}
-		logger = log.GetLogger()
+		logger = slog.Default()
 	)
 
-	c.SetLogger(logger)
-	assert.True(t, logger == c.GetLogger(), "context logger should be the setted one")
+	c.SetStructuredLogger(logger)
+	assert.True(t, logger == c.GetStructuredLogger(), "context logger should be the setted one")
 	// assert.True(t, logger == GetLogger(), "default logger should be the setted one")
 }
 

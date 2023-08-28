@@ -7,19 +7,26 @@
 # to archive to file: C-c C-x C-a
 # open archive sibling: C-c C-tab
 
-* WIP v5 [5/7] [71%]
-DEADLINE: <2023-06-11 Sun>
+* TODO v5 [9/11] [81%]
+DEADLINE: <2023-07-28 Fri>
 
-** IDEA read header for translator
-DEADLINE: <2024-05-11 Sat>
+** DONE [#A] http2 [2/2] [100%]
+CLOSED: [2023-07-07 Fri 14:30] DEADLINE: <2023-07-07 Fri>
+*** DONE http2 server
+CLOSED: [2023-07-06 Thu 13:21]
+*** DONE stream payload
+CLOSED: [2023-07-07 Fri 14:30]
+
+** CANCELLED read header for translator
+CLOSED: [2023-07-24 Mon 11:06] DEADLINE: <2024-05-11 Sat>
 ** TODO update the doc
-DEADLINE: <2023-05-18 Thu>
-** TODO run some fuzzing
-DEADLINE: <2023-05-13 Sat>
-** TODO run some benchmark
-DEADLINE: <2023-05-13 Sat>
+DEADLINE: <2023-07-28 Fri>
+** CANCELLED run some fuzzing
+CLOSED: [2023-07-24 Mon 11:06] DEADLINE: <2023-05-13 Sat>
+** CANCELLED run some benchmark
+CLOSED: [2023-07-24 Mon 11:07] DEADLINE: <2023-05-13 Sat>
 ** WIP coverage [1/9]
-DEADLINE: <2023-05-12 Fri>
+DEADLINE: <2023-07-28 Fri>
 - [ ] test CORS
 - [ ] test DumpRoutes
 - [ ] test ctrl+c
