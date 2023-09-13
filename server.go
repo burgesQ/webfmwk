@@ -147,7 +147,7 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 		s.slog.Debug(fmt.Sprintf("%s server: starting", so2), "address", addr)
 		defer s.slog.Info(fmt.Sprintf("%s server: done", so2), "address", addr)
 
-		go s.pollPingEndpoint(addr)
+		go s.pollPingEndpoint(addr, cfg)
 
 		if e := server.Serve(listner); e != nil {
 			s.slog.Error(fmt.Sprintf("%s server", so2), "address", addr, "error", e)
@@ -199,7 +199,7 @@ func (s *Server) DumpRoutes() map[string][]string {
 type FastLogger struct{ *slog.Logger }
 
 func (flg *FastLogger) Printf(msg string, keys ...any) {
-	flg.Info(msg, keys...)
+	flg.Info(fmt.Sprintf(msg, keys...))
 }
 
 // Initialize a http.Server struct. Save the server in the pool of workers.

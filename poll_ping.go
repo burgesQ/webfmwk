@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -62,7 +63,9 @@ func (s *Server) pollPingEndpoint(addr string, cfg ...tls.IConfig) {
 					return
 				}
 
-				s.slog.Info("server not up", "uri", uri, "error", e)
+				s.slog.Info("server not up",
+					slog.String("uri", uri),
+					slog.String("error", e.Error()))
 
 				continue
 			}
