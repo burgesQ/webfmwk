@@ -98,22 +98,22 @@ func Shutdown() error {
 // Start expose an server to an HTTP endpoint.
 func (s *Server) Start(addr string) {
 	if s.meta.http2 {
-		s.slog.Warn("https endpoints required with http2, skipping", "address", addr)
+		s.slog.Warn("https endpoints required with http2, skipping", slog.String("address", addr))
 
 		return
 	}
 
 	s.internalHandler()
 	s.launcher.Start(func() {
-		s.slog.Debug("http server: starting", "address", addr)
+		s.slog.Debug("http server: starting", slog.String("address", addr))
 
 		go s.pollPingEndpoint(addr)
 
 		if e := s.internalInit(addr).ListenAndServe(addr); e != nil {
-			s.slog.Error("http server", "address", addr, "error", e)
+			s.slog.Error("http server", slog.String("address", addr), slog.Any("error", e))
 		}
 
-		s.slog.Info("http server: done", "address", addr)
+		s.slog.Info("http server: done", slog.String("address", addr))
 	})
 }
 
@@ -124,13 +124,13 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 
 	tlsCfg, err := tls.GetTLSCfg(cfg, s.meta.http2)
 	if err != nil {
-		s.slog.Error("loading tls config", "error", err)
+		s.slog.Error("loading tls config", slog.Any("error", err))
 		os.Exit(2)
 	}
 
 	listner, err := tls.LoadListner(addr, tlsCfg)
 	if err != nil {
-		s.slog.Error("loading tls listener", "error", err)
+		s.slog.Error("loading tls listener", slog.Any("error", err))
 		os.Exit(3)
 	}
 
@@ -144,13 +144,14 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 	so2 := sOr2(s.meta.http2)
 
 	s.launcher.Start(func() {
-		s.slog.Debug(fmt.Sprintf("%s server: starting", so2), "address", addr)
-		defer s.slog.Info(fmt.Sprintf("%s server: done", so2), "address", addr)
+		s.slog.Debug(fmt.Sprintf("%s server: starting", so2), slog.String("address", addr))
+		defer s.slog.Info(fmt.Sprintf("%s server: done", so2), slog.String("address", addr))
 
 		go s.pollPingEndpoint(addr, cfg)
 
 		if e := server.Serve(listner); e != nil {
-			s.slog.Error(fmt.Sprintf("%s server", so2), "address", addr, "error", e)
+			s.slog.Error(fmt.Sprintf("%s server", so2),
+				slog.String("address", addr), slog.Any("error", e))
 		}
 	})
 }
@@ -189,7 +190,7 @@ func (s *Server) DumpRoutes() map[string][]string {
 
 	for m, p := range all {
 		for i := range p {
-			s.slog.Info("routes", "name", m, "route", p[i])
+			s.slog.Info("routes", slog.String("name", m), slog.String("route", p[i]))
 		}
 	}
 
@@ -230,7 +231,7 @@ func (s *Server) internalInit(addr string) *fasthttp.Server {
 
 	poolOfServers = append(poolOfServers, worker)
 
-	s.slog.Debug("[+] server ", "address", addr, "total", len(poolOfServers))
+	s.slog.Debug("[+] server ", slog.String("address", addr), slog.Int("total", len(poolOfServers)))
 
 	return worker
 }
@@ -266,14 +267,14 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 
 	defer func() {
 		if e := s.Shutdown(); e != nil {
-			s.slog.Error("cannot stop the server", "error", e)
+			s.slog.Error("cannot stop the server", slog.Any("error", e))
 		}
 	}()
 
 	for s.ctx.Err() == nil {
 		select {
 		case si := <-c:
-			s.slog.Info("captured signal, exiting...", "signal", si)
+			s.slog.Info("captured signal, exiting...", slog.String("signal", si.String()))
 
 			return
 		case <-s.ctx.Done():
@@ -287,29 +288,19 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 //
 
 // GetLogger return the used Log instance.
-func (s *Server) GetStructuredLogger() *slog.Logger {
-	return s.slog
-}
+func (s *Server) GetStructuredLogger() *slog.Logger { return s.slog }
 
 // GetLauncher return a pointer to the internal workerLauncher.
-func (s *Server) GetLauncher() WorkerLauncher {
-	return s.launcher
-}
+func (s *Server) GetLauncher() WorkerLauncher { return s.launcher }
 
 // GetContext return the context.Context used.
-func (s *Server) GetContext() context.Context {
-	return s.ctx
-}
+func (s *Server) GetContext() context.Context { return s.ctx }
 
 // GetContext return the server' context cancel func.
-func (s *Server) GetCancel() context.CancelFunc {
-	return s.cancel
-}
+func (s *Server) GetCancel() context.CancelFunc { return s.cancel }
 
 // IsReady return the channel on which `true` is send once the server is up.
-func (s *Server) IsReady() chan bool {
-	return s.isReady
-}
+func (s *Server) IsReady() chan bool { return s.isReady }
 
 // AddHandlers register the Handler handlers. Handler are executed from the top most.
 func (s *Server) addHandlers(h ...Handler) *Server { //nolint: unparam

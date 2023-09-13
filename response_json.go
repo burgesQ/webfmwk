@@ -3,6 +3,7 @@ package webfmwk
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/segmentio/encoding/json"
@@ -76,7 +77,7 @@ func (c *icontext) JSONBlob(statusCode int, content []byte) error {
 	)
 
 	if e := run(); e != nil {
-		c.slog.Error("cannot prettying the content", "error", e)
+		c.slog.Error("cannot prettying the content", slog.Any("error", e))
 	} else {
 		content = out.Bytes()
 	}

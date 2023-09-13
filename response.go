@@ -1,5 +1,7 @@
 package webfmwk
 
+import "log/slog"
+
 type (
 	// Header represent a header in a string key:value form.
 	Header [2]string
@@ -55,7 +57,7 @@ func (c *icontext) setHeaders(headers ...Header) {
 	for _, h := range headers {
 		key, val := h[0], h[1]
 		if key == "" || val == "" {
-			c.slog.Warn("can't set header: empty value", "key", key, "val", val)
+			c.slog.Warn("can't set header: empty value", slog.String("key", key), slog.String("val", val))
 
 			return
 		}

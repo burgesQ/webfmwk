@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/fasthttp/router"
 	"github.com/segmentio/encoding/json"
@@ -190,7 +191,9 @@ func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
 				case ANY:
 					s.ANY(prefix+route.Path, route.Handler)
 				default:
-					s.slog.Warn("Cannot load route [%s](%s)", "route", prefix+route.Path, "verbe", route.Verbe)
+					s.slog.Warn("cannot load route",
+						slog.String("route", prefix+route.Path),
+						slog.String("verbe", route.Verbe))
 				}
 			}
 		}
@@ -215,7 +218,7 @@ func (s *Server) GetRouter() *router.Router {
 	if len(s.meta.docHandlers) > 0 {
 		for i := range s.meta.docHandlers {
 			h := s.meta.docHandlers[i]
-			s.slog.Info("load doc handler", "name", h.Name)
+			s.slog.Info("load doc handler", slog.String("name", h.Name))
 			r.ANY(s.meta.prefix+h.Path, s.CustomHandler(h.H))
 		}
 	}
@@ -230,11 +233,11 @@ func (s *Server) GetRouter() *router.Router {
 	// register socket.io (goplog) handlers
 	switch {
 	case s.meta.socketIOHF:
-		s.slog.Info("loading socket io handler func", "path", s.meta.socketIOPath)
+		s.slog.Info("loading socket io handler func", slog.String("path", s.meta.socketIOPath))
 		r.ANY(s.meta.socketIOPath,
 			fasthttpadaptor.NewFastHTTPHandlerFunc(s.meta.socketIOHandlerFunc))
 	case s.meta.socketIOH:
-		s.slog.Info("loading socket io handler", "path", s.meta.socketIOPath)
+		s.slog.Info("loading socket io handler", slog.String("path", s.meta.socketIOPath))
 		r.ANY(s.meta.socketIOPath,
 			fasthttpadaptor.NewFastHTTPHandler(s.meta.socketIOHandler))
 	}

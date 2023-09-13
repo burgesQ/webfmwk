@@ -124,7 +124,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 	b := c.PostBody()
 
 	if e := json.Unmarshal(b, &dest); e != nil {
-		c.slog.Error("fetching payload", "error", e)
+		c.slog.Error("fetching payload", slog.Any("error", e))
 
 		return errUnprocessablePayload
 	}
@@ -136,7 +136,7 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 // this implemtation use validator to anotate & check struct
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
 	if e := validate.Struct(dest); e != nil {
-		c.slog.Error("validating form or query param", "error", e)
+		c.slog.Error("validating form or query param", slog.Any("error", e))
 
 		var ev validator.ValidationErrors
 
@@ -172,7 +172,7 @@ func (c *icontext) DecodeQP(dest interface{}) ErrorHandled {
 	})
 
 	if e := decoder.Decode(dest, m); e != nil {
-		c.slog.Error("validating query params", "error", e)
+		c.slog.Error("validating query params", slog.Any("error", e))
 
 		return NewUnprocessable(NewErrorFromError(e))
 	}

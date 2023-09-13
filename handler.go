@@ -73,7 +73,9 @@ func handleNotFound(c Context) error {
 	fc := c.GetFastContext()
 
 	c.GetStructuredLogger().Info("[!] 404 reached", slog.Group("request",
-		"ip", GetIPFromRequest(fc), "method", fc.Method(), "uri", fc.RequestURI()))
+		slog.String("ip", GetIPFromRequest(fc)),
+		slog.String("method", string(fc.Method())),
+		slog.String("uri", string(fc.RequestURI()))))
 
 	return c.JSONNotFound(json.RawMessage(`{"status":404,"message":"not found"}`))
 }
@@ -82,7 +84,9 @@ func handleNotAllowed(c Context) error {
 	fc := c.GetFastContext()
 
 	c.GetStructuredLogger().Info("[!] 405 reached", slog.Group("request",
-		"ip", GetIPFromRequest(fc), "method", fc.Method(), "uri", fc.RequestURI()))
+		slog.String("ip", GetIPFromRequest(fc)),
+		slog.String("method", string(fc.Method())),
+		slog.String("uri", string(fc.RequestURI()))))
 
 	return c.JSONMethodNotAllowed(json.RawMessage(`{"status":405,"message":"method not allowed"}`))
 }
