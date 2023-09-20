@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/burgesQ/webfmwk/v6/tls"
@@ -90,6 +91,32 @@ func (a Addresses) String() (ret string) {
 	ret += "\n\t --- end address"
 
 	return
+}
+
+func (a Addresses) AsAttrs() []any {
+	r := make([]any, len(a))
+
+	for i := range a {
+		r[i] = slog.Group(fmt.Sprintf("address %d", i), a[i].AsAttrs()...)
+	}
+
+	return r
+}
+
+func Tern[T any](cond bool, t, f func() T) T {
+	if cond {
+		return t()
+	}
+
+	return f()
+}
+
+func (a Address) AsAttrs() []any {
+	return []any{
+		slog.String("name", a.Name),
+		slog.String("address", a.Addr),
+		slog.Any("tls", a.TLS),
+	}
 }
 
 // String implement the fmt.Stringer interface
