@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -51,17 +52,25 @@ func (s *Server) Run(addrs ...Address) {
 			continue
 		}
 
-		if cfg := addr.GetTLS(); cfg != nil && !cfg.Empty() {
+		switch cfg := addr.GetTLS(); {
+		case cfg != nil && !cfg.Empty():
 			s.GetStructuredLogger().Info("starting https server",
 				"name", addr.GetName(), "address", "https://"+addr.GetAddr())
 			s.StartTLS(addr.GetAddr(), cfg)
 
-			continue
-		}
+		case addr.IsUnixPath():
+			s.GetStructuredLogger().Info("starting unix socket server",
+				"name", addr.GetName(), "path", addr.GetAddr())
 
-		s.GetStructuredLogger().Info("starting http server",
-			"name", addr.GetName(), "address", "http://"+addr.GetAddr())
-		s.Start(addr.GetAddr())
+			s.StartUnixSocket(addr.GetAddr())
+
+			// continue
+
+		default:
+			s.GetStructuredLogger().Info("starting http server",
+				"name", addr.GetName(), "address", "http://"+addr.GetAddr())
+			s.Start(addr.GetAddr())
+		}
 	}
 }
 
@@ -114,6 +123,31 @@ func (s *Server) Start(addr string) {
 		}
 
 		s.slog.Info("http server: done", slog.String("address", addr))
+	})
+}
+
+func (s *Server) StartUnixSocket(path string) {
+	s.internalHandler()
+
+	// do some magic
+
+	// open socket as listener
+	listener, err := net.Listen("unix", strings.TrimPrefix(path, _unixSocketPrefix))
+	if err != nil {
+		s.slog.Error("listing on socket", slog.Any("error", err))
+		return
+	}
+
+	server := s.internalInit(path)
+
+	s.launcher.Start(func() {
+		s.slog.Debug("unix socket server: starting", slog.String("path", path))
+		defer s.slog.Info("unix socket server: done", slog.String("path", path))
+
+		if e := server.Serve(listener); e != nil {
+			s.slog.Error("unix socket server",
+				slog.String("path", path), slog.Any("error", e))
+		}
 	})
 }
 

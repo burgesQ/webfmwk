@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/burgesQ/webfmwk/v6/tls"
 )
+
+const _unixSocketPrefix = `unix://`
 
 type (
 	// IAddress interface hold an api server listing configuration
@@ -24,6 +27,9 @@ type (
 
 		// IsOk validate that the Address structure have at least the address field populated.
 		IsOk() bool
+
+		// IsUnixPath return true if the address is a valid unix socket path.
+		IsUnixPath() bool
 
 		// SameAs return true if both config are identique.
 		SameAs(in IAddress) bool
@@ -126,6 +132,11 @@ func (a Address) String() string {
 	}
 
 	return fmt.Sprintf("name: %q\naddr: %q", a.Name, a.Addr)
+}
+
+// IsOk implement the IAddress interface
+func (a Address) IsUnixPath() bool {
+	return strings.HasPrefix(a.Addr, _unixSocketPrefix)
 }
 
 // IsOk implement the IAddress interface
