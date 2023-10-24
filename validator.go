@@ -115,7 +115,15 @@ func RegisterValidatorAlias(name, what string) (e error) {
 
 // RegisterValidatorTrans register some validation alias.
 // See https://go-playground/validator.v10 for more.
-func RegisterValidatorTrans(name, what string) error {
+func RegisterValidatorTrans(name, what string) (e error) {
+	// from init server - if validator is called before
+	// the server init (which may happen pretty often)
+	once.Do(func() { e = initOnce() })
+
+	if e != nil {
+		return fmt.Errorf("init validator: %w", e)
+	}
+
 	return validate.RegisterTranslation(name, trans,
 		func(ut ut.Translator) error {
 			return ut.Add(name, what, true) // see universal-translator for details
