@@ -219,7 +219,7 @@ func TestUseCase(t *testing.T) {
 
 		"push_invalid_wrong": {
 			action: _pushNTest, url: "/api/world", pushContent: []byte(`{`),
-			body: `{"message":"Unprocessable payload","status":422}`, code: http.StatusUnprocessableEntity,
+			body: UnprocessablePayloadErrorStr, code: http.StatusUnprocessableEntity,
 		},
 
 		"push_custom": {

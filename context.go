@@ -75,10 +75,12 @@ type (
 	}
 )
 
+const UnprocessablePayloadErrorStr = `{"message":"unprocessable payload content","status":422}`
+
 var (
 	// decoder annotation : `schema` : gorilla
 	decoder                 = schema.NewDecoder()
-	errUnprocessablePayload = NewUnprocessable(NewError("Unprocessable payload"))
+	errUnprocessablePayload = NewUnprocessable(NewError("unprocessable payload content"))
 )
 
 // GetVar implement Context
