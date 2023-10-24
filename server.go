@@ -17,6 +17,11 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+const (
+	exitTLSConfigFailure   = 2
+	exitTLSListenerFailure = 3
+)
+
 type (
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
@@ -135,6 +140,7 @@ func (s *Server) StartUnixSocket(path string) {
 	listener, err := net.Listen("unix", strings.TrimPrefix(path, _unixSocketPrefix))
 	if err != nil {
 		s.slog.Error("listing on socket", slog.Any("error", err))
+
 		return
 	}
 
@@ -159,13 +165,13 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 	tlsCfg, err := tls.GetTLSCfg(cfg, s.meta.http2)
 	if err != nil {
 		s.slog.Error("loading tls config", slog.Any("error", err))
-		os.Exit(2)
+		os.Exit(exitTLSConfigFailure)
 	}
 
 	listner, err := tls.LoadListner(addr, tlsCfg)
 	if err != nil {
 		s.slog.Error("loading tls listener", slog.Any("error", err))
-		os.Exit(3)
+		os.Exit(exitTLSListenerFailure)
 	}
 
 	server := s.internalInit(addr)
