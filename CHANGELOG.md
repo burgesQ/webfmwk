@@ -4,17 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantipush c Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.0.1] (upcoming)
+## [6.0.3] (upcoming)
 
 ### Added
 ### Changed
 ### Fixed
 ### Removed
 
-## [6.0.0] (Mon Aug 28 17:27:46 2023)
+## [6.0.3] (Wed Oct 25 12:01:08 2023)
 
 ### Added
-- http2 support 
+- address: AsAttrs method (slogging)
+- server: unix socket listening
+
+### Changed
+- 422 response payload
+
+### Fixed
+- github action use go 1.21
+- TLS poll ping use cse
+- custom validation translation was missing some global init
+
+### Removed
+
+## [6.0.1] (Mon Aug 28 17:27:46 2023)
+
+### Added
+- http2 support
 - slog support
 
 ### Changed
