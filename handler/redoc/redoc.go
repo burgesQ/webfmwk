@@ -97,7 +97,14 @@ const (
 		</style>
 	</head>
 	<body>
-		<redoc spec-url={{ .DocURI }}></redoc>
+		<redoc spec-url={{ .DocURI }}
+           required-props-first=true
+           theme='{
+             "sidebar": {
+               "backgroundColor": "lightblue"
+             }
+           }'
+        ></redoc>
 		<script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
 	</body>
 </html>`

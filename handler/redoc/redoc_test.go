@@ -20,7 +20,7 @@ func TestRedocParam(t *testing.T) {
 
 	assert.Equal(t, _defPath, def.Path)
 	assert.Contains(t, string(genContent(defRedoc())),
-		"<redoc spec-url="+_defURI+"></redoc>")
+		"<redoc spec-url="+_defURI+"\n")
 }
 
 func TestGetHandler(t *testing.T) {

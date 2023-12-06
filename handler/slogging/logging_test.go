@@ -14,9 +14,11 @@ import (
 const _testPort = ":6670"
 
 func TestHandler(t *testing.T) {
+	// TODO: use a mocked logger to ensure debug / info has been used
+
 	s, e := webfmwk.InitServer(webfmwk.CheckIsUp(),
 		webfmwk.SetPrefix("/api"),
-		webfmwk.WithHandlers(Handler),
+		webfmwk.WithHandlers(NewHandler()),
 	)
 
 	require.Nil(t, e)
