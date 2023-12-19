@@ -121,7 +121,7 @@ func TestUseCase(t *testing.T) {
 
 	defer func() { require.Nil(t, s.ShutdownAndWait()) }()
 
-	go s.Start(_testPort)
+	go require.Nil(t, s.Start(_testPort))
 	<-s.isReady
 
 	const (

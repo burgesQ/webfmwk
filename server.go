@@ -2,6 +2,7 @@ package webfmwk
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -14,7 +15,7 @@ import (
 	fasthttp2 "github.com/dgrr/http2"
 	"github.com/lab259/cors"
 	"github.com/valyala/fasthttp"
-	// "golang.org/x/sync/errgroup"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -25,11 +26,9 @@ const (
 type (
 	// Server is a struct holding all the necessary data / struct
 	Server struct {
-		ctx      context.Context //nolint:containedctx
-		cancel   context.CancelFunc
-		wg       *sync.WaitGroup
-		launcher WorkerLauncher
-		// log      log.Log
+		ctx     context.Context //nolint:containedctx
+		cancel  context.CancelFunc
+		wg      *errgroup.Group
 		slog    *slog.Logger
 		isReady chan bool
 		meta    serverMeta
@@ -37,7 +36,7 @@ type (
 )
 
 var (
-	// TODO: use sync.Pool
+	// TODO: use sync.Pool ?
 	// poolOfServers hold all the http(s) server to properly shut them down
 	poolOfServers []*fasthttp.Server
 	poolMu        sync.Mutex
@@ -61,26 +60,35 @@ func (s *Server) Run(addrs ...Address) {
 		case cfg != nil && !cfg.Empty():
 			s.GetStructuredLogger().Info("starting https server",
 				"name", addr.GetName(), "address", "https://"+addr.GetAddr())
-			s.StartTLS(addr.GetAddr(), cfg)
+
+			if e := s.StartTLS(addr.GetAddr(), cfg); e != nil {
+				s.slog.Error("starting HTTPS server", slog.Any("error", e))
+				s.cancel()
+
+				return
+			}
 
 		case addr.IsUnixPath():
 			s.GetStructuredLogger().Info("starting unix socket server",
 				"name", addr.GetName(), "path", addr.GetAddr())
 
 			if e := s.StartUnixSocket(addr.GetAddr()); e != nil {
-				s.slog.Error("starting server", slog.Any("error", e))
-
+				s.slog.Error("starting unix socket server", slog.Any("error", e))
 				s.cancel()
 
 				return
 			}
 
-			// continue
-
 		default:
 			s.GetStructuredLogger().Info("starting http server",
 				"name", addr.GetName(), "address", "http://"+addr.GetAddr())
-			s.Start(addr.GetAddr())
+
+			if e := s.Start(addr.GetAddr()); e != nil {
+				s.slog.Error("starting HTTP server", slog.Any("error", e))
+				s.cancel()
+
+				return
+			}
 		}
 	}
 }
@@ -115,68 +123,76 @@ func Shutdown() error {
 // Process methods
 //
 
-// Start expose an server to an HTTP endpoint.
-func (s *Server) Start(addr string) {
-	if s.meta.http2 {
-		s.slog.Warn("https endpoints required with http2, skipping", slog.String("address", addr))
+var ErrTLSWithHTTP2 = errors.New("HTTPS endpoints required with HTTP2")
 
-		return
+// Start expose an server to an HTTP endpoint.
+func (s *Server) Start(addr string) error {
+	if s.meta.http2 {
+		return fmt.Errorf("%w,, skipping %q", ErrTLSWithHTTP2, addr)
 	}
 
 	s.internalHandler()
 
 	started := make(chan struct{})
 
-	s.launcher.Start(func() {
+	s.wg.Go(func() error {
 		s.slog.Debug("http server: starting", slog.String("address", addr))
+		defer s.slog.Info("http server: done", slog.String("address", addr))
 
 		go s.pollPingEndpoint(addr)
 
 		close(started)
+
 		if e := s.internalInit(addr).ListenAndServe(addr); e != nil {
-			s.slog.Error("http server", slog.String("address", addr), slog.Any("error", e))
+			return fmt.Errorf("http server %s: %w", addr, e)
 		}
 
-		s.slog.Info("http server: done", slog.String("address", addr))
+		return nil
 	})
 
 	<-started
+
+	return nil
 }
 
 func (s *Server) StartUnixSocket(path string) error {
 	s.internalHandler()
 
 	server := s.internalInit(path)
+	started := make(chan struct{})
 
-	s.launcher.Start(func() {
+	s.wg.Go(func() error {
 		s.slog.Debug("unix socket server: starting", slog.String("path", path))
 		defer s.slog.Info("unix socket server: done", slog.String("path", path))
 
+		close(started)
+
 		if e := server.ListenAndServeUNIX(
-			strings.TrimPrefix(path, _unixSocketPrefix),
-			os.ModeSocket); e != nil {
-			s.slog.Error("unix socket server", slog.String("path", path), slog.Any("error", e))
+			strings.TrimPrefix(path, _unixSocketPrefix), os.ModeSocket); e != nil {
+			return fmt.Errorf("unix socket server %q: %w", path, e)
 		}
+
+		return nil
 	})
+
+	<-started
 
 	return nil
 }
 
 // StartTLS expose an https server.
 // The server may have mTLS and/or http2 capabilities.
-func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
+func (s *Server) StartTLS(addr string, cfg tls.IConfig) error {
 	s.internalHandler()
 
 	tlsCfg, err := tls.GetTLSCfg(cfg, s.meta.http2)
 	if err != nil {
-		s.slog.Error("loading tls config", slog.Any("error", err))
-		os.Exit(exitTLSConfigFailure)
+		return fmt.Errorf("loading tls config: %w", err)
 	}
 
 	listner, err := tls.LoadListner(addr, tlsCfg)
 	if err != nil {
-		s.slog.Error("loading tls listener", slog.Any("error", err))
-		os.Exit(exitTLSListenerFailure)
+		return fmt.Errorf("loading tls listener: %w", err)
 	}
 
 	server := s.internalInit(addr)
@@ -187,18 +203,25 @@ func (s *Server) StartTLS(addr string, cfg tls.IConfig) {
 	}
 
 	so2 := sOr2(s.meta.http2)
+	started := make(chan struct{})
 
-	s.launcher.Start(func() {
+	s.wg.Go(func() error {
 		s.slog.Debug(fmt.Sprintf("%s server: starting", so2), slog.String("address", addr))
 		defer s.slog.Info(fmt.Sprintf("%s server: done", so2), slog.String("address", addr))
 
 		go s.pollPingEndpoint(addr, cfg)
+		close(started)
 
 		if e := server.Serve(listner); e != nil {
-			s.slog.Error(fmt.Sprintf("%s server", so2),
-				slog.String("address", addr), slog.Any("error", e))
+			return fmt.Errorf("%s server %q: %w", so2, addr, e)
 		}
+
+		return nil
 	})
+
+	<-started
+
+	return nil
 }
 
 func sOr2(http2 bool) string {
@@ -226,12 +249,9 @@ func (s *Server) Shutdown() error {
 // WaitForStop wait for all servers to terminate.
 // Use of a sync.waitGroup to properly wait all running servers.
 func (s *Server) WaitForStop() {
-	s.wg.Wait()
-
-	// g := errgroup.Group{}
-	// if err := g.Wait(); err != nil {
-	// 	return nil, err
-	// }
+	if e := s.wg.Wait(); e != nil {
+		s.slog.Error("waiting for server stop", slog.Any("error", e))
+	}
 }
 
 // DumpRoutes dump the API endpoints using the server logger.
@@ -277,11 +297,11 @@ func (s *Server) internalInit(addr string) *fasthttp.Server {
 
 	// save the server
 	poolMu.Lock()
-	defer poolMu.Unlock()
-
 	poolOfServers = append(poolOfServers, worker)
+	poolMu.Unlock()
 
-	s.slog.Debug("[+] server ", slog.String("address", addr), slog.Int("total", len(poolOfServers)))
+	s.slog.Debug("[+] server",
+		slog.String("address", addr), slog.Int("total", len(poolOfServers)))
 
 	return worker
 }
@@ -298,15 +318,20 @@ func concatAddr(addr, prefix string) string {
 
 // launch the ctrl+c job if needed.
 func (s *Server) internalHandler() {
-	if s.meta.ctrlc && !s.meta.ctrlcStarted {
-		s.launcher.Start(func() {
-			s.slog.Debug("exit handler: starting")
-			s.exitHandler(os.Interrupt, syscall.SIGHUP)
-			s.slog.Info("exit handler: done")
-		})
-
-		s.meta.ctrlcStarted = true
+	if !s.meta.ctrlc || s.meta.ctrlcStarted {
+		return
 	}
+
+	s.wg.Go(func() error {
+		s.slog.Debug("exit handler: starting")
+		defer s.slog.Info("exit handler: done")
+
+		s.exitHandler(os.Interrupt, syscall.SIGHUP)
+
+		return nil
+	})
+
+	s.meta.ctrlcStarted = true
 }
 
 // handle ctrl+c internaly.
@@ -324,7 +349,8 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 	for s.ctx.Err() == nil {
 		select {
 		case si := <-c:
-			s.slog.Info("captured signal, exiting...", slog.String("signal", si.String()))
+			s.slog.Info("captured signal, exiting...",
+				slog.String("signal", si.String()))
 
 			return
 		case <-s.ctx.Done():
@@ -341,7 +367,7 @@ func (s *Server) exitHandler(sig ...os.Signal) {
 func (s *Server) GetStructuredLogger() *slog.Logger { return s.slog }
 
 // GetLauncher return a pointer to the internal workerLauncher.
-func (s *Server) GetLauncher() WorkerLauncher { return s.launcher }
+func (s *Server) GetGroup() *errgroup.Group { return s.wg }
 
 // GetContext return the context.Context used.
 func (s *Server) GetContext() context.Context { return s.ctx }
@@ -406,7 +432,7 @@ func (s *Server) DisableHTTP2() *Server {
 }
 
 // EnableCtrlC let the server handle the SIGINT interuption.
-// To add worker to the interuption pool, please use the `GetLauncher` method.
+// To add worker to the interuption pool, please use the `GetGroup` method.
 func (s *Server) enableCtrlC() *Server {
 	s.meta.ctrlc = true
 

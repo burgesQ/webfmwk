@@ -41,7 +41,7 @@ func TestSSLEnforced(t *testing.T) {
 
 	t.Logf("starting tls server ...\n")
 
-	go s.StartTLS(fmt.Sprintf("127.0.0.1:%d", port), cfg)
+	go require.Nil(t, s.StartTLS(fmt.Sprintf("127.0.0.1:%d", port), cfg))
 	t.Logf("waiting for tls server ...\n")
 	<-s.isReady
 	t.Logf("tls server is ready ...\n")

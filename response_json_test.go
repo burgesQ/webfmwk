@@ -71,7 +71,7 @@ func TestJSONResponse(t *testing.T) {
 		})
 	}
 
-	go s.Start(_testPort)
+	go require.Nil(t, s.Start(_testPort))
 	<-s.isReady
 
 	for name, test := range tests {

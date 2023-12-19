@@ -29,7 +29,7 @@ func TestHandler(t *testing.T) {
 		return c.JSONOk(json.RawMessage(`{}`))
 	})
 
-	go s.Start(_testPort)
+	go require.Nil(t, s.Start(_testPort))
 	<-s.IsReady()
 
 	webtest.RequestAndTestAPI(t, "http://127.0.0.1"+_testPort+"/api/testing",

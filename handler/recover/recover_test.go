@@ -34,7 +34,7 @@ func TestHandler(t *testing.T) {
 		panic(webfmwk.NewForbidden(webfmwk.NewError("some fatal error")))
 	})
 
-	go s.Start(_testPort)
+	go require.Nil(t, s.Start(_testPort))
 	<-s.IsReady()
 	// t.Log("server inited")
 

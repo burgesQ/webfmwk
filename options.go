@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/valyala/fasthttp"
+	"golang.org/x/sync/errgroup"
 )
 
 type (
@@ -82,16 +83,15 @@ func InitServer(opts ...Option) (*Server, error) {
 	once.Do(func() { e = initOnce() })
 
 	var (
-		wg          sync.WaitGroup
 		ctx, cancel = context.WithCancel(context.Background())
+		wg, _       = errgroup.WithContext(ctx)
 		s           = &Server{
-			launcher: CreateWorkerLauncher(&wg, cancel),
-			ctx:      ctx,
-			cancel:   cancel,
-			wg:       &wg,
-			slog:     slog.Default(),
-			isReady:  make(chan bool),
-			meta:     getDefaultMeta(),
+			wg:      wg,
+			ctx:     ctx,
+			cancel:  cancel,
+			slog:    slog.Default(),
+			isReady: make(chan bool),
+			meta:    getDefaultMeta(),
 		}
 	)
 
@@ -309,10 +309,6 @@ func (m *serverMeta) toServer(addr string) *fasthttp.Server {
 		LogAllErrors:                  true,
 		CloseOnShutdown:               true,
 	}
-
-	// if m.http2 {
-	// 	http2.ConfigureServer(s, http2.ServerConfig{})
-	// }
 
 	return s
 }

@@ -51,8 +51,8 @@ func TestGetLauncher(t *testing.T) {
 
 	require.Nil(t, e)
 	t.Cleanup(func() { require.Nil(t, s.ShutdownAndWait()) })
-	if s.GetLauncher() == nil {
-		t.Errorf("Launcher wrongly created : %v.", s.launcher)
+	if s.GetGroup() == nil {
+		t.Errorf("Worker group wrongly created: %v.", s.wg)
 	}
 }
 
