@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	fasthttp2 "github.com/dgrr/http2"
 	"github.com/lab259/cors"
 	"github.com/valyala/fasthttp"
+	// "golang.org/x/sync/errgroup"
 )
 
 const (
@@ -67,7 +67,13 @@ func (s *Server) Run(addrs ...Address) {
 			s.GetStructuredLogger().Info("starting unix socket server",
 				"name", addr.GetName(), "path", addr.GetAddr())
 
-			s.StartUnixSocket(addr.GetAddr())
+			if e := s.StartUnixSocket(addr.GetAddr()); e != nil {
+				s.slog.Error("starting server", slog.Any("error", e))
+
+				s.cancel()
+
+				return
+			}
 
 			// continue
 
@@ -118,31 +124,27 @@ func (s *Server) Start(addr string) {
 	}
 
 	s.internalHandler()
+
+	started := make(chan struct{})
+
 	s.launcher.Start(func() {
 		s.slog.Debug("http server: starting", slog.String("address", addr))
 
 		go s.pollPingEndpoint(addr)
 
+		close(started)
 		if e := s.internalInit(addr).ListenAndServe(addr); e != nil {
 			s.slog.Error("http server", slog.String("address", addr), slog.Any("error", e))
 		}
 
 		s.slog.Info("http server: done", slog.String("address", addr))
 	})
+
+	<-started
 }
 
-func (s *Server) StartUnixSocket(path string) {
+func (s *Server) StartUnixSocket(path string) error {
 	s.internalHandler()
-
-	// do some magic
-
-	// open socket as listener
-	listener, err := net.Listen("unix", strings.TrimPrefix(path, _unixSocketPrefix))
-	if err != nil {
-		s.slog.Error("listing on socket", slog.Any("error", err))
-
-		return
-	}
 
 	server := s.internalInit(path)
 
@@ -150,11 +152,14 @@ func (s *Server) StartUnixSocket(path string) {
 		s.slog.Debug("unix socket server: starting", slog.String("path", path))
 		defer s.slog.Info("unix socket server: done", slog.String("path", path))
 
-		if e := server.Serve(listener); e != nil {
-			s.slog.Error("unix socket server",
-				slog.String("path", path), slog.Any("error", e))
+		if e := server.ListenAndServeUNIX(
+			strings.TrimPrefix(path, _unixSocketPrefix),
+			os.ModeSocket); e != nil {
+			s.slog.Error("unix socket server", slog.String("path", path), slog.Any("error", e))
 		}
 	})
+
+	return nil
 }
 
 // StartTLS expose an https server.
@@ -222,6 +227,11 @@ func (s *Server) Shutdown() error {
 // Use of a sync.waitGroup to properly wait all running servers.
 func (s *Server) WaitForStop() {
 	s.wg.Wait()
+
+	// g := errgroup.Group{}
+	// if err := g.Wait(); err != nil {
+	// 	return nil, err
+	// }
 }
 
 // DumpRoutes dump the API endpoints using the server logger.
