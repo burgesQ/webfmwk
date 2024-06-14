@@ -98,6 +98,8 @@ type (
 
 		// Name is used in message.
 		Name string `json:"name"`
+
+		Middlewares *[]Handler
 	}
 
 	// Routes hold an array of route.
@@ -174,27 +176,17 @@ func (s *Server) ANY(path string, handler HandlerFunc) {
 
 // RouteApplier apply the array of RoutePerPrefix.
 func (s *Server) RouteApplier(rpps ...RoutesPerPrefix) {
-	for _, rpp := range rpps {
-		for prefix, routes := range rpp {
-			for _, route := range routes {
-				switch route.Verbe {
-				case GET:
-					s.GET(prefix+route.Path, route.Handler)
-				case POST:
-					s.POST(prefix+route.Path, route.Handler)
-				case PUT:
-					s.PUT(prefix+route.Path, route.Handler)
-				case PATCH:
-					s.PATCH(prefix+route.Path, route.Handler)
-				case DELETE:
-					s.DELETE(prefix+route.Path, route.Handler)
-				case ANY:
-					s.ANY(prefix+route.Path, route.Handler)
-				default:
-					s.slog.Warn("cannot load route",
-						slog.String("route", prefix+route.Path),
-						slog.String("verbe", route.Verbe))
-				}
+	for i := range rpps {
+		rpp := rpps[i]
+		for prefix := range rpp {
+			routes := rpp[prefix]
+
+			for i := range routes {
+				route := routes[i]
+
+				route.Path = prefix + route.Path
+
+				s.AddRoutes(route)
 			}
 		}
 	}
@@ -248,20 +240,28 @@ func (s *Server) GetRouter() *router.Router {
 	}
 
 	// register routes
-	for p, rs := range s.meta.routes {
-		prefix, routes := p, rs // never sure if I should copy
+	for prefix := range s.meta.routes {
+		routes := s.meta.routes[prefix] // never sure if I should copy
 
 		var group *router.Group
 		if len(prefix) != 0 {
 			group = r.Group(prefix)
 		}
 
-		for _, r1 := range routes {
-			route := r1
+		for i := range routes {
+			route := routes[i]
 			handler := route.Handler
 
 			// register internal Handlers
 			handler = contentIsJSON(handleHandlerError(handler))
+
+			// TODO: register group wise / route wise custom Handlers
+			// if route. != nil {
+			if route.Middlewares != nil {
+				for _, mdlw := range *route.Middlewares {
+					handler = mdlw(handler)
+				}
+			}
 
 			// register user server wise custom Handlers
 			if s.meta.handlers != nil {
@@ -269,18 +269,6 @@ func (s *Server) GetRouter() *router.Router {
 					handler = h(handleHandlerError(handler))
 				}
 			}
-
-			// TODO: register group wise / route wise custom Handlers
-			// if route.handlers != nil {
-			// 	for _, h := range s.meta.handlers {
-			// 		handler = h(handleHandlerError(handler))
-			// 	}
-			// }
-			// if group.handlers != nil {
-			// 	for _, h := range s.meta.handlers {
-			// 		handler = h(handleHandlerError(handler))
-			// 	}
-			// }
 
 			if len(prefix) == 0 {
 				r.Handle(route.Verbe, route.Path, s.CustomHandler(handler))
