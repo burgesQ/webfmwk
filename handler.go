@@ -41,7 +41,6 @@ func GetIPFromRequest(fc *fasthttp.RequestCtx) string {
 func handleHandlerError(next HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(c Context) error {
 		if e := next(c); e != nil {
-			c.GetStructuredLogger().Error("catch'd from handler", "error", e)
 			HandleError(c, e)
 		}
 

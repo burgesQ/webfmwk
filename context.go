@@ -137,12 +137,10 @@ func (c *icontext) FetchContent(dest interface{}) ErrorHandled {
 // Validate implement Context
 // this implemtation use validator to anotate & check struct
 func (c *icontext) Validate(dest interface{}) ErrorHandled {
-	if e := validate.Struct(dest); e != nil {
-		c.slog.Error("validating form or query param", slog.Any("error", e))
-
+	if err := validate.Struct(dest); err != nil {
 		var ev validator.ValidationErrors
 
-		errors.As(e, &ev)
+		errors.As(err, &ev)
 
 		return NewUnprocessable(ValidationError{
 			Status: http.StatusUnprocessableEntity,
